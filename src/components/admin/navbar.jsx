@@ -17,11 +17,11 @@ const Navbar = () => {
     };
 
     const navLinks = [
-        { name: "Dashboard", path: "/admin/dashboard" },
-        { name: "Training", path: "/admin/training" },
-        { name: "Validation", path: "/admin/validation" },
-        { name: "Certificate", path: "/admin/certificate" },
-        { name: "Article", path: "/admin/article" },
+        { name: "Dashboard", path: "/dashboard" },
+        { name: "Training", path: "/training" },
+        { name: "Validation", path: "/validation" },
+        { name: "Certificate", path: "/certificate" },
+        { name: "Article", path: "/article" },
         { name: "Logout", path: "#" },
     ];
 
