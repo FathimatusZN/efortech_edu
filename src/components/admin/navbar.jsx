@@ -59,7 +59,7 @@ const Navbar = () => {
                 {/* Navigation Links */}
                 <div className={`hidden md:flex items-center`}>
                     <ul className="flex space-x-4 md:space-x-8 lg:space-x-16 text-mainBlue font-medium">
-                        {navLinks.filter(link => link.name !== "Logout").map((link, index) => (
+                        {navLinks.filter(link => link.name !== "Logout" && link.name !== "Sign In").map((link, index) => (
                             <li key={index}>
                                 <a href={link.path} className="hover:text-mainGrey rd-10">{link.name}</a>
                             </li>
@@ -99,14 +99,16 @@ const Navbar = () => {
 
                     <div className="border-b-2 border-gray-300 mb-4" />
                     <ul className="flex flex-col space-y-0 text-mainBlue font-medium">
-                        {navLinks.map((link, index) => (
-                            <li key={index}>
-                                <a href={link.path} className="flex items-center hover:bg-gray-100 p-2 rounded">
-                                    <span className="ml-2">{link.name}</span>
-                                </a>
-                                {index < navLinks.length - 1 && <div className="border-b border-gray-300 my-2" />}
-                            </li>
-                        ))}
+                        {navLinks
+                            .filter(link => link.name !== "Sign In")
+                            .map((link, index) => (
+                                <li key={index}>
+                                    <a href={link.path} className="flex items-center hover:bg-gray-100 p-2 rounded">
+                                        <span className="ml-2">{link.name}</span>
+                                    </a>
+                                    {index < navLinks.length - 1 && <div className="border-b border-gray-300 my-2" />}
+                                </li>
+                            ))}
                     </ul>
                 </div>
             )}
