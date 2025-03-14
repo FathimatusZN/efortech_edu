@@ -57,10 +57,23 @@ const SigninPage = () => {
                             </div>
                         </div>
 
-                        <div className="flex justify-end">
-                            <Link href="/change-password" className="text-[#ED7117] text-sm font-semibold hover:underline">
-                                Forgot Password?
-                            </Link>
+                        <div className="space-y-2">
+                            <label className="text-lg font-semibold text-[#333333] flex items-center">
+                                Confirm Password <span className="text-red-500 ml-1">*</span>
+                            </label>
+                            <div className="relative">
+                                <input
+                                    type={showPassword ? "text" : "password"}
+                                    placeholder="Enter your correct password"
+                                    className="w-full border border-[#03649F] rounded-[10px] px-4 py-2 focus:outline-none placeholder:text-[#D9D9D9] placeholder:text-[14px] pr-12 shadow-md"
+                                />
+                                <div
+                                    onClick={togglePasswordVisibility}
+                                    className="absolute inset-y-0 right-3 flex items-center cursor-pointer text-gray-500"
+                                >
+                                    {showPassword ? <FaEye size={20} /> : <FaEyeSlash size={20} />}
+                                </div>
+                            </div>
                         </div>
 
                         <div className="flex justify-center pt-12">
@@ -74,7 +87,7 @@ const SigninPage = () => {
 
                         <p className="text-gray-500 text-center text-sm">
                             Don't have an account?{" "}
-                            <Link href="/register" className="text-[#ED7117] font-semibold hover:underline">
+                            <Link href="../auth/register" className="text-[#ED7117] font-semibold hover:underline">
                                 Register
                             </Link>
                         </p>
