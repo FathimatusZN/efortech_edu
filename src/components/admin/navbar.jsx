@@ -52,12 +52,12 @@ const AdminNavbar = () => {
                 {/* Desktop Navigation */}
                 <div className="hidden md:flex items-center space-x-8 text-mainBlue font-medium">
                     {navLinks.map((link, index) => (
-                        <a key={index} href={link.path} className="hover:text-gray-600">{link.name}</a>
+                        <a key={index} href={link.path} className="hover:text-mainOrange">{link.name}</a>
                     ))}
 
                     {/* Profile Button */}
                     <div className="relative" ref={profileMenuRef}>
-                        <button onClick={toggleProfileMenu} className="flex items-center space-x-2">
+                        <button onClick={toggleProfileMenu} className="flex items-center space-x-2 hover:text-mainOrange">
                             <img src="/assets/admin1.png" className="w-8 h-8 rounded-full border border-gray-300" />
                             <span>{user?.role === "superadmin" ? "Super Admin" : "Admin"}</span>
                         </button>
