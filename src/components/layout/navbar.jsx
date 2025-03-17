@@ -58,12 +58,12 @@ const DefaultNavbar = () => {
 
                 {/* Desktop Navigation */}
                 <div className="hidden md:flex items-center space-x-16 text-mainBlue font-medium">
-                    <a href="/" className="hover:text-lightBlue">Home</a>
-                    <a href="/user/training" className="hover:text-lightBlue">Training</a>
-                    <a href="/certificate" className="hover:text-lightBlue">Certificate</a>
-                    <a href="/article" className="hover:text-lightBlue">Article</a>
+                    <a href="/" className="hover:text-mainOrange">Home</a>
+                    <a href="/user/training" className="hover:text-mainOrange">Training</a>
+                    <a href="/certificate" className="hover:text-mainOrange">Certificate</a>
+                    <a href="/article" className="hover:text-mainOrange">Article</a>
                     {!user && (
-                        <a href="/auth/signin" className="bg-orange-500 hover:bg-orange-600 text-white px-8 h-10 rounded-lg flex items-center whitespace-nowrap">
+                        <a href="/auth/signin" className="bg-orange-500 hover:bg-orange-600 text-white px-8 h-8 rounded-lg flex items-center whitespace-nowrap">
                             <FaUser className="mr-2" /> Sign In
                         </a>
                     )}
