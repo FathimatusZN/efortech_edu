@@ -6,14 +6,14 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const RegisterPage = () => {
     const [showPassword, setShowPassword] = useState(false);
-    const [showConfirmPassword, setShowConfirmPassword] = useState(false); 
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [error, setError] = useState("");
 
     const togglePasswordVisibility = () => setShowPassword((prev) => !prev);
-    const toggleConfirmPasswordVisibility = () => setShowConfirmPassword((prev) => !prev); 
+    const toggleConfirmPasswordVisibility = () => setShowConfirmPassword((prev) => !prev);
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -53,7 +53,7 @@ const RegisterPage = () => {
                         className="border-2 border-[#03649F] rounded-[10px] p-6 space-y-5 bg-white shadow-md h-full flex flex-col justify-between"
                     >
                         <div className="space-y-4">
- 
+
                             <div className="space-y-2">
                                 <label className="text-lg font-semibold text-[#333333] flex items-center">
                                     Full Name <span className="text-red-500 ml-1">*</span>
