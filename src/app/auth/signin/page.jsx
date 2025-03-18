@@ -3,8 +3,10 @@
 import Link from "next/link";
 import { useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { useAuth } from "@/app/context/AuthContext"; // Import useAuth
 
 const SigninPage = () => {
+    const { login } = useAuth(); // Ambil fungsi login dari AuthContext
     const [showPassword, setShowPassword] = useState(false);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -72,6 +74,8 @@ const SigninPage = () => {
                             </label>
                             <input
                                 type="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
                                 placeholder="Enter your email in the correct format"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
