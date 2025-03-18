@@ -6,6 +6,7 @@ import AdminFooter from "@/components/admin/footer";
 
 const FooterWrapper = () => {
     const { user } = useAuth();
+    console.log("User di Footer:", user);
 
     if (user?.role === "superadmin" || user?.role === "admin") {
         return <AdminFooter />;

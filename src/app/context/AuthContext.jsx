@@ -1,22 +1,21 @@
 "use client";
 import { createContext, useContext, useState, useEffect } from "react";
 
-// Buat context untuk Auth
 const AuthContext = createContext();
 
-// Provider untuk membungkus seluruh aplikasi
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(null); // State untuk user
+    const [user, setUser] = useState(null);
 
-    // Simulasi Fetch User (nanti bisa diganti API)
+    // Ambil user dari localStorage saat pertama kali render
     useEffect(() => {
-        const savedUser = localStorage.getItem("user");
-        if (savedUser) setUser(JSON.parse(savedUser));
+        const storedUser = JSON.parse(localStorage.getItem("user"));
+        if (storedUser) {
+            setUser(storedUser);
+        }
     }, []);
 
-    // Fungsi login sementara (nanti diganti API)
-    const login = (role) => {
-        const userData = { name: "User", role: role };
+    // Fungsi login (simpan user di state dan localStorage)
+    const login = (userData) => {
         setUser(userData);
         localStorage.setItem("user", JSON.stringify(userData));
     };
@@ -34,5 +33,6 @@ export const AuthProvider = ({ children }) => {
     );
 };
 
-// Custom hook untuk pakai AuthContext
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+    return useContext(AuthContext);
+};
