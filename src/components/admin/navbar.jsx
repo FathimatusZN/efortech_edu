@@ -1,36 +1,39 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { FaUser, FaBars, FaTimes } from "react-icons/fa";
+import { FaUser } from "react-icons/fa";
+import { useAuth } from "@/app/context/AuthContext";
 
-const Navbar = () => {
-    const [isOpen, setIsOpen] = useState(false);
+const AdminNavbar = () => {
+    const { user, logout } = useAuth();
     const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
-    const profileMenuRef = useRef(null); // Create a ref for the profile menu
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const profileMenuRef = useRef(null);
+    const mobileMenuRef = useRef(null);
 
-    const toggleMenu = () => {
-        setIsOpen(!isOpen);
-    };
+    const toggleProfileMenu = () => setIsProfileMenuOpen(!isProfileMenuOpen);
+    const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
 
-    const toggleProfileMenu = () => {
-        setIsProfileMenuOpen(!isProfileMenuOpen);
-    };
-
-    const navLinks = [
+    let navLinks = [
         { name: "Dashboard", path: "/dashboard" },
         { name: "Training", path: "/training" },
         { name: "Validation", path: "/validation" },
         { name: "Certificate", path: "/certificate" },
         { name: "Article", path: "/article" },
-        { name: "Sign In", path: "../auth/signin" },
-        { name: "Logout", path: "#" },
+        { name: "Manage Admin", path: "/manage-admin" } // Tetap ditulis di sini
     ];
 
-    // Close the profile menu when clicking outside of it
+    if (user?.role === "superadmin" || user?.role === "admin") {
+        navLinks = navLinks.filter(link => link.path !== "/manage-admin");
+    }
+
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
                 setIsProfileMenuOpen(false);
+            }
+            if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target)) {
+                setIsMobileMenuOpen(false);
             }
         };
 
@@ -41,79 +44,83 @@ const Navbar = () => {
     }, []);
 
     return (
-        <nav className="sticky top-0 z-50 bg-white py-3 drop-shadow-[0_2px_4px_rgba(237,113,23,0.3)]">
+        <nav className="sticky top-0 z-50 bg-white py-3 shadow-md">
             <div className="container mx-auto flex justify-between items-center px-6">
-
                 {/* Logo */}
-                <div className="flex items-center">
-                    <img src="/assets/logo.png" alt="Logo" className="h-8 absolute left-6 top-3 flex items-center" />
-                </div>
+                <img src="/assets/logo.png" alt="Logo" className="h-8" />
 
-                {/* Hamburger Icon */}
-                <div className="md:hidden">
-                    <button onClick={toggleMenu} className="text-mainBlue">
-                        {isOpen ? <FaTimes size={24} /> : <FaBars size={24} />}
-                    </button>
-                </div>
-
-                {/* Navigation Links */}
-                <div className={`hidden md:flex items-center`}>
-                    <ul className="flex space-x-4 md:space-x-8 lg:space-x-16 text-mainBlue font-medium">
-                        {navLinks.filter(link => link.name !== "Logout" && link.name !== "Sign In").map((link, index) => (
-                            <li key={index}>
-                                <a href={link.path} className="hover:text-mainGrey rd-10">{link.name}</a>
-                            </li>
-                        ))}
-                    </ul>
+                {/* Desktop Navigation */}
+                <div className="hidden md:flex items-center space-x-8 text-mainBlue font-medium">
+                    {navLinks.map((link, index) => (
+                        <a key={index} href={link.path} className="hover:text-mainOrange">{link.name}</a>
+                    ))}
 
                     {/* Profile Button */}
                     <div className="relative" ref={profileMenuRef}>
-                        <button
-                            onClick={toggleProfileMenu}
-                            className="flex items-center bg-transparent text-mainBlue hover:text-lightBlue ml-8"
-                        >
-                            <img
-                                src="/assets/admin1.png"
-                                className="w-8 h-8 rounded-full mr-2 border border-lightBlue"
-                            />
-                            <span>Admin</span>
+                        <button onClick={toggleProfileMenu} className="flex items-center space-x-2 hover:text-mainOrange">
+                            <img src="/assets/admin1.png" className="w-8 h-8 rounded-full border border-gray-300" />
+                            <span>{user?.role === "superadmin" ? "Super Admin" : "Admin"}</span>
                         </button>
                         {isProfileMenuOpen && (
-                            <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-300 rounded-[10px] shadow-lg z-10">
-                                <a href="#" className="block px-4 py-2 text-mainBlue rounded-[10px] hover:bg-gray-100">Logout</a>
+                            <div className="absolute right-0 mt-3 w-52 bg-white border rounded-md shadow-lg z-10">
+                                {user?.role === "superadmin" && (
+                                    <a href="/manage-admin" className="block px-4 py-2 hover:bg-gray-100 hover:font-bold">Manage Admin</a>
+                                )}
+                                <a
+                                    href="#"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        logout();
+                                        window.location.reload();
+                                    }}
+                                    className="block px-4 py-2 text-mainBlue rounded-[10px] hover:bg-gray-100 hover:font-bold"
+                                >
+                                    Logout
+                                </a>
                             </div>
                         )}
                     </div>
                 </div>
-            </div>
 
-            {/* Mobile Menu */}
-            {isOpen && (
-                <div className="absolute top-16 right-0 bg-white w-64 max-w-[246px] h-auto min-h-[376px] rounded-lg p-4 md:hidden shadow-md">
-                    <div className="flex items-center justify-center mb-4">
-                        <a href="../auth/signin" className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-2 rounded-lg flex items-center whitespace-nowrap">
-                            <FaUser className="mr-2" />
-                            Sign In
-                        </a>
-                    </div>
-
-                    <div className="border-b-2 border-gray-300 mb-4" />
-                    <ul className="flex flex-col space-y-0 text-mainBlue font-medium">
-                        {navLinks
-                            .filter(link => link.name !== "Sign In")
-                            .map((link, index) => (
-                                <li key={index}>
-                                    <a href={link.path} className="flex items-center hover:bg-gray-100 p-2 rounded">
-                                        <span className="ml-2">{link.name}</span>
+                {/* Mobile Navigation (Profile Button) */}
+                <div className="md:hidden relative" ref={mobileMenuRef}>
+                    <button onClick={toggleMobileMenu} className="flex items-center space-x-2">
+                        <img src="/assets/admin1.png" className="w-8 h-8 rounded-full border border-gray-300" />
+                        <span className="text-sm font-medium text-mainBlue hover:font-bold">{user?.role === "superadmin" ? "Super Admin" : "Admin"}</span>
+                    </button>
+                    {isMobileMenuOpen && (
+                        <div className="absolute top-12 right-0 w-56 bg-white border rounded-md shadow-lg p-4 z-10">
+                            <ul className="space-y-2 text-mainBlue font-medium">
+                                {navLinks.map((link, index) => (
+                                    <li key={index}>
+                                        <a href={link.path} className="block px-4 py-2 hover:bg-gray-100 hover:font-bold">{link.name}</a>
+                                    </li>
+                                ))}
+                                {user?.role === "superadmin" && (
+                                    <li>
+                                        <a href="/manage-admin" className="block px-4 py-2 hover:bg-gray-100 hover:font-bold">Manage Admin</a>
+                                    </li>
+                                )}
+                                <li>
+                                    <a
+                                        href="#"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            logout();
+                                            window.location.reload();
+                                        }}
+                                        className="block px-4 py-2 text-mainBlue rounded-[10px] hover:bg-gray-100 hover:font-bold"
+                                    >
+                                        Logout
                                     </a>
-                                    {index < navLinks.length - 1 && <div className="border-b border-gray-300 my-2" />}
                                 </li>
-                            ))}
-                    </ul>
+                            </ul>
+                        </div>
+                    )}
                 </div>
-            )}
+            </div>
         </nav>
     );
 };
 
-export default Navbar;
+export default AdminNavbar;

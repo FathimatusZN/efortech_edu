@@ -1,33 +1,76 @@
-import { FaUser } from "react-icons/fa";
+"use client";
 
-const Navbar = () => {
-  return (
-    <nav className="sticky top-0 z-50 bg-white py-3 drop-shadow-[0_2px_4px_rgba(237,113,23,0.3)]">
-      <div className="container mx-auto flex justify-between items-center px-6">
-        
-        {/* Logo */}
-        <div className="flex items-center">
-          <img src="/assets/logo.png" alt="Logo" className="h-8"/>
-        </div>
+import { useState, useRef, useEffect } from "react";
+import { FaUser, FaBars, FaTimes } from "react-icons/fa";
+import { useAuth } from "@/app/context/AuthContext";
 
-        {/* Navigation Links - Sekarang di kanan */}
-        <div className="flex items-center space-x-16">
-          <ul className="hidden md:flex space-x-16 text-mainBlue font-medium">
-            <li><a href="/" className="hover:text-lightBlue">Home</a></li>
-            <li><a href="/training" className="hover:text-lightBlue">Training</a></li>
-            <li><a href="#" className="hover:text-lightBlue">Certificate</a></li> {/* Perlu konfirmasi */}
-            <li><a href="/article" className="hover:text-lightBlue">Article</a></li>
-          </ul>
+const DefaultNavbar = () => {
+    const { user } = useAuth();
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const mobileMenuRef = useRef(null);
 
-          {/* Sign In Button */}
-          <button className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-2 rounded-lg flex items-center">
-            <FaUser className="mr-2" />
-            Sign In
-          </button>
-        </div>
-      </div>
-    </nav>
-  );
+    const toggleMobileMenu = () => {
+        setIsMobileMenuOpen(!isMobileMenuOpen);
+    };
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target)) {
+                setIsMobileMenuOpen(false);
+            }
+        };
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
+
+    return (
+        <nav className="sticky top-0 z-50 bg-white py-3 shadow-md">
+            <div className="container mx-auto flex justify-between items-center px-6">
+                {/* Logo */}
+                <img src="/assets/logo.png" alt="Logo" className="h-8" />
+
+                {/* Hamburger Icon - Mobile */}
+                <div className="md:hidden relative" ref={mobileMenuRef}>
+                    <button onClick={toggleMobileMenu} className="text-mainBlue">
+                        {isMobileMenuOpen ? <FaTimes size={24} /> : <FaBars size={24} />}
+                    </button>
+                    {isMobileMenuOpen && (
+                        <div className="absolute top-12 right-0 w-56 bg-white border rounded-md shadow-lg p-4 z-10">
+                            <ul className="space-y-2 text-mainBlue font-medium">
+                                {!user && (
+                                    <li>
+                                        <a href="/auth/signin" className="block bg-orange-500 hover:bg-orange-600 hover:font-bold text-white w-full px-8 h-10 rounded-lg flex items-center justify-center">
+                                            <FaUser className="mr-2" /> Sign In
+                                        </a>
+                                    </li>
+                                )}
+                                <li><a href="/" className="block px-4 py-2 hover:bg-gray-100 hover:font-bold">Home</a></li>
+                                <li><a href="/user/training" className="block px-4 py-2 hover:bg-gray-100 hover:font-bold">Training</a></li>
+                                <li><a href="/certificate" className="block px-4 py-2 hover:bg-gray-100 hover:font-bold">Certificate</a></li>
+                                <li><a href="/article" className="block px-4 py-2 hover:bg-gray-100 hover:font-bold">Article</a></li>
+                            </ul>
+                        </div>
+                    )}
+                </div>
+
+                {/* Desktop Navigation */}
+                <div className="hidden md:flex items-center space-x-16 text-mainBlue font-medium">
+                    <a href="/" className="hover:text-mainOrange">Home</a>
+                    <a href="/user/training" className="hover:text-mainOrange">Training</a>
+                    <a href="/certificate" className="hover:text-mainOrange">Certificate</a>
+                    <a href="/article" className="hover:text-mainOrange">Article</a>
+                    {!user && (
+                        <a href="/auth/signin" className="bg-orange-500 hover:bg-orange-600 text-white px-8 h-8 rounded-lg flex items-center whitespace-nowrap">
+                            <FaUser className="mr-2" /> Sign In
+                        </a>
+                    )}
+                </div>
+            </div>
+        </nav>
+    );
 };
 
-export default Navbar;
+export default DefaultNavbar;
