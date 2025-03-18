@@ -74,8 +74,6 @@ const SigninPage = () => {
                             </label>
                             <input
                                 type="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
                                 placeholder="Enter your email in the correct format"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
