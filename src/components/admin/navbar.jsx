@@ -20,7 +20,7 @@ const AdminNavbar = () => {
         { name: "Validation", path: "/validation" },
         { name: "Certificate", path: "/certificate" },
         { name: "Article", path: "/article" },
-        { name: "Manage Admin", path: "/manage-admin" } // Tetap ditulis di sini
+        { name: "Manage Admin", path: "/manage-admin" }
     ];
 
     if (user?.role === "superadmin" || user?.role === "admin") {
