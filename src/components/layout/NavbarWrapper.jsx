@@ -7,6 +7,7 @@ import AdminNavbar from "@/components/admin/navbar.jsx";
 
 const NavbarWrapper = () => {
     const { user } = useAuth();
+    console.log("User di Navbar:", user);
 
     if (!user) {
         return <DefaultNavbar />;

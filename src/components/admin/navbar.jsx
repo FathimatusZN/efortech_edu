@@ -71,6 +71,7 @@ const AdminNavbar = () => {
                                     onClick={(e) => {
                                         e.preventDefault();
                                         logout();
+                                        window.location.reload();
                                     }}
                                     className="block px-4 py-2 text-mainBlue rounded-[10px] hover:bg-gray-100 hover:font-bold"
                                 >
@@ -106,6 +107,7 @@ const AdminNavbar = () => {
                                         onClick={(e) => {
                                             e.preventDefault();
                                             logout();
+                                            window.location.reload();
                                         }}
                                         className="block px-4 py-2 text-mainBlue rounded-[10px] hover:bg-gray-100 hover:font-bold"
                                     >

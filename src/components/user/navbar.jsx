@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/app/context/AuthContext";
 
 const UserNavbar = () => {
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const profileMenuRef = useRef(null);
@@ -50,8 +50,9 @@ const UserNavbar = () => {
           <div className="relative" ref={profileMenuRef}>
             <button onClick={toggleProfileMenu} className="flex items-center space-x-2 hover:text-mainOrange">
               <img src="/assets/user1.png" className="w-8 h-8 rounded-full border border-gray-300" />
-              <span>User</span>
+              <span>{user?.name || "User"}</span>
             </button>
+
             {isProfileMenuOpen && (
               <div className="absolute right-0 mt-3 w-52 bg-white border rounded-md shadow-lg z-10">
                 <a href="/user/edit-profile" className="block px-4 py-2 hover:bg-gray-100 hover:font-bold">Edit Profile</a>
@@ -60,6 +61,7 @@ const UserNavbar = () => {
                   onClick={(e) => {
                     e.preventDefault();
                     logout();
+                    window.location.reload();
                   }}
                   className="block px-4 py-2 text-mainBlue rounded-[10px] hover:bg-gray-100 hover:font-bold"
                 >
@@ -93,6 +95,7 @@ const UserNavbar = () => {
                     onClick={(e) => {
                       e.preventDefault();
                       logout();
+                      window.location.reload();
                     }}
                     className="block px-4 py-2 text-mainBlue rounded-[10px] hover:bg-gray-100 hover:font-bold"
                   >

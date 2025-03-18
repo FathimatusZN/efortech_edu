@@ -5,7 +5,7 @@ import { FaUser, FaBars, FaTimes } from "react-icons/fa";
 import { useAuth } from "@/app/context/AuthContext";
 
 const DefaultNavbar = () => {
-    const { user, login, logout } = useAuth();
+    const { user } = useAuth();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const mobileMenuRef = useRef(null);
 

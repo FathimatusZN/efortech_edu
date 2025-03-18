@@ -1,41 +1,80 @@
-"use client";
+'use client'
 
-import Link from "next/link";
-import { useState } from "react";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { useState } from 'react';
+import { useCreateUserWithEmailAndPassword } from 'react-firebase-hooks/auth';
+import { auth, db } from '@/app/firebase/config';
+import Link from 'next/link';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import { doc, setDoc } from "firebase/firestore";
+import { useRouter } from "next/navigation";
 
 const RegisterPage = () => {
+    const [fullName, setFullName] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
-    const [error, setError] = useState("");
+    const [role, setRole] = useState("user"); // Default role user
+    const [error, setError] = useState('');
+    const router = useRouter();
+    const [createUserWithEmailAndPassword] = useCreateUserWithEmailAndPassword(auth);
 
     const togglePasswordVisibility = () => setShowPassword((prev) => !prev);
     const toggleConfirmPasswordVisibility = () => setShowConfirmPassword((prev) => !prev);
 
-    const handleSubmit = (e) => {
+    const handleRegister = async (e) => {
         e.preventDefault();
+        setError('');
 
-        setError("");
-
-        if (!email.includes("@")) {
-            setError("");
+        if (!email.includes('@')) {
+            setError('Please enter a valid email.');
             return;
         }
 
         if (password !== confirmPassword) {
-            setError("Password and Confirm Password do not match.")
+            setError('Password and Confirm Password do not match.');
             return;
         }
 
-        alert("Registrasi berhasil!");
+        try {
+            // Buat user di Firebase Authentication
+            const res = await createUserWithEmailAndPassword(email, password);
+            if (!res.user) throw new Error('User registration failed');
+
+            // Simpan data user ke Firestore
+            const userRef = doc(db, "users", res.user.uid);
+            await setDoc(userRef, {
+                fullName,
+                email,
+                role: "user",  // Default role sebagai user
+                createdAt: new Date(),
+            });
+
+            console.log("User registered and saved:", res.user);
+            sessionStorage.setItem('user', JSON.stringify({
+                uid: res.user.uid,
+                email: res.user.email,
+                fullName,
+                role: "user"
+            }));
+
+            // Reset form
+            setFullName('');
+            setEmail('');
+            setPassword('');
+            setConfirmPassword('');
+
+            alert('Registration successful!');
+            router.push('/auth/signin'); // Redirect ke login
+        } catch (e) {
+            setError(e.message);
+        }
     };
+
 
     return (
         <div className="w-full min-h-screen flex flex-col md:flex-row -mt-16">
-
             <div className="relative w-full md:w-1/2 h-auto md:h-auto overflow-hidden">
                 <img
                     src="/assets/Gambar2.jpg"
@@ -47,13 +86,8 @@ const RegisterPage = () => {
             <div className="w-full md:w-1/2 flex items-center justify-center p-6">
                 <div className="w-[550px] h-[650px] space-y-6 flex flex-col justify-center">
                     <h1 className="text-3xl font-bold text-[#333333] text-center">Register Form</h1>
-
-                    <form
-                        onSubmit={handleSubmit}
-                        className="border-2 border-[#03649F] rounded-[10px] p-6 space-y-5 bg-white shadow-md h-full flex flex-col justify-between"
-                    >
+                    <form onSubmit={handleRegister} className="border-2 border-[#03649F] rounded-[10px] p-6 space-y-5 bg-white shadow-md h-full flex flex-col justify-between">
                         <div className="space-y-4">
-
                             <div className="space-y-2">
                                 <label className="text-lg font-semibold text-[#333333] flex items-center">
                                     Full Name <span className="text-red-500 ml-1">*</span>
@@ -62,10 +96,11 @@ const RegisterPage = () => {
                                     type="text"
                                     placeholder="Enter your name here"
                                     className="w-full border border-[#03649F] rounded-[10px] px-4 py-2 focus:outline-none placeholder:text-[#D9D9D9] shadow-md"
+                                    value={fullName}
+                                    onChange={(e) => setFullName(e.target.value)}
                                     required
                                 />
                             </div>
-
                             <div className="space-y-2">
                                 <label className="text-lg font-semibold text-[#333333] flex items-center">
                                     Email <span className="text-red-500 ml-1">*</span>
@@ -79,7 +114,6 @@ const RegisterPage = () => {
                                     required
                                 />
                             </div>
-
                             <div className="space-y-2">
                                 <label className="text-lg font-semibold text-[#333333] flex items-center">
                                     Password <span className="text-red-500 ml-1">*</span>
@@ -93,15 +127,11 @@ const RegisterPage = () => {
                                         onChange={(e) => setPassword(e.target.value)}
                                         required
                                     />
-                                    <div
-                                        onClick={togglePasswordVisibility}
-                                        className="absolute inset-y-0 right-3 flex items-center cursor-pointer text-gray-500"
-                                    >
+                                    <div onClick={togglePasswordVisibility} className="absolute inset-y-0 right-3 flex items-center cursor-pointer text-gray-500">
                                         {showPassword ? <FaEye size={20} /> : <FaEyeSlash size={20} />}
                                     </div>
                                 </div>
                             </div>
-
                             <div className="space-y-2">
                                 <label className="text-lg font-semibold text-[#333333] flex items-center">
                                     Confirm Password <span className="text-red-500 ml-1">*</span>
@@ -115,35 +145,20 @@ const RegisterPage = () => {
                                         onChange={(e) => setConfirmPassword(e.target.value)}
                                         required
                                     />
-                                    <div
-                                        onClick={toggleConfirmPasswordVisibility}
-                                        className="absolute inset-y-0 right-3 flex items-center cursor-pointer text-gray-500"
-                                    >
+                                    <div onClick={toggleConfirmPasswordVisibility} className="absolute inset-y-0 right-3 flex items-center cursor-pointer text-gray-500">
                                         {showConfirmPassword ? <FaEye size={20} /> : <FaEyeSlash size={20} />}
                                     </div>
                                 </div>
                             </div>
-
-                            {error && (
-                                <p className="text-red-600 text-sm">
-                                    {error}
-                                </p>
-                            )}
-
+                            {error && <p className="text-red-600 text-sm">{error}</p>}
                             <div className="flex justify-center pt-16">
-                                <button
-                                    type="submit"
-                                    className="bg-[#ED7117] hover:bg-orange-600 text-white font-semibold rounded-[10px] w-[180px] h-[40px] transition"
-                                >
+                                <button type="submit" className="bg-[#ED7117] hover:bg-orange-600 text-white font-semibold rounded-[10px] w-[180px] h-[40px] transition">
                                     Register
                                 </button>
                             </div>
-
                             <p className="text-gray-500 text-center text-sm">
-                                Already have an account?{" "}
-                                <Link href="../auth/signin" className="text-[#ED7117] font-semibold hover:underline">
-                                    Sign In
-                                </Link>
+                                Already have an account?{' '}
+                                <Link href="../auth/signin" className="text-[#ED7117] font-semibold hover:underline">Sign In</Link>
                             </p>
                         </div>
                     </form>
