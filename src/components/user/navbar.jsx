@@ -13,7 +13,7 @@ const UserNavbar = () => {
 
   let navLinks = [
     { name: "Home", path: "/user/home" },
-    { name: "Training", path: "/user/training" },
+    { name: "Training", path: "/training" },
     { name: "Certificate", path: "/user/certificate" },
     { name: "Article", path: "/user/article" },
   ];
