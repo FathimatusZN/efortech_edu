@@ -25,53 +25,26 @@ const RegisterPage = () => {
 
     const handleRegister = async (e) => {
         e.preventDefault();
-        setError('');
+        setError("");
 
-        if (!email.includes('@')) {
-            setError('Please enter a valid email.');
-            return;
-        }
-
-        if (password !== confirmPassword) {
-            setError('Password and Confirm Password do not match.');
-            return;
-        }
+        if (!email.includes("@")) return setError("Please enter a valid email.");
+        if (password !== confirmPassword) return setError("Passwords do not match.");
 
         try {
-            // Buat user di Firebase Authentication
-            const res = await createUserWithEmailAndPassword(email, password);
-            if (!res.user) throw new Error('User registration failed');
-
-            // Simpan data user ke Firestore
-            const userRef = doc(db, "users", res.user.uid);
-            await setDoc(userRef, {
-                fullName,
-                email,
-                role: "user",  // Default role sebagai user
-                createdAt: new Date(),
+            const res = await fetch("http://localhost:5000/api/register", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ fullName, email, password }),
             });
 
-            console.log("User registered and saved:", res.user);
-            sessionStorage.setItem('user', JSON.stringify({
-                uid: res.user.uid,
-                email: res.user.email,
-                fullName,
-                role: "user"
-            }));
+            if (!res.ok) throw new Error(await res.text());
 
-            // Reset form
-            setFullName('');
-            setEmail('');
-            setPassword('');
-            setConfirmPassword('');
-
-            alert('Registration successful!');
-            router.push('/auth/signin'); // Redirect ke login
+            alert("Registration successful!");
+            router.push("/auth/signin");
         } catch (e) {
             setError(e.message);
         }
     };
-
 
     return (
         <div className="w-full min-h-screen flex flex-col md:flex-row -mt-16">

@@ -33,14 +33,14 @@ const DashboardAdmin = () => {
                 </h1>
 
                 {/* Glassmorphism Shapes */}
-                <div className="w-full sm:w-[45%] h-[200px] bg-white bg-opacity-10 backdrop-blur-md rounded-xl shadow-lg flex flex-col items-center justify-center p-4">
+                <div className="w-full sm:w-[45%] h-[200px] bg-white bg-opacity-10 backdrop-blur-md rounded-xl shadow-lg flex flex-col items-center justify-center p-4 shadow-[inset_4px_2px_15px_rgba(255,255,255,0.25)]">
                     <h2 className="text-lg sm:text-xl font-semibold text-white">Training Registrations</h2>
                     <p className="text-gray-200 text-5xl sm:text-6xl font-bold drop-shadow-md">
                         14
                     </p>
                     <p className="text-gray-200 text-sm sm:text-base">data need to be validated</p>
                 </div>
-                <div className="w-full sm:w-[45%] h-[200px] bg-white bg-opacity-10 backdrop-blur-md rounded-xl shadow-lg flex flex-col items-center justify-center p-4">
+                <div className="w-full sm:w-[45%] h-[200px] bg-white bg-opacity-10 backdrop-blur-md rounded-xl shadow-lg flex flex-col items-center justify-center p-4 shadow-[inset_4px_2px_15px_rgba(255,255,255,0.25)]">
                     <h2 className="text-lg sm:text-xl font-semibold text-white">Training Certificate</h2>
                     <p className="text-gray-200 text-5xl sm:text-6xl font-bold drop-shadow-md">
                         20
@@ -52,7 +52,7 @@ const DashboardAdmin = () => {
             {/* Charts Section */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 mx-auto max-w-5xl">
                 {/* Registrant Chart */}
-                <div className="bg-white shadow-md p-4 rounded-lg">
+                <div className="bg-white shadow-md p-4 rounded-lg border border-[#01458E]">
                     <h2 className="text-lg font-semibold mb-2 text-center">Registrant Overview</h2>
                     <ResponsiveContainer width="100%" height={250}>
                         <BarChart data={registrantData}>
@@ -65,7 +65,7 @@ const DashboardAdmin = () => {
                 </div>
 
                 {/* Certificate Chart */}
-                <div className="bg-white shadow-md p-4 rounded-lg">
+                <div className="bg-white shadow-md p-4 rounded-lg border border-[#01458E]">
                     <h2 className="text-lg font-semibold mb-2 text-center">Certificate Issued</h2>
                     <ResponsiveContainer width="100%" height={250}>
                         <BarChart data={certificateData}>

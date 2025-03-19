@@ -39,6 +39,7 @@ const SigninPage = () => {
         }
 
         try {
+            // Login dengan Firebase Authentication
             const res = await signInWithEmailAndPassword(email, password);
             if (!res || !res.user) {
                 throw new Error("Authentication failed");
@@ -58,7 +59,6 @@ const SigninPage = () => {
                 }));
                 console.log("User signed in:", userData);
 
-                // Pastikan userData tersedia sebelum dipakai
                 login({
                     uid: res.user.uid,
                     email: res.user.email,
@@ -68,7 +68,7 @@ const SigninPage = () => {
             } else {
                 console.error("No user data found in Database");
                 setEmailError("User data not found in database.");
-                return; // Stop eksekusi lebih lanjut
+                return;
             }
 
             setEmail("");
