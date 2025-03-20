@@ -12,10 +12,10 @@ const UserNavbar = () => {
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
 
   let navLinks = [
-    { name: "Home", path: "/user/home" },
-    { name: "Training", path: "/user/training" },
-    { name: "Certificate", path: "/user/certificate" },
-    { name: "Article", path: "/user/article" },
+    { name: "Home", path: "/home" },
+    { name: "Training", path: "/training" },
+    { name: "Certificate", path: "/certificate" },
+    { name: "Article", path: "/article" },
   ];
 
   useEffect(() => {

@@ -42,7 +42,7 @@ const DefaultNavbar = () => {
                             <ul className="space-y-2 text-mainBlue font-medium">
                                 {!user && (
                                     <li>
-                                        <a href="/auth/signin" className="block bg-orange-500 hover:bg-orange-600 hover:font-bold text-white w-full px-8 h-10 rounded-lg flex items-center justify-center">
+                                        <a href="/auth/signin" className=" bg-orange-500 hover:bg-orange-600 hover:font-bold text-white w-full px-8 h-10 rounded-lg flex items-center justify-center">
                                             <FaUser className="mr-2" /> Sign In
                                         </a>
                                     </li>

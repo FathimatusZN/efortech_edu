@@ -37,7 +37,7 @@ export default function TrainingPage() {
     },
     {
       title: "Industrial IoT Training and International Advantech",
-      image: "https://source.unsplash.com/400x277/?industry",
+      image: "https://unsplash.com/photos/black-metal-empty-building-SLIFI67jv5k",
       description: "Join our industrial IoT training for a better understanding of automation.",
     },
     {
