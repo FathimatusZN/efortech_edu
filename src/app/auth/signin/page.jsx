@@ -99,7 +99,7 @@ const SigninPage = () => {
                         onSubmit={handleSubmit}
                         className="border-2 border-[#03649F] rounded-[10px] p-6 space-y-4 bg-white shadow-md"
                     >
-                        {/* EMAIL */}
+                        
                         <div className="space-y-1">
                             <label className="text-lg font-semibold text-[#333333] flex items-center">
                                 Email <span className="text-red-500 ml-1">*</span>

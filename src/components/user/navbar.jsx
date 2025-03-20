@@ -64,7 +64,7 @@ const UserNavbar = () => {
 
         {/* Menu Desktop */}
         <ul className="hidden md:flex space-x-8 md:space-x-12 text-mainBlue font-medium text-sm md:text-base">
-          <li><a href="/" className="hover:text-mainOrange transition duration-300">Home</a></li>
+          <li><a href="/home" className="hover:text-mainOrange transition duration-300">Home</a></li>
           <li><a href="/training" className="hover:text-mainOrange transition duration-300">Training</a></li>
 
           {/* Certificate dengan Submenu */}
