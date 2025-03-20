@@ -1,21 +1,32 @@
 import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
 import { useAuth } from "@/app/context/AuthContext";
 
 const UserNavbar = () => {
   const { user, logout } = useAuth();
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isCertificateMenuOpen, setIsCertificateMenuOpen] = useState(false);
   const profileMenuRef = useRef(null);
   const mobileMenuRef = useRef(null);
+  const certificateMenuRef = useRef(null);
 
   const toggleProfileMenu = () => setIsProfileMenuOpen(!isProfileMenuOpen);
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
+  const toggleCertificateMenu = () => setIsCertificateMenuOpen(!isCertificateMenuOpen);
 
   let navLinks = [
-    { name: "Home", path: "/home" },
+    { name: "Home", path: "/user/home" },
     { name: "Training", path: "/training" },
-    { name: "Certificate", path: "/certificate" },
-    { name: "Article", path: "/article" },
+    {
+      name: "Certificate",
+      path: "#",
+      subMenu: [
+        { name: "Check Certificate", path: "/user/certificate/check" },
+        { name: "Upload Certificate", path: "/user/certificate/upload" },
+      ],
+    },
+    { name: "Article", path: "/user/article" },
   ];
 
   useEffect(() => {
@@ -25,6 +36,9 @@ const UserNavbar = () => {
       }
       if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target)) {
         setIsMobileMenuOpen(false);
+      }
+      if (certificateMenuRef.current && !certificateMenuRef.current.contains(event.target)) {
+        setIsCertificateMenuOpen(false);
       }
     };
 
@@ -43,7 +57,33 @@ const UserNavbar = () => {
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center space-x-8 text-mainBlue font-medium">
           {navLinks.map((link, index) => (
-            <a key={index} href={link.path} className="hover:text-mainOrange">{link.name}</a>
+            <div key={index} className="relative" ref={link.name === "Certificate" ? certificateMenuRef : null}>
+              {link.subMenu ? (
+                <>
+                  <button
+                    onClick={toggleCertificateMenu}
+                    className="hover:text-mainOrange flex items-center"
+                  >
+                    {link.name}
+                  </button>
+                  {isCertificateMenuOpen && (
+                    <div className="absolute top-10 left-0 bg-white border rounded-md shadow-lg w-48">
+                      {link.subMenu.map((sub, idx) => (
+                        <Link
+                          key={idx}
+                          href={sub.path}
+                          className="block px-4 py-2 hover:bg-gray-100"
+                        >
+                          {sub.name}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <Link href={link.path} className="hover:text-mainOrange">{link.name}</Link>
+              )}
+            </div>
           ))}
 
           {/* Profile Button */}
@@ -53,19 +93,19 @@ const UserNavbar = () => {
               <span>{user?.name || "User"}</span>
             </button>
             {isProfileMenuOpen && (
-              <div className="absolute right-0 mt-3 w-52 bg-white border rounded-md shadow-lg z-10">
-                <a href="/user/edit-profile" className="block px-4 py-2 hover:bg-gray-100 hover:font-bold">Edit Profile</a>
-                <a
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
+              <div className="absolute right-0 mt-3 w-52 bg-white border rounded-md shadow-lg">
+                <Link href="/user/edit-profile" className="block px-4 py-2 hover:bg-gray-100">
+                  Edit Profile
+                </Link>
+                <button
+                  onClick={() => {
                     logout();
                     window.location.reload();
                   }}
-                  className="block px-4 py-2 text-mainBlue rounded-[10px] hover:bg-gray-100 hover:font-bold"
+                  className="block px-4 py-2 text-mainBlue hover:bg-gray-100 w-full text-left"
                 >
                   Logout
-                </a>
+                </button>
               </div>
             )}
           </div>
@@ -75,31 +115,48 @@ const UserNavbar = () => {
         <div className="md:hidden relative" ref={mobileMenuRef}>
           <button onClick={toggleMobileMenu} className="flex items-center space-x-2">
             <img src="/assets/user1.png" className="w-8 h-8 rounded-full border border-gray-300" />
-            <span className="text-sm font-medium text-mainBlue hover:font-bold">User</span>
+            <span className="text-sm font-medium text-mainBlue">User</span>
           </button>
           {isMobileMenuOpen && (
-            <div className="absolute top-12 right-0 w-56 bg-white border rounded-md shadow-lg p-4 z-10">
+            <div className="absolute top-12 right-0 w-56 bg-white border rounded-md shadow-lg p-4">
               <ul className="space-y-2 text-mainBlue font-medium">
                 <li>
-                  <a href="/user/edit-profile" className="block px-4 py-2 hover:bg-gray-100 hover:font-bold">Edit Profile</a>
+                  <Link href="/user/edit-profile" className="block px-4 py-2 hover:bg-gray-100">
+                    Edit Profile
+                  </Link>
                 </li>
                 {navLinks.map((link, index) => (
                   <li key={index}>
-                    <a href={link.path} className="block px-4 py-2 hover:bg-gray-100 hover:font-bold">{link.name}</a>
+                    {link.subMenu ? (
+                      <>
+                        <button onClick={toggleCertificateMenu} className="block px-4 py-2 w-full text-left">
+                          {link.name}
+                        </button>
+                        {isCertificateMenuOpen && (
+                          <div className="pl-4">
+                            {link.subMenu.map((sub, idx) => (
+                              <Link key={idx} href={sub.path} className="block px-4 py-2 hover:bg-gray-100">
+                                {sub.name}
+                              </Link>
+                            ))}
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <Link href={link.path} className="block px-4 py-2 hover:bg-gray-100">{link.name}</Link>
+                    )}
                   </li>
                 ))}
                 <li>
-                  <a
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault();
+                  <button
+                    onClick={() => {
                       logout();
                       window.location.reload();
                     }}
-                    className="block px-4 py-2 text-mainBlue rounded-[10px] hover:bg-gray-100 hover:font-bold"
+                    className="block px-4 py-2 text-mainBlue hover:bg-gray-100 w-full text-left"
                   >
                     Logout
-                  </a>
+                  </button>
                 </li>
               </ul>
             </div>

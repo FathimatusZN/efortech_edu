@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { FaUser } from "react-icons/fa";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useAuth } from "@/app/context/AuthContext";
 
 const AdminNavbar = () => {
     const { user, logout } = useAuth();
+    const router = useRouter();
     const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const profileMenuRef = useRef(null);
@@ -16,15 +18,18 @@ const AdminNavbar = () => {
 
     let navLinks = [
         { name: "Dashboard", path: "/dashboard" },
-        { name: "Training", path: "/training" },
-        { name: "Validation", path: "/validation" },
-        { name: "Certificate", path: "/certificate" },
-        { name: "Article", path: "/article" },
+        { name: "Training", path: "/training-admin" },
+        { name: "Validation", path: "/validation-admin" },
+        { name: "Certificate", path: "/certificate-admin" },
+        { name: "Article", path: "/article-admin" },
         { name: "Manage Admin", path: "/manage-admin" }
     ];
 
     if (user?.role === "superadmin" || user?.role === "admin") {
         navLinks = navLinks.filter(link => link.path !== "/manage-admin");
+    }
+    if (!user || (user.role !== "admin" && user.role !== "superadmin")) {
+        return null;
     }
 
     useEffect(() => {
@@ -43,8 +48,13 @@ const AdminNavbar = () => {
         };
     }, []);
 
+    const handleLogout = () => {
+        logout();
+        router.push("/login");
+    };
+
     return (
-        <nav className="sticky top-0 z-50 bg-white py-3 shadow-md">
+        <nav className="sticky top-0 z-50 bg-white py-3 drop-shadow-[0_2px_4px_rgba(237,113,23,0.3)]">
             <div className="container mx-auto flex justify-between items-center px-6">
                 {/* Logo */}
                 <img src="/assets/logo.png" alt="Logo" className="h-8" />
@@ -52,7 +62,9 @@ const AdminNavbar = () => {
                 {/* Desktop Navigation */}
                 <div className="hidden md:flex items-center space-x-8 text-mainBlue font-medium">
                     {navLinks.map((link, index) => (
-                        <a key={index} href={link.path} className="hover:text-mainOrange">{link.name}</a>
+                        <Link key={index} href={link.path} className="hover:text-mainOrange">
+                            {link.name}
+                        </Link>
                     ))}
 
                     {/* Profile Button */}
@@ -64,19 +76,16 @@ const AdminNavbar = () => {
                         {isProfileMenuOpen && (
                             <div className="absolute right-0 mt-3 w-52 bg-white border rounded-md shadow-lg z-10">
                                 {user?.role === "superadmin" && (
-                                    <a href="/manage-admin" className="block px-4 py-2 hover:bg-gray-100 hover:font-bold">Manage Admin</a>
+                                    <Link href="/manage-admin" className="block px-4 py-2 hover:bg-gray-100 hover:font-bold">
+                                        Manage Admin
+                                    </Link>
                                 )}
-                                <a
-                                    href="#"
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        logout();
-                                        window.location.reload();
-                                    }}
-                                    className="block px-4 py-2 text-mainBlue rounded-[10px] hover:bg-gray-100 hover:font-bold"
+                                <button
+                                    onClick={handleLogout}
+                                    className="block w-full text-left px-4 py-2 text-mainBlue rounded-[10px] hover:bg-gray-100 hover:font-bold"
                                 >
                                     Logout
-                                </a>
+                                </button>
                             </div>
                         )}
                     </div>
@@ -93,26 +102,25 @@ const AdminNavbar = () => {
                             <ul className="space-y-2 text-mainBlue font-medium">
                                 {navLinks.map((link, index) => (
                                     <li key={index}>
-                                        <a href={link.path} className="block px-4 py-2 hover:bg-gray-100 hover:font-bold">{link.name}</a>
+                                        <Link href={link.path} className="block px-4 py-2 hover:bg-gray-100 hover:font-bold">
+                                            {link.name}
+                                        </Link>
                                     </li>
                                 ))}
                                 {user?.role === "superadmin" && (
                                     <li>
-                                        <a href="/manage-admin" className="block px-4 py-2 hover:bg-gray-100 hover:font-bold">Manage Admin</a>
+                                        <Link href="/manage-admin" className="block px-4 py-2 hover:bg-gray-100 hover:font-bold">
+                                            Manage Admin
+                                        </Link>
                                     </li>
                                 )}
                                 <li>
-                                    <a
-                                        href="#"
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            logout();
-                                            window.location.reload();
-                                        }}
-                                        className="block px-4 py-2 text-mainBlue rounded-[10px] hover:bg-gray-100 hover:font-bold"
+                                    <button
+                                        onClick={handleLogout}
+                                        className="block w-full text-left px-4 py-2 text-mainBlue rounded-[10px] hover:bg-gray-100 hover:font-bold"
                                     >
                                         Logout
-                                    </a>
+                                    </button>
                                 </li>
                             </ul>
                         </div>

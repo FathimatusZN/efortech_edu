@@ -31,7 +31,7 @@ const RegisterPage = () => {
         if (password !== confirmPassword) return setError("Passwords do not match.");
 
         try {
-            const res = await fetch("http://localhost:5000/api/register", {
+            const res = await fetch("http://localhost:5000/api/auth/register", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ fullName, email, password }),
