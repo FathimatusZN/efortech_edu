@@ -40,46 +40,30 @@ const SigninPage = () => {
 
         try {
             const res = await signInWithEmailAndPassword(email, password);
-            if (!res || !res.user) {
-                throw new Error("Authentication failed");
-            }
+            if (!res || !res.user) throw new Error("Authentication failed");
 
-            // Ambil data user dari Firestore
             const userRef = doc(db, "users", res.user.uid);
             const userSnap = await getDoc(userRef);
 
             if (userSnap.exists()) {
                 const userData = userSnap.data();
-                sessionStorage.setItem("user", JSON.stringify({
-                    uid: res.user.uid,
-                    email: res.user.email,
-                    fullName: userData.fullName,
-                    role: userData.role
-                }));
-                console.log("User signed in:", userData);
+                sessionStorage.setItem("role", userData.role);
 
-                // Pastikan userData tersedia sebelum dipakai
                 login({
                     uid: res.user.uid,
                     email: res.user.email,
-                    fullName: userData.fullName,
                     role: userData.role,
                 });
-            } else {
-                console.error("No user data found in Database");
-                setEmailError("User data not found in database.");
-                return; // Stop eksekusi lebih lanjut
-            }
 
-            setEmail("");
-            setPassword("");
-            router.push("/");
+                router.push(userData.role === "admin" || userData.role === "superadmin" ? "/dashboard" : "/home");
+            } else {
+                setEmailError("User data not found.");
+            }
         } catch (err) {
             console.error("Firebase Auth Error:", err.message);
             setEmailError("Invalid email or password.");
         }
     };
-
 
     return (
         <div className="w-full min-h-screen flex flex-col md:flex-row -mt-16">
