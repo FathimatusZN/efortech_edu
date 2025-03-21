@@ -24,8 +24,6 @@ export default function ArticlePage() {
       ? articles
       : articles.filter((article) => article.category === selectedCategory);
 
-      const mainOrange = "#FF6600";
-
   return (
     <div className="max-w-screen w-full relative mx-auto">
       {/* CAROUSEL / SLIDER */}
@@ -37,7 +35,7 @@ export default function ArticlePage() {
         }}
         autoplay={{ delay: 5000 }}
         loop={true}
-        className="w-full h-[446px] md:h-[336px] overflow-hidden shadow-lg"
+        className="w-full h-[50vh] md:h-[40vh] lg:h-[35vh] overflow-hidden shadow-lg"
       >
         {carouselImages.map((slide) => (
           <SwiperSlide key={slide.id} className="relative">
@@ -46,8 +44,8 @@ export default function ArticlePage() {
               alt={slide.title}
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-black/50 flex items-end justify-items-start text-white text-center p-6">
-              <h1 className="text-xl md:text-3xl font-bold">{slide.title}</h1>
+            <div className="absolute inset-0 bg-black/50 flex items-end text-white text-center p-6">
+              <h1 className="text-lg md:text-xl lg:text-2xl font-bold">{slide.title}</h1>
             </div>
           </SwiperSlide>
         ))}
@@ -56,27 +54,10 @@ export default function ArticlePage() {
       {/* Pagination DI LUAR gambar */}
       <div className="custom-pagination flex justify-center mt-4"></div>
 
-      {/* Styling Pagination dengan Tailwind */}
-      <style jsx global>{`
-        .custom-pagination .swiper-pagination-bullet {
-          width: 12px;
-          height: 12px;
-          background-color: #f97316;
-          opacity: 0.6;
-          transition: all 0.3s ease;
-          margin: 0 6px;
-          border-radius: 50%;
-        }
-        .custom-pagination .swiper-pagination-bullet-active {
-          opacity: 1;
-          transform: scale(1.3);
-        }
-      `}</style>
-
       {/* FILTER DROPDOWN */}
       <div className="mt-6 flex justify-center">
         <select
-          className="w-full md:w-1/3 py-2 px-4 border border-mainOrange focus:border-mainOrange rounded-full shadow-lg"
+          className="w-full md:w-1/3 py-2 px-4 border border-orange-500 focus:border-orange-600 rounded-full shadow-lg"
           value={selectedCategory}
           onChange={(e) => setSelectedCategory(e.target.value)}
         >
@@ -89,12 +70,11 @@ export default function ArticlePage() {
       </div>
 
       {/* GRID ARTIKEL */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 justify-center items-center gap-8 p-8 max-w-max mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 p-10 mx-auto max-w-max">
         {filteredArticles.map((article) => (
           <ArticleCard key={article.id} {...article} />
         ))}
       </div>
-
     </div>
   );
 }

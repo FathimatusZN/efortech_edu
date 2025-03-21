@@ -22,11 +22,11 @@ const UserNavbar = () => {
       name: "Certificate",
       path: "#",
       subMenu: [
-        { name: "Check Certificate", path: "/user/certificate/check" },
-        { name: "Upload Certificate", path: "/user/certificate/upload" },
+        { name: "Check Certificate", path: "/certificate/check" },
+        { name: "Upload Certificate", path: "/certificate/upload" },
       ],
     },
-    { name: "Article", path: "/user/article" },
+    { name: "Article", path: "/article" },
   ];
 
   useEffect(() => {
