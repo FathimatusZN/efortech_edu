@@ -1,12 +1,9 @@
 'use client'
 
 import { useState } from 'react';
-import { useCreateUserWithEmailAndPassword } from 'react-firebase-hooks/auth';
-import { auth, db } from '@/app/firebase/config';
-import Link from 'next/link';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
-import { doc, setDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
+import Link from 'next/link';
 
 const RegisterPage = () => {
     const [fullName, setFullName] = useState('');
@@ -15,10 +12,8 @@ const RegisterPage = () => {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-    const [role, setRole] = useState("user"); // Default role user
     const [error, setError] = useState('');
     const router = useRouter();
-    const [createUserWithEmailAndPassword] = useCreateUserWithEmailAndPassword(auth);
 
     const togglePasswordVisibility = () => setShowPassword((prev) => !prev);
     const toggleConfirmPasswordVisibility = () => setShowConfirmPassword((prev) => !prev);

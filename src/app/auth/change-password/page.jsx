@@ -3,7 +3,9 @@
 import { useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { auth } from "@/app/firebase/config";
-import { updatePassword, reauthenticateWithCredential, EmailAuthProvider } from "firebase/auth";
+import { getAuth, EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function ChangePasswordPage() {
   const user = auth.currentUser;
@@ -16,20 +18,12 @@ export default function ChangePasswordPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
+  const router = useRouter();
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setSuccess("");
-
-    if (!user) {
-      setError("No user is logged in.");
-      return;
-    }
-
-    if (!currentPassword) {
-      setError("Current password is required.");
-      return;
-    }
 
     if (newPassword.length < 8) {
       setError("New password must be at least 8 characters.");
@@ -42,16 +36,30 @@ export default function ChangePasswordPage() {
     }
 
     try {
-      // Re-authenticate user before changing password
-      const credential = EmailAuthProvider.credential(user.email, currentPassword);
-      await reauthenticateWithCredential(user, credential);
+      const token = await auth.currentUser.getIdToken(); // Dapatkan token dari Firebase
 
-      // Update password
-      await updatePassword(user, newPassword);
-      setSuccess("Password changed successfully!");
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
+      const response = await fetch("http://localhost:5000/api/user/change-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // Kirim token untuk autentikasi
+        },
+        body: JSON.stringify({
+          currentPassword,
+          newPassword,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) throw new Error(data.error);
+
+      await auth.signOut();
+
+      // ✅ Tampilkan alert & arahkan ke login
+      alert("Password updated successfully! Please sign in again.");
+      router.push("/auth/signin");
+
     } catch (err) {
       setError(err.message);
     }
