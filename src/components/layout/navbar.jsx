@@ -11,7 +11,7 @@ const DefaultNavbar = () => {
     const mobileMenuRef = useRef(null);
 
     const navLinks = [
-        { name: "Home", path: "/" },
+        { name: "Home", path: "/home" },
         { name: "Training", path: "/user/training" },
         { name: "Certificate", path: "/certificate" },
         { name: "Article", path: "/article" },

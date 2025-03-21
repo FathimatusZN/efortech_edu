@@ -16,17 +16,17 @@ const UserNavbar = () => {
   const toggleCertificateMenu = () => setIsCertificateMenuOpen(!isCertificateMenuOpen);
 
   let navLinks = [
-    { name: "Home", path: "/user/home" },
+    { name: "Home", path: "/home" },
     { name: "Training", path: "/training" },
     {
       name: "Certificate",
       path: "#",
       subMenu: [
-        { name: "Check Certificate", path: "/user/certificate/check" },
-        { name: "Upload Certificate", path: "/user/certificate/upload" },
+        { name: "Check Certificate", path: "/certificate/check" },
+        { name: "Upload Certificate", path: "/certificate/upload" },
       ],
     },
-    { name: "Article", path: "/user/article" },
+    { name: "Article", path: "/article" },
   ];
 
   useEffect(() => {
@@ -96,6 +96,9 @@ const UserNavbar = () => {
               <div className="absolute right-0 mt-3 w-52 bg-white border rounded-md shadow-lg">
                 <Link href="/user/edit-profile" className="block px-4 py-2 hover:bg-gray-100">
                   Edit Profile
+                </Link>
+                <Link href="/auth/change-password" className="block px-4 py-2 hover:bg-gray-100">
+                  Change Password
                 </Link>
                 <button
                   onClick={() => {
