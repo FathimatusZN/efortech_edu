@@ -123,7 +123,7 @@ const SigninPage = () => {
                             </p>
 
                             <div className="flex justify-end pt-4">
-                                <Link href="../auth/change-password" className="text-sm text-[#ED7117] font-semibold hover:underline">
+                                <Link href="../auth/forgot-password" className="text-sm text-[#ED7117] font-semibold hover:underline">
                                     Forgot Password?
                                 </Link>
                             </div>
