@@ -15,11 +15,11 @@ export default function ArticleCard({ id, category, title, description, image, l
   
         {/* TITLE */}
         <h2 className="text-lg font-semibold mt-2 text-blue-900 mx-4 leading-tight">
-          {title.length > 30 ? title.substring(0, 30) + "..." : title}
+          {title.length > 100 ? title.substring(0, 100) + "..." : title}
         </h2>
   
         {/* DESCRIPTION */}
-        <p className="text-gray-600 mx-4 text-sm mt-1">{description.substring(0, 90)}...</p>
+        <p className="text-gray-600 mx-4 text-sm mt-1">{description.substring(0, 50)}...</p>
   
         {/* READ MORE LINK */}
         <button
