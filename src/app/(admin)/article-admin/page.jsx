@@ -4,25 +4,17 @@ import React, { useState } from "react";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import ArticleCard from "@/components/admin/ArticleCardAdmin";
 import { FaSearch, FaPlus } from "react-icons/fa";
+import { articles } from "./data"; // Import data dari file data.js
 
-const dummyArticles = Array.from({ length: 12 }).map((_, index) => ({
-    id: index + 1,
-    imageUrl: '/assets/Gambar2.jpg',
-    title: `6 Cara Digital Twin Mengubah Industri Manufaktur Menuju Era Digitalisasi ${index + 1}`,
-    description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam eu turpis molestie, dictum est a, mattis tellus Elit etiam eu turpis molestie...",
-    category: "Education",
-    views: Math.floor(Math.random() * 1000),
-}));
-
-const PAGE_SIZE = 6; // Menampilkan 3 baris (3x2) per load
+const PAGE_SIZE = 6;
 
 const ArticlePage = () => {
-    const [displayedArticles, setDisplayedArticles] = useState(dummyArticles.slice(0, PAGE_SIZE));
+    const [displayedArticles, setDisplayedArticles] = useState(articles.slice(0, PAGE_SIZE));
     const [loadedCount, setLoadedCount] = useState(PAGE_SIZE);
 
     const loadMore = () => {
         const nextCount = loadedCount + PAGE_SIZE;
-        setDisplayedArticles(dummyArticles.slice(0, nextCount));
+        setDisplayedArticles(articles.slice(0, nextCount));
         setLoadedCount(nextCount);
     };
 
@@ -31,7 +23,6 @@ const ArticlePage = () => {
             <div className="relative pt-4 px-4 sm:px-6 lg:px-8 max-w-[1440px] mx-auto min-h-screen">
                 {/* Title */}
                 <div className="flex flex-wrap justify-between items-center w-full max-w-[1440px] mx-auto mt-6 mb-6 gap-4">
-                    {/* Title */}
                     <h1 className="text-2xl sm:text-3xl font-bold">Articles</h1>
 
                     {/* Search & Add Button */}
@@ -47,7 +38,7 @@ const ArticlePage = () => {
                         </div>
 
                         {/* Add New Button */}
-                        <button className="flex items-center gap-2 bg-lightBlue text-white px-4 py-2 sm:px-6 sm:py-2 rounded-lg shadow hover:bg-mainBlue">
+                        <button className="flex items-center gap-2 bg-lightBlue text-white px-4 py-2 sm:px-6 sm:py-2 rounded-lg shadow hover:bg-mainBlue" href="../add-article">
                             <FaPlus />
                             <span>Add New</span>
                         </button>
@@ -57,12 +48,19 @@ const ArticlePage = () => {
                 {/* Article Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-6">
                     {displayedArticles.map((article) => (
-                        <ArticleCard key={article.id} {...article} />
+                        <ArticleCard
+                            key={article.id}
+                            title={article.title}
+                            description={article.description}
+                            category={article.category}
+                            views={100} // Data views belum ada di dummy, bisa diganti dengan random
+                            imageUrl={article.image}
+                        />
                     ))}
                 </div>
 
                 {/* Load More Button */}
-                {loadedCount < dummyArticles.length && (
+                {loadedCount < articles.length && (
                     <div className="flex justify-end mt-6">
                         <button
                             onClick={loadMore}

@@ -1,7 +1,7 @@
 import React from "react";
 import { FaEdit, FaTrash, FaEye, FaShapes } from "react-icons/fa";
 
-const ArticleCard = ({ title, description, category, views, imageUrl }) => {
+function ArticleCard({ title, description, category, views = Math.floor(Math.random() * 1000), imageUrl }) {
     const truncatedDescription = description.length > 100 ? description.slice(0, 120) + "..." : description;
 
     return (
