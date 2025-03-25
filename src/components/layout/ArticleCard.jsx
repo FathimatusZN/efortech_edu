@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 export default function ArticleCard({ id, category, title, description, image, link }) {
   const router = useRouter();
   return (
-    <div className="bg-white max-w-[417] h-[433] border-2 border-mainBlue rounded-l-xl rounded-br-xl shadow-lg hover:shadow-xl transition-all overflow-hidden">
+    <div className="bg-white max-w-[417] max-h-[433] border-2 border-mainBlue rounded-l-xl rounded-br-xl shadow-lg hover:shadow-xl transition-all overflow-hidden">
       {/* IMAGE */}
       <img src={image} alt={title} className="w-full h-[241] object-cover rounded-tl-xl" />
 
@@ -15,11 +15,11 @@ export default function ArticleCard({ id, category, title, description, image, l
 
       {/* TITLE */}
       <h2 className="text-lg font-semibold mt-2 text-blue-900 mx-4 leading-tight">
-        {title.length > 50 ? title.substring(0, 50) + "..." : title}
+        {title.length > 100 ? title.substring(0, 100) + "..." : title}
       </h2>
 
       {/* DESCRIPTION */}
-      <p className="text-gray-600 mx-4 text-sm mt-1">{description.substring(0, 90)}...</p>
+      <p className="text-gray-600 mx-4 text-sm mt-1">{description.substring(0, 50)}...</p>
 
       {/* READ MORE LINK */}
       <button

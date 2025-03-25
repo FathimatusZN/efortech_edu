@@ -94,7 +94,7 @@ const UserNavbar = () => {
             </button>
             {isProfileMenuOpen && (
               <div className="absolute right-0 mt-3 w-52 bg-white border rounded-md shadow-lg">
-                <Link href="/user/edit-profile" className="block px-4 py-2 hover:bg-gray-100">
+                <Link href="/edit-profile" className="block px-4 py-2 hover:bg-gray-100">
                   Edit Profile
                 </Link>
                 <Link href="/auth/change-password" className="block px-4 py-2 hover:bg-gray-100">
