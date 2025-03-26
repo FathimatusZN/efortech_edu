@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { useRouter} from "next/navigation";
 
-const ValidationPage = () => {
+const ValidationCoursePage = () => {
     const router = useRouter();
     const [courseData, setCourseData] = useState([
         { id: "ID0000001", name: "Full Name 1", date: "12 Feb 2025", course: "PMP Certificate", session: "08.00-12.00" },
@@ -55,13 +55,12 @@ const ValidationPage = () => {
 
     return (
         <div className="max-w-screen mx-auto p-6">
-            <h1 className="text-2xl font-bold text-left mb-6">Validation</h1>
+            <h1 className="text-2xl font-bold text-left mb-6">Training Registration Validation</h1>
             
-            {/* Course Registration Validation */}
             <div className="bg-white outline outline-3 outline-mainBlue rounded-2xl p-6 mb-6 shadow-[8px_8px_0px_0px_#157ab2]">
             <div className="relative">
             <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold">Course Registration Validation</h2>
+                <h2 className="text-lg font-semibold">Need to be Processed</h2>
                 <div className="relative" ref={filterRef}>
                 {!isFilterOpen && (
                     <Image
@@ -101,16 +100,16 @@ const ValidationPage = () => {
                 </div>
             </div>
             </div>
-                <table className="w-full border-collapse rounded-lg overflow-hidden">
+                <table className="w-full border-collapse rounded-xl overflow-hidden">
                     <thead>
-                        <tr className="bg-mainBlue text-white">
-                            <th className="p-3 border-2 border-black">Full Name</th>
-                            <th className="p-3 border-2 border-black">ID</th>
-                            <th className="p-3 border-2 border-black">Registration Date</th>
-                            <th className="p-3 border-2 border-black">Course Name</th>
-                            <th className="p-3 border-2 border-black">Session</th>
-                            <th className="p-3 border-2 border-black" colSpan={2}>Validation</th>
-                            <th className="p-3 border-2 border-black">Notes</th>
+                        <tr className="bg-secondBlue text-white">
+                            <th className="p-3 outline outline-1 outline-white">Full Name</th>
+                            <th className="p-3 outline outline-1 outline-white">ID</th>
+                            <th className="p-3 outline outline-1 outline-white">Registration Date</th>
+                            <th className="p-3 outline outline-1 outline-white">Course Name</th>
+                            <th className="p-3 outline outline-1 outline-white">Session</th>
+                            <th className="p-3 outline outline-1 outline-white" colSpan={2}>Validation</th>
+                            <th className="p-3 outline outline-1 outline-white">Notes</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -142,16 +141,12 @@ const ValidationPage = () => {
                         )}
                     </tbody>
                 </table>
-                <div className="flex justify-end mt-4">
-                    <a href="/validation/course" className="text-black underline cursor-pointer">See All Validation</a>
-                </div>
             </div>
 
-            {/* Certificate Validation */}
             <div className="bg-white outline outline-3 outline-mainBlue shadow-[8px_8px_0px_0px_#157ab2] rounded-2xl p-6">
             <div className="relative">
             <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold">Course Registration Validation</h2>
+                <h2 className="text-lg font-semibold">Processed</h2>
                 <div className="relative" ref={filterRef}>
                 {!isFilterOpen && (
                     <Image
@@ -191,16 +186,16 @@ const ValidationPage = () => {
                 </div>
             </div>
             </div>
-                <table className="w-full border-collapse rounded-lg overflow-hidden">
+                <table className="w-full border-collapse rounded-xl overflow-hidden">
                     <thead>
                         <tr className="bg-mainBlue text-white">
-                            <th className="p-3 border-2 border-black">Full Name</th>
-                            <th className="p-3 border-2 border-black">ID</th>
-                            <th className="p-3 border-2 border-black">Issued Date</th>
-                            <th className="p-3 border-2 border-black">Course Name</th>
-                            <th className="p-3 border-2 border-black">Expired Date</th>
-                            <th className="p-3 border-2 border-black" colSpan={2}>Validation</th>
-                            <th className="p-3 border-2 border-black">Notes</th>
+                            <th className="p-3 outline outline-1 outline-white">Full Name</th>
+                            <th className="p-3 outline outline-1 outline-white">ID</th>
+                            <th className="p-3 outline outline-1 outline-white">Issued Date</th>
+                            <th className="p-3 outline outline-1 outline-white">Course Name</th>
+                            <th className="p-3 outline outline-1 outline-white">Expired Date</th>
+                            <th className="p-3 outline outline-1 outline-white" colSpan={2}>Validation</th>
+                            <th className="p-3 outline outline-1 outline-white">Notes</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -232,12 +227,9 @@ const ValidationPage = () => {
                     )}
                     </tbody>
                 </table>
-                <div className="flex justify-end mt-4">
-                    <a href="/all-validations" className="text-black underline cursor-pointer">See All Validation</a>
-                </div>
             </div>
         </div>
     );
 };
 
-export default ValidationPage;
+export default ValidationCoursePage;
