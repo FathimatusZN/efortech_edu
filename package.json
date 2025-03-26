@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@headlessui/react": "^2.2.0",
+    "@tinymce/tinymce-react": "^6.0.0",
     "axios": "^1.8.4",
     "firebase": "^11.4.0",
     "lucide-react": "^0.483.0",
