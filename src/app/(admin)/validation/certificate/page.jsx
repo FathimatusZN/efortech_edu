@@ -5,23 +5,28 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-const ValidationCoursePage = () => {
+const ValidationCertificatePage = () => {
   const router = useRouter();
   const [courseData, setCourseData] = useState([
-    { id: "ID0000001", name: "Full Name 1", date: "12 Feb 2025", course: "PMP Certificate", session: "08.00-12.00", validation: "pending" },
-    { id: "ID0000002", name: "Full Name 2", date: "Registration Date", course: "Course Name", session: "Session", validation: "pending" },
-    { id: "ID0000003", name: "Full Name 3", date: "Registration Date", course: "Course Name", session: "Session", validation: "pending" },
-    { id: "ID0000004", name: "Full Name 4", date: "Registration Date", course: "Course Name", session: "Session", validation: "pending" },
-  ]);
+    { id: "ID0000001", name: "Full Name 1", date: "12 Feb 2025", course: "PMP Certificate", expired: "12 Feb 2027", validation: "pending", notes: "Notes" },
+    { id: "ID0000002", name: "Full Name 2", date: "12 Feb 2025", course: "Training Name", expired: "12 Feb 2027", validation: "pending", notes: "Notes" },
+    { id: "ID0000003", name: "Full Name 3", date: "12 Feb 2025", course: "Training Name", expired: "12 Feb 2027", validation: "pending", notes: "Notes" },
+    { id: "ID0000004", name: "Full Name 4", date: "12 Feb 2025", course: "Training Name", expired: "12 Feb 2027", validation: "pending", notes: "Notes" },
+]);
 
-  const [processedData, setProcessedData] = useState([
-    { id: "ID0000001", name: "Full Name 1", date: "12 Feb 2025", course: "PMP Certificate", session: "08.00-12.00", validation: "accepted" },
-    { id: "ID0000002", name: "Full Name 2", date: "Registration Date", course: "Course Name", session: "Session", validation: "accepted" },
-    { id: "ID0000003", name: "Full Name 3", date: "Registration Date", course: "Course Name", session: "Session", validation: "rejected" },
-    { id: "ID0000004", name: "Full Name 4", date: "12 Feb 2025", course: "PMP Certificate", session: "08.00-12.00", validation: "accepted" },
-    { id: "ID0000005", name: "Full Name 5", date: "Registration Date", course: "Course Name", session: "Session", validation: "accepted" },
-    { id: "ID0000006", name: "Full Name 6", date: "Registration Date", course: "Course Name", session: "Session", validation: "rejected" },
-  ]);
+const [processedData, setProcessedData] = useState([
+    { id: "ID0000001", name: "Full Name 1", date: "12 Feb 2025", course: "PMP Certificate", expired: "12 Feb 2027", validation: "accepted", notes: "Notes" },
+    { id: "ID0000002", name: "Full Name 2", date: "10 Feb 2025", course: "Training Name", expired: "12 Feb 2027", validation: "accepted", notes: "Notes" },
+    { id: "ID0000003", name: "Full Name 3", date: "10 Feb 2025", course: "Training Name", expired: "12 Feb 2027", validation: "rejected", notes: "Notes" },
+    { id: "ID0000004", name: "Full Name 1", date: "10 Feb 2025", course: "Training Name", expired: "12 Feb 2027", validation: "accepted", notes: "Notes" },
+    { id: "ID0000005", name: "Full Name 2", date: "10 Feb 2025", course: "Training Name", expired: "12 Feb 2027", validation: "accepted", notes: "Session Schedule is Full" },
+    { id: "ID0000006", name: "Full Name 3", date: "10 Feb 2025", course: "Training Name", expired: "12 Feb 2027", validation: "rejected", notes: "Notes" },
+    { id: "ID0000007", name: "Full Name 1", date: "10 Feb 2025", course: "Training Name", expired: "12 Feb 2027", validation: "accepted", notes: "Notes" },
+    { id: "ID0000008", name: "Full Name 2", date: "10 Feb 2025", course: "Training Name", expired: "12 Feb 2027", validation: "rejected", notes: "Session Schedule is Full" },
+    { id: "ID0000009", name: "Full Name 3", date: "10 Feb 2025", course: "Training Name", expired: "12 Feb 2027", validation: "accepted", notes: "Notes" },
+    { id: "ID0000010", name: "Full Name 3", date: "10 Feb 2025", course: "Training Name", expired: "12 Feb 2027", validation: "accepted", notes: "Notes" },
+]);
+
 
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isFilterOpenProcessed, setIsFilterOpenProcessed] = useState(false);
@@ -83,7 +88,7 @@ const ValidationCoursePage = () => {
 
   return (
     <div className="max-w-screen mx-auto p-6">
-      <h1 className="text-2xl font-bold text-left mb-6">Training Registration Validation</h1>
+      <h1 className="text-2xl font-bold text-left mb-6">Training Certificate Validation</h1>
 
       {/* Need to be Processed Section */}
       <div className="bg-white outline outline-3 outline-mainBlue rounded-2xl p-6 mb-6 shadow-[8px_8px_0px_0px_#157ab2]">
@@ -134,9 +139,9 @@ const ValidationCoursePage = () => {
             <tr className="bg-secondBlue text-white">
               <th className="p-3 outline outline-1 outline-white">Full Name</th>
               <th className="p-3 outline outline-1 outline-white">ID</th>
-              <th className="p-3 outline outline-1 outline-white">Registration Date</th>
-              <th className="p-3 outline outline-1 outline-white">Course Name</th>
-              <th className="p-3 outline outline-1 outline-white">Session</th>
+              <th className="p-3 outline outline-1 outline-white">Issued Date</th>
+              <th className="p-3 outline outline-1 outline-white">Training Name</th>
+              <th className="p-3 outline outline-1 outline-white">Expired Date</th>
               <th className="p-3 outline outline-1 outline-white" colSpan={2}>Validation</th>
               <th className="p-3 outline outline-1 outline-white">Notes</th>
             </tr>
@@ -149,7 +154,7 @@ const ValidationCoursePage = () => {
                   <td className="p-3 border-2 border-lightBlue">{item.id}</td>
                   <td className="p-3 border-2 border-lightBlue">{item.date}</td>
                   <td className="p-3 border-2 border-lightBlue">{item.course}</td>
-                  <td className="p-3 border-2 border-lightBlue">{item.session}</td>
+                  <td className="p-3 border-2 border-lightBlue">{item.expired}</td>
                   <td className="p-3 border-2 border-lightBlue text-center">
                     <button onClick={() => handleValidation("course", item.id, "accepted")}>
                       <Image src={checkIcon} alt="Approve" width={40} height={40} />
@@ -230,9 +235,9 @@ const ValidationCoursePage = () => {
             <tr className="bg-mainBlue text-white">
               <th className="p-3 outline outline-1 outline-white">Full Name</th>
               <th className="p-3 outline outline-1 outline-white">ID</th>
-              <th className="p-3 outline outline-1 outline-white">Registration Date</th>
-              <th className="p-3 outline outline-1 outline-white">Course Name</th>
-              <th className="p-3 outline outline-1 outline-white">Session</th>
+              <th className="p-3 outline outline-1 outline-white">Issued Date</th>
+              <th className="p-3 outline outline-1 outline-white">Training Name</th>
+              <th className="p-3 outline outline-1 outline-white">Expired Date</th>
               <th className="p-3 outline outline-1 outline-white" colSpan={2}>Validation</th>
               <th className="p-3 outline outline-1 outline-white">Notes</th>
             </tr>
@@ -245,7 +250,7 @@ const ValidationCoursePage = () => {
                   <td className="p-3 border-2 border-lightBlue">{item.id}</td>
                   <td className="p-3 border-2 border-lightBlue">{item.date}</td>
                   <td className="p-3 border-2 border-lightBlue">{item.course}</td>
-                  <td className="p-3 border-2 border-lightBlue">{item.session}</td>
+                  <td className="p-3 border-2 border-lightBlue">{item.expired}</td>
                   <td className="p-3 border-2 border-lightBlue text-center">
                     <button
                       onClick={() => handleValidation("processed", item.id, "accepted")}
@@ -312,4 +317,4 @@ const ValidationCoursePage = () => {
   );
 };
 
-export default ValidationCoursePage;
+export default ValidationCertificatePage;
