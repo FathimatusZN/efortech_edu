@@ -38,9 +38,8 @@ const SigninPage = () => {
         setLoading(true);
 
         try {
-            console.log("🔵 Memanggil login function...");
-            await login(email, password); // 🔥 Pakai fungsi login dari AuthContext
-            console.log("✅ Login berhasil!");
+            await login(email, password); // Login AuthContext
+            console.log("✅ Login success!");
 
             // Ambil user dari sessionStorage
             const role = sessionStorage.getItem("role");
