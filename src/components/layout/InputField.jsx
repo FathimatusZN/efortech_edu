@@ -85,7 +85,8 @@ const SelectDropdown = ({ label, required, children, className }) => {
 
 // Image Uploader Component
 const ImageUploader = ({ maxImages }) => {
-    const [images, setImages] = useState([null]);
+    const [images, setImages] = useState([null]); // Menyimpan URL gambar
+    const [previewImage, setPreviewImage] = useState(null); // Gambar yang dipreview
 
     const handleUpload = (event, index) => {
         const file = event.target.files[0];
@@ -104,8 +105,10 @@ const ImageUploader = ({ maxImages }) => {
     };
 
     const removeImage = (index) => {
-        const newImages = images.filter((_, i) => i !== index);
-        setImages(newImages);
+        if (images[index]) {
+            URL.revokeObjectURL(images[index]); // Bebaskan URL dari memory
+        }
+        setImages(images.filter((_, i) => i !== index));
     };
 
     return (
@@ -117,9 +120,17 @@ const ImageUploader = ({ maxImages }) => {
                         <label className="cursor-pointer flex flex-col items-center justify-center outline outline-1 outline-dashed outline-mainBlue rounded-md w-full h-32">
                             {image ? (
                                 <>
-                                    <img src={image} alt="Uploaded" className="w-full h-full object-cover rounded-md" />
+                                    <img
+                                        src={image}
+                                        alt="Uploaded"
+                                        className="w-full h-full object-cover rounded-md"
+                                        onClick={() => setPreviewImage(image)}
+                                    />
                                     <button
-                                        onClick={() => removeImage(index)}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            removeImage(index);
+                                        }}
                                         className="absolute top-2 right-2 bg-error1 text-white p-1 rounded-full hover:bg-white hover:text-error1"
                                     >
                                         <FaTrash />
@@ -149,6 +160,21 @@ const ImageUploader = ({ maxImages }) => {
                     </div>
                 )}
             </div>
+
+            {/* Modal Preview */}
+            {previewImage && (
+                <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50">
+                    <div className="relative bg-white p-4 rounded-lg">
+                        <button
+                            onClick={() => setPreviewImage(null)}
+                            className="absolute top-2 right-2 bg-gray-700 text-white p-2 rounded-full hover:bg-gray-900"
+                        >
+                            <FaTimes />
+                        </button>
+                        <img src={previewImage} alt="Preview" className="max-w-[90vw] max-h-[80vh] rounded-md" />
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
@@ -235,4 +261,71 @@ const AddLabel = ({ label = "Labels", placeholder = "Enter label", onChange }) =
     );
 };
 
-export { PageTitle, SaveButton, DiscardButton, AddPageHeader, InputField, SelectDropdown, ImageUploader, AddLabel };
+const SourcesInput = ({ sources, setSources }) => {
+    // Menambahkan source baru
+    const addSource = () => {
+        setSources([...sources, { previewText: "", link: "" }]);
+    };
+
+    // Menghapus source berdasarkan index
+    const removeSource = (index) => {
+        setSources(sources.filter((_, i) => i !== index));
+    };
+
+    // Mengupdate nilai input
+    const updateSource = (index, key, value) => {
+        const newSources = sources.map((source, i) =>
+            i === index ? { ...source, [key]: value } : source
+        );
+        setSources(newSources);
+    };
+
+    return (
+        <div>
+            {sources.map((source, index) => (
+                <div key={index} className="flex items-center text-sm gap-2 mt-2">
+                    {/* Input untuk Preview Text */}
+                    <input
+                        type="text"
+                        placeholder="Text Preview"
+                        value={source.previewText}
+                        onChange={(e) => updateSource(index, "previewText", e.target.value)}
+                        className="w-3/5 p-2 text-[14px] rounded-md shadow-[0px_4px_4px_rgba(21,122,178,0.25)]"
+                    />
+
+                    {/* Input untuk Link */}
+                    <div className="relative w-2/5">
+                        <FaLink className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral3" />
+                        <input
+                            type="text"
+                            placeholder="Enter a link"
+                            value={source.link}
+                            onChange={(e) => updateSource(index, "link", e.target.value)}
+                            className="w-full p-2 pl-9 text-[14px] rounded-md shadow-[0px_4px_4px_rgba(21,122,178,0.25)] text-lightBlue"
+                        />
+                    </div>
+
+                    {/* Tombol Hapus */}
+                    <button
+                        className="bg-error1 text-white p-1 rounded-full hover:bg-mainOrange transition"
+                        onClick={() => removeSource(index)}
+                    >
+                        <FaTimes size={14} />
+                    </button>
+                </div>
+            ))}
+
+            {/* Tombol Tambah Source */}
+            <div className="flex justify-end mt-4">
+                <button
+                    onClick={addSource}
+                    className="bg-lightBlue text-white flex items-center gap-2 text-xs px-3 py-2 rounded-md hover:bg-mainBlue transition"
+                >
+                    <FaPlus size={16} /> Add More Sources
+                </button>
+            </div>
+        </div>
+    );
+}
+
+export { PageTitle, SaveButton, DiscardButton, AddPageHeader, InputField, SelectDropdown, ImageUploader, AddLabel, SourcesInput };
