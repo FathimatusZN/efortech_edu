@@ -1,69 +1,72 @@
 "use client";
 import { createContext, useContext, useState, useEffect } from "react";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { app } from "@/app/firebase/config";
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword } from "firebase/auth";
+import { auth, app } from "@/app/firebase/config";
+import axios from "axios";
 
-const AuthContext = createContext();
+export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
-    const auth = getAuth(app);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-            if (currentUser) {
-                const idToken = await currentUser.getIdToken(true);
-                localStorage.setItem("token", idToken);
+        const checkStoredAuth = async () => {
+            setLoading(true);
+            const storedUser = localStorage.getItem("user");
+            const storedToken = localStorage.getItem("token");
 
-                // Ambil user data dari backend hanya setelah user terdeteksi
-                await fetchUserData(idToken);
+            if (storedUser && storedToken) {
+                setUser(JSON.parse(storedUser));
+                setLoading(false);
             } else {
-                setUser(null);
-                localStorage.removeItem("token");
-                localStorage.removeItem("user");
-            }
-            setLoading(false);
-        });
+                // Jalankan Firebase Auth Listener
+                const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+                    if (currentUser) {
+                        const idToken = await currentUser.getIdToken(true);
 
-        return () => unsubscribe();
-    }, []);
-
-    const fetchUserData = async (token) => {
-        try {
-            if (!token) throw new Error("No token found");
-
-            let endpoint = "http://localhost:5000/api/user";
-            const storedUser = JSON.parse(localStorage.getItem("user"));
-
-            if (storedUser) {
-                setUser(storedUser);
-            } else {
-                const response = await fetch(endpoint, {
-                    method: "GET",
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
+                        try {
+                            const res = await axios.get("http://localhost:5000/api/user/me", {
+                                headers: { Authorization: `Bearer ${idToken}` }
+                            });
+                            setUser(res.data);
+                            localStorage.setItem("user", JSON.stringify(res.data));
+                            localStorage.setItem("token", idToken);
+                        } catch (error) {
+                            console.error("Error fetching user data", error);
+                            logout();
+                        }
+                    } else {
+                        logout();
+                    }
+                    setLoading(false);
                 });
 
-                if (!response.ok) {
-                    throw new Error("Failed to fetch user data");
-                }
-
-                const userData = await response.json();
-                setUser(userData);
-                localStorage.setItem("user", JSON.stringify(userData));
+                return () => unsubscribe();
             }
+        };
+
+        checkStoredAuth();
+    }, []);
+
+    const login = async (email, password) => {
+        try {
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+
+            const user = userCredential.user;
+            const idToken = await user.getIdToken(true);
+
+            const res = await axios.post("http://localhost:5000/api/auth/login", { idToken });
+
+            console.log("✅ Backend response:", res.data);
+            setUser(res.data.user);
+            localStorage.setItem("token", idToken);
+            localStorage.setItem("role", res.data.user.role);
         } catch (error) {
-            console.error("Error fetching user data:", error);
+            throw error;
         }
     };
 
-    const login = (userData, token) => {
-        setUser(userData);
-        localStorage.setItem("user", JSON.stringify(userData));
-        localStorage.setItem("token", token);
-    };
 
     const logout = async () => {
         try {
@@ -77,7 +80,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, logout, loading }}>
+        <AuthContext.Provider value={{ user, loading, login, logout }}>
             {children}
         </AuthContext.Provider>
     );

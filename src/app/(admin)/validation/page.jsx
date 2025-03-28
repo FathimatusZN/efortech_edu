@@ -1,60 +1,243 @@
 "use client";
 
-import React from "react";
+import { useState, useRef, useEffect } from "react";
+import Image from "next/image";
+import { useRouter} from "next/navigation";
 
+const ValidationPage = () => {
+    const router = useRouter();
+    const [courseData, setCourseData] = useState([
+        { id: "ID0000001", name: "Full Name 1", date: "12 Feb 2025", course: "PMP Certificate", session: "08.00-12.00" },
+        { id: "ID0000002", name: "Full Name 2", date: "Registration Date", course: "Course Name", session: "Session" },
+        { id: "ID0000003", name: "Full Name 3", date: "Registration Date", course: "Course Name", session: "Session" },
+        { id: "ID0000004", name: "Full Name 4", date: "Registration Date", course: "Course Name", session: "Session" },
+    ]);
 
-export default function Main() {
+    const [certificateData, setCertificateData] = useState([
+        { id: "ID0000001", name: "Full Name 1", issued: "20 Nov 2024", course: "PMP Certificate", expired: "20 Nov 2026" },
+        { id: "ID0000002", name: "Full Name 2", issued: "Registration Date", course: "Course Name", expired: "Session" },
+        { id: "ID0000003", name: "Full Name 3", issued: "Registration Date", course: "Course Name", expired: "Session" },
+        { id: "ID0000004", name: "Full Name 4", issued: "Registration Date", course: "Course Name", expired: "Session" },
+    ]);
+
+    const [isFilterOpen, setIsFilterOpen] = useState(false);
+    const filterRef = useRef(null);
+      
+        useEffect(() => {
+          const handleClickOutside = (event) => {
+            if (filterRef.current && !filterRef.current.contains(event.target)) {
+              setIsFilterOpen(false);
+            }
+          };
+      
+          if (isFilterOpen) {
+            document.addEventListener("mousedown", handleClickOutside);
+          } else {
+            document.removeEventListener("mousedown", handleClickOutside);
+          }
+      
+          return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+          };
+        }, [isFilterOpen]);
+
+    const checkIcon = "/assets/button_acc.png";
+    const crossIcon = "/assets/button_reject.png";
+    const filterIcon = "/assets/ic_filter.png";
+
+    const handleValidation = (type, id) => {
+        if (type === "course") {
+            setCourseData(courseData.filter((item) => item.id !== id));
+        } else {
+            setCertificateData(certificateData.filter((item) => item.id !== id));
+        }
+    };
+
     return (
-        <div className="main-container w-[1440px] h-[1024px] text-[0px] bg-[#fff] relative overflow-hidden mx-auto my-0">
-            <span className="flex w-[1368px] h-[48px] justify-center items-center font-['Montserrat'] text-[32px] font-bold leading-[48px] text-[#000] tracking-[-0.61px] relative text-center whitespace-nowrap mt-[127px] mr-0 mb-0 ml-[35px]">
-                Admin Dashboard
-            </span>
-            <div className="w-[1012px] h-[307px] bg-[url(https://static.codia.ai/image/2025-03-17/aa501830-e01c-45c0-a6ff-a94c42cf017f.png)] bg-cover bg-no-repeat rounded-[10px] relative z-[7] mt-[16px] mr-0 mb-0 ml-[214px]">
-                <div className="w-[476px] h-[207px] bg-[url(https://static.codia.ai/image/2025-03-17/3366b4fc-b20b-4638-9f99-59bb763afcb9.png)] bg-cover bg-no-repeat rounded-[10px] absolute top-[69.5px] left-[515.25px] z-[16]">
-                    <div className="flex w-[475.5px] h-[207px] pt-[13px] pr-[12px] pb-[13px] pl-[12px] gap-[10px] justify-center items-center flex-wrap rounded-[10px] relative z-[17] mt-[0.5px] mr-0 mb-0 ml-[0.25px]">
-                        <div className="flex flex-col gap-[10px] justify-center items-center grow basis-0 flex-nowrap relative z-[18]">
-                            <span className="h-[24px] self-stretch shrink-0 basis-auto font-['Montserrat'] text-[20px] font-bold leading-[24px] text-[#fff] relative text-center whitespace-nowrap z-[19]">
-                                Training Certificate
-                            </span>
-                            <span className="h-[117px] self-stretch shrink-0 basis-auto font-['Montserrat'] text-[96px] font-semibold leading-[117px] text-[#fff] relative text-center whitespace-nowrap z-20">
-                                04
-                            </span>
-                            <span className="h-[20px] self-stretch shrink-0 basis-auto font-['Montserrat'] text-[16px] font-normal leading-[19.504px] text-[#fff] relative text-center whitespace-nowrap z-[21]">
-                                data need to be validated
-                            </span>
-                        </div>
+        <div className="max-w-screen mx-auto p-6">
+            <h1 className="text-2xl font-bold text-left mb-6">Validation</h1>
+            
+            {/* Course Registration Validation */}
+            <div className="bg-white outline outline-3 outline-mainBlue rounded-2xl p-6 mb-6 shadow-[8px_8px_0px_0px_#157ab2]">
+            <div className="relative">
+            <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold">Course Registration Validation</h2>
+                <div className="relative" ref={filterRef}>
+                {!isFilterOpen && (
+                    <Image
+                    src={filterIcon}
+                    alt="Filter"
+                    width={50}
+                    height={50}
+                    className="cursor-pointer"
+                    onClick={() => setIsFilterOpen(true)}
+                    />
+                )}
+                {isFilterOpen && (
+                    <div className="absolute top-full z-50 mt-2 right-0 bg-white border border-gray-300 rounded-xl shadow-md w-40">
+                    <p className="text-secondBlue font-bold p-2">Sort by</p>
+                    <div className="border-t border-gray-300">
+                        <p
+                        className="cursor-pointer hover:bg-gray-200 text-secondBlue p-2"
+                        onClick={() => setIsFilterOpen(false)}
+                        >
+                        Name
+                        </p>
+                        <p
+                        className="cursor-pointer hover:bg-gray-200 text-secondBlue p-2"
+                        onClick={() => setIsFilterOpen(false)}
+                        >
+                        Request Date
+                        </p>
+                        <p
+                        className="cursor-pointer hover:bg-gray-200 text-secondBlue p-2"
+                        onClick={() => setIsFilterOpen(false)}
+                        >
+                        Issued Date
+                        </p>
                     </div>
-                </div>
-                <div className="w-[476px] h-[207px] bg-[url(https://static.codia.ai/image/2025-03-17/afa9f7c9-38f3-42e9-a21f-33df9870932a.png)] bg-cover bg-no-repeat rounded-[10px] absolute top-[70px] left-[19px] z-[9]">
-                    <div className="flex w-[475.5px] h-[207px] pt-[13px] pr-[12px] pb-[13px] pl-[12px] gap-[10px] justify-center items-center flex-wrap rounded-[10px] relative z-10 mt-0 mr-0 mb-0 ml-0">
-                        <div className="flex flex-col gap-[10px] justify-center items-center grow basis-0 flex-nowrap relative z-[11]">
-                            <span className="h-[24px] self-stretch shrink-0 basis-auto font-['Montserrat'] text-[20px] font-bold leading-[24px] text-[#fff] relative text-center whitespace-nowrap z-[12]">
-                                Training Registration
-                            </span>
-                            <span className="h-[117px] self-stretch shrink-0 basis-auto font-['Montserrat'] text-[96px] font-semibold leading-[117px] text-[#fff] relative text-center whitespace-nowrap z-[13]">
-                                04
-                            </span>
-                            <span className="h-[20px] self-stretch shrink-0 basis-auto font-['Montserrat'] text-[16px] font-normal leading-[19.504px] text-[#fff] relative text-center whitespace-nowrap z-[14]">
-                                data need to be validated
-                            </span>
-                        </div>
                     </div>
+                )}
                 </div>
             </div>
-            <div className="flex w-[1370px] h-[384px] justify-between items-center relative z-[4] mt-[32px] mr-0 mb-0 ml-[35px]">
-                <div className="flex w-[674px] pt-[16px] pr-[36px] pb-[16px] pl-[36px] flex-col gap-[14px] items-center shrink-0 flex-nowrap rounded-[15px] border-solid border border-[#01458e] relative z-[4]">
-                    <span className="h-[24px] self-stretch shrink-0 basis-auto font-['Montserrat'] text-[20px] font-semibold leading-[24px] text-[#333333] relative text-center whitespace-nowrap z-[5]">
-                        Registrant Statistics
-                    </span>
-                    <div className="self-stretch grow shrink-0 basis-0 bg-[url(https://static.codia.ai/image/2025-03-17/2e4d586c-4a6b-4be9-babf-1693fc401fcd.png)] bg-cover bg-no-repeat relative z-[6]" />
+            </div>
+                <table className="w-full border-collapse rounded-lg overflow-hidden">
+                    <thead>
+                        <tr className="bg-mainBlue text-white">
+                            <th className="p-3 border-2 border-black">Full Name</th>
+                            <th className="p-3 border-2 border-black">ID</th>
+                            <th className="p-3 border-2 border-black">Registration Date</th>
+                            <th className="p-3 border-2 border-black">Course Name</th>
+                            <th className="p-3 border-2 border-black">Session</th>
+                            <th className="p-3 border-2 border-black" colSpan={2}>Validation</th>
+                            <th className="p-3 border-2 border-black">Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {courseData.length > 0 ? (
+                            courseData.map((item) => (
+                                <tr key={item.id} className="text-center border-t">
+                                    <td className="p-3 border-2 border-lightBlue">{item.name}</td>
+                                    <td className="p-3 border-2 border-lightBlue">{item.id}</td>
+                                    <td className="p-3 border-2 border-lightBlue">{item.date}</td>
+                                    <td className="p-3 border-2 border-lightBlue">{item.course}</td>
+                                    <td className="p-3 border-2 border-lightBlue">{item.session}</td>
+                                    <td className="p-3 border-2 border-lightBlue text-center">
+                                        <button onClick={() => handleValidation("course", item.id)}>
+                                            <Image src={checkIcon} alt="Approve" width={40} height={40} />
+                                        </button>
+                                    </td>
+                                    <td className="p-3 border-2 border-lightBlue text-center">
+                                        <button onClick={() => handleValidation("course", item.id)}>
+                                            <Image src={crossIcon} alt="Reject" width={40} height={40} />
+                                        </button>
+                                    </td>
+                                    <td className="p-3 border-2 border-lightBlue">Notes</td>
+                                </tr>
+                            ))
+                        ) : (
+                            <tr>
+                                <td colSpan="8" className="text-center p-3 border-2 border-lightBlue">There is no registration data to validate yet.</td>
+                            </tr>
+                        )}
+                    </tbody>
+                </table>
+                <div className="flex justify-end mt-4">
+                    <a href="/validation/course" className="text-black underline cursor-pointer">See All Validation</a>
                 </div>
-                <div className="flex w-[674.289px] pt-[16px] pr-[36px] pb-[16px] pl-[36px] flex-col gap-[14px] items-center shrink-0 flex-nowrap rounded-[15px] border-solid border border-[#01458e] relative z-[1]">
-                    <span className="h-[24px] self-stretch shrink-0 basis-auto font-['Montserrat'] text-[20px] font-semibold leading-[24px] text-[#333333] relative text-center whitespace-nowrap z-[2]">
-                        Certificate Statistics
-                    </span>
-                    <div className="self-stretch grow shrink-0 basis-0 bg-[url(https://static.codia.ai/image/2025-03-17/219cfc84-260c-43f3-8042-36994d69d22c.png)] bg-cover bg-no-repeat relative z-[3]" />
+            </div>
+
+            {/* Certificate Validation */}
+            <div className="bg-white outline outline-3 outline-mainBlue shadow-[8px_8px_0px_0px_#157ab2] rounded-2xl p-6">
+            <div className="relative">
+            <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold">Course Registration Validation</h2>
+                <div className="relative" ref={filterRef}>
+                {!isFilterOpen && (
+                    <Image
+                    src={filterIcon}
+                    alt="Filter"
+                    width={50}
+                    height={50}
+                    className="cursor-pointer"
+                    onClick={() => setIsFilterOpen(true)}
+                    />
+                )}
+                {isFilterOpen && (
+                    <div className="absolute top-full z-50 mt-2 right-0 bg-white border border-gray-300 rounded-xl shadow-md w-40">
+                    <p className="text-secondBlue font-bold p-2">Sort by</p>
+                    <div className="border-t border-gray-300">
+                        <p
+                        className="cursor-pointer hover:bg-gray-200 text-secondBlue p-2"
+                        onClick={() => setIsFilterOpen(false)}
+                        >
+                        Name
+                        </p>
+                        <p
+                        className="cursor-pointer hover:bg-gray-200 text-secondBlue p-2"
+                        onClick={() => setIsFilterOpen(false)}
+                        >
+                        Request Date
+                        </p>
+                        <p
+                        className="cursor-pointer hover:bg-gray-200 text-secondBlue p-2"
+                        onClick={() => setIsFilterOpen(false)}
+                        >
+                        Issued Date
+                        </p>
+                    </div>
+                    </div>
+                )}
+                </div>
+            </div>
+            </div>
+                <table className="w-full border-collapse rounded-lg overflow-hidden">
+                    <thead>
+                        <tr className="bg-mainBlue text-white">
+                            <th className="p-3 border-2 border-black">Full Name</th>
+                            <th className="p-3 border-2 border-black">ID</th>
+                            <th className="p-3 border-2 border-black">Issued Date</th>
+                            <th className="p-3 border-2 border-black">Course Name</th>
+                            <th className="p-3 border-2 border-black">Expired Date</th>
+                            <th className="p-3 border-2 border-black" colSpan={2}>Validation</th>
+                            <th className="p-3 border-2 border-black">Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {certificateData.length > 0 ? (
+                            certificateData.map((item) => (
+                            <tr key={item.id} className="text-center border-t">
+                                <td className="p-3 border-2 border-lightBlue">{item.name}</td>
+                                <td className="p-3 border-2 border-lightBlue">{item.id}</td>
+                                <td className="p-3 border-2 border-lightBlue">{item.issued}</td>
+                                <td className="p-3 border-2 border-lightBlue">{item.course}</td>
+                                <td className="p-3 border-2 border-lightBlue">{item.expired}</td>
+                                <td className="p-3 border-2 border-lightBlue">
+                                    <button onClick={() => handleValidation("course", item.id)}>
+                                        <Image src={checkIcon} alt="Approve" width={40} height={40} />
+                                    </button>
+                                </td>
+                                <td className="p-3 border-2 border-lightBlue">
+                                    <button onClick={() => handleValidation("course", item.id)}>
+                                        <Image src={crossIcon} alt="Reject" width={40} height={40} />
+                                    </button>
+                                </td>
+                                <td className="py-3 border-2 border-lightBlue">notes</td>
+                            </tr>
+                        ))
+                    ) : (
+                        <tr>
+                            <td colSpan="8" className="text-center p-3 border-2 border-lightBlue">There is no certificate data to validate yet.</td>
+                        </tr>
+                    )}
+                    </tbody>
+                </table>
+                <div className="flex justify-end mt-4">
+                    <a href="/all-validations" className="text-black underline cursor-pointer">See All Validation</a>
                 </div>
             </div>
         </div>
     );
-}
+};
+
+export default ValidationPage;

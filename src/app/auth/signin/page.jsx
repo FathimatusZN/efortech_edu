@@ -4,21 +4,18 @@ import Link from "next/link";
 import { useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useAuth } from "@/app/context/AuthContext";
-import { useSignInWithEmailAndPassword } from "react-firebase-hooks/auth";
-import { auth, db } from "@/app/firebase/config";
 import { useRouter } from "next/navigation";
-import { doc, getDoc } from "firebase/firestore";
 
 const SigninPage = () => {
     const { login } = useAuth();
     const router = useRouter();
-    const [signInWithEmailAndPassword, user, loading, error] = useSignInWithEmailAndPassword(auth);
 
     const [showPassword, setShowPassword] = useState(false);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [emailError, setEmailError] = useState("");
     const [passwordError, setPasswordError] = useState("");
+    const [loading, setLoading] = useState(false);
 
     const togglePasswordVisibility = () => {
         setShowPassword((prev) => !prev);
@@ -38,32 +35,29 @@ const SigninPage = () => {
             return;
         }
 
+        setLoading(true);
+
         try {
-            const res = await signInWithEmailAndPassword(email, password);
-            if (!res || !res.user) throw new Error("Authentication failed");
+            await login(email, password); // Login AuthContext
+            console.log("✅ Login success!");
 
-            const userRef = doc(db, "users", res.user.uid);
-            const userSnap = await getDoc(userRef);
+            // Ambil user dari sessionStorage
+            const role = sessionStorage.getItem("role");
 
-            if (userSnap.exists()) {
-                const userData = userSnap.data();
-                sessionStorage.setItem("role", userData.role);
-
-                login({
-                    uid: res.user.uid,
-                    email: res.user.email,
-                    role: userData.role,
-                });
-
-                router.push(userData.role === "admin" || userData.role === "superadmin" ? "/dashboard" : "/home");
-            } else {
-                setEmailError("User data not found.");
-            }
+            router.push(role === "admin" || role === "superadmin" ? "/dashboard" : "/home");
         } catch (err) {
-            console.error("Firebase Auth Error:", err.message);
-            setEmailError("Invalid email or password.");
+
+            // Tangani error Firebase
+            if (err.message.includes("auth/invalid-credential")) {
+                setPasswordError("Invalid email or password.");
+            } else {
+                setPasswordError("An error occurred. Please try again.");
+            }
+        } finally {
+            setLoading(false);
         }
     };
+
 
     return (
         <div className="w-full min-h-screen flex flex-col md:flex-row -mt-16">
@@ -83,7 +77,7 @@ const SigninPage = () => {
                         onSubmit={handleSubmit}
                         className="border-2 border-[#03649F] rounded-[10px] p-6 space-y-4 bg-white shadow-md"
                     >
-                        
+
                         <div className="space-y-1">
                             <label className="text-lg font-semibold text-[#333333] flex items-center">
                                 Email <span className="text-red-500 ml-1">*</span>
@@ -128,7 +122,7 @@ const SigninPage = () => {
                             </p>
 
                             <div className="flex justify-end pt-4">
-                                <Link href="../auth/change-password" className="text-sm text-[#ED7117] font-semibold hover:underline">
+                                <Link href="../auth/forgot-password" className="text-sm text-[#ED7117] font-semibold hover:underline">
                                     Forgot Password?
                                 </Link>
                             </div>
