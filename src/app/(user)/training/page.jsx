@@ -1,4 +1,8 @@
+"use client";
+import { useRouter } from "next/navigation";
+
 export default function TrainingPage() {
+  const router = useRouter();
   const trainingData = [
     {
       title: "WISE-4000 LAN Wireless / IO Module Series",
@@ -57,6 +61,7 @@ export default function TrainingPage() {
           <div
             key={index}
             className="relative group overflow-hidden rounded-lg shadow-lg w-full max-w-[400px] h-[277px] mx-auto transition-all duration-500 ease-in-out"
+            onClick={() => router.push(`/training/${training.id}`)}
           >
             {/* Gambar dengan efek blur saat hover */}
             <img
