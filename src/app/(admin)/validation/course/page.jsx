@@ -3,7 +3,8 @@
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Search, MailOpen } from "lucide-react";
+import { Button } from "@/components/ui/button"
 
 const ValidationCoursePage = () => {
   const router = useRouter();
@@ -30,6 +31,8 @@ const ValidationCoursePage = () => {
 
   const filterRef = useRef(null);
   const filterRefProcessed = useRef(null);
+
+  const [isSearchVisibleMobile, setIsSearchVisibleMobile] = useState(false);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -82,14 +85,20 @@ const ValidationCoursePage = () => {
   );
 
   return (
-    <div className="max-w-screen mx-auto p-6">
-      <h1 className="text-2xl font-bold text-left mb-6">Training Registration Validation</h1>
-
+    <div className="max-w-screen mx-auto p-4 md:p-6">
+      <h1 className="text-xl md:text-2xl font-bold text-left mb-6">Training Registration Validation</h1>
+  
       {/* Need to be Processed Section */}
-      <div className="bg-white outline outline-3 outline-mainBlue rounded-2xl p-6 mb-6 shadow-[8px_8px_0px_0px_#157ab2]">
+      <div className="bg-white outline outline-3 outline-mainBlue rounded-2xl p-4 md:p-6 mb-6 shadow-[4px_4px_0px_0px_#157ab2] md:shadow-[8px_8px_0px_0px_#157ab2] overflow-x-auto">
         <div className="relative">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold">Need to be Processed</h2>
+            <Button variant="destructive">Destructive</Button>
+            <Button variant="mainBlue">mainb</Button>
+            <Button variant="lightBlue">lightb</Button>
+            <Button>
+              <Search /> Login with Email
+            </Button>
             <div className="relative" ref={filterRef}>
               {!isFilterOpen && (
                 <Image
@@ -129,62 +138,86 @@ const ValidationCoursePage = () => {
             </div>
           </div>
         </div>
-        <table className="w-full border-collapse rounded-xl overflow-hidden">
-          <thead>
-            <tr className="bg-secondBlue text-white">
-              <th className="p-3 outline outline-1 outline-white">Full Name</th>
-              <th className="p-3 outline outline-1 outline-white">ID</th>
-              <th className="p-3 outline outline-1 outline-white">Registration Date</th>
-              <th className="p-3 outline outline-1 outline-white">Course Name</th>
-              <th className="p-3 outline outline-1 outline-white">Session</th>
-              <th className="p-3 outline outline-1 outline-white" colSpan={2}>Validation</th>
-              <th className="p-3 outline outline-1 outline-white">Notes</th>
-            </tr>
-          </thead>
-          <tbody>
-            {courseData.length > 0 ? (
-              courseData.map((item) => (
-                <tr key={item.id} className="text-center border-t">
-                  <td className="p-3 border-2 border-lightBlue">{item.name}</td>
-                  <td className="p-3 border-2 border-lightBlue">{item.id}</td>
-                  <td className="p-3 border-2 border-lightBlue">{item.date}</td>
-                  <td className="p-3 border-2 border-lightBlue">{item.course}</td>
-                  <td className="p-3 border-2 border-lightBlue">{item.session}</td>
-                  <td className="p-3 border-2 border-lightBlue text-center">
-                    <button onClick={() => handleValidation("course", item.id, "accepted")}>
-                      <Image src={checkIcon} alt="Approve" width={40} height={40} />
-                    </button>
-                  </td>
-                  <td className="p-3 border-2 border-lightBlue text-center">
-                    <button onClick={() => handleValidation("course", item.id, "rejected")}>
-                      <Image src={crossIcon} alt="Reject" width={40} height={40} />
-                    </button>
-                  </td>
-                  <td className="p-3 border-2 border-lightBlue">Notes</td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="8" className="text-center p-3 border-2 border-blue-200">
-                  There is no registration data to validate yet.
-                </td>
+        <div className="overflow-x-auto">
+          <table className="min-w-[800px] w-full border-collapse rounded-xl overflow-hidden text-sm md:text-base">
+            <thead>
+              <tr className="bg-secondBlue text-white">
+                <th className="p-3 outline outline-1 outline-white">Full Name</th>
+                <th className="p-3 outline outline-1 outline-white">ID</th>
+                <th className="p-3 outline outline-1 outline-white">Registration Date</th>
+                <th className="p-3 outline outline-1 outline-white">Course Name</th>
+                <th className="p-3 outline outline-1 outline-white">Session</th>
+                <th className="p-3 outline outline-1 outline-white" colSpan={2}>Validation</th>
+                <th className="p-3 outline outline-1 outline-white">Notes</th>
               </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {courseData.length > 0 ? (
+                courseData.map((item) => (
+                  <tr key={item.id} className="text-center border-t">
+                    <td className="p-3 border-2 border-lightBlue">{item.name}</td>
+                    <td className="p-3 border-2 border-lightBlue">{item.id}</td>
+                    <td className="p-3 border-2 border-lightBlue">{item.date}</td>
+                    <td className="p-3 border-2 border-lightBlue">{item.course}</td>
+                    <td className="p-3 border-2 border-lightBlue">{item.session}</td>
+                    <td className="p-3 border-2 border-lightBlue text-center">
+                      <button onClick={() => handleValidation("course", item.id, "accepted")}>
+                        <Image src={checkIcon} alt="Approve" width={40} height={40} />
+                      </button>
+                    </td>
+                    <td className="p-3 border-2 border-lightBlue text-center">
+                      <button onClick={() => handleValidation("course", item.id, "rejected")}>
+                        <Image src={crossIcon} alt="Reject" width={40} height={40} />
+                      </button>
+                    </td>
+                    <td className="p-3 border-2 border-lightBlue">Notes</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="8" className="text-center p-3 border-2 border-blue-200">
+                    There is no registration data to validate yet.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
-
+  
       {/* Processed Section */}
-      <div className="bg-white outline outline-3 outline-mainBlue shadow-[8px_8px_0px_0px_#157ab2] rounded-2xl p-6">
+      <div className="bg-white outline outline-3 outline-mainBlue shadow-[4px_4px_0px_0px_#157ab2] md:shadow-[8px_8px_0px_0px_#157ab2] rounded-2xl p-4 md:p-6 overflow-x-auto">
         <div className="relative">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold">Processed</h2>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center justify-end space-x-4 w-full md:justify-between">
+              {/* Mobile Search Icon */}
+              <div className="block md:hidden relative">
+                {!isSearchVisibleMobile ? (
+                  <button onClick={() => setIsSearchVisibleMobile(true)}>
+                    <Search className="w-6 h-6 text-mainBlue" />
+                  </button>
+                ) : (
+                  <div className="absolute right-0 z-50">
+                    <input
+                      type="text"
+                      placeholder="Search"
+                      className="border border-neutral3 rounded-lg px-3 py-1 w-48"
+                      autoFocus
+                      onBlur={() => setIsSearchVisibleMobile(false)} // otomatis hilang saat kehilangan fokus
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Desktop Search Bar */}
               <input
                 type="text"
                 placeholder="Search"
-                className="border border-neutral3 rounded-lg px-3 py-1"
+                className="hidden md:block border border-neutral3 rounded-lg px-3 py-1"
               />
+
+              {/* Filter Button */}
               <div className="relative" ref={filterRefProcessed}>
                 {!isFilterOpenProcessed && (
                   <Image
@@ -225,91 +258,63 @@ const ValidationCoursePage = () => {
             </div>
           </div>
         </div>
-        <table className="w-full border-collapse rounded-xl overflow-hidden">
-          <thead>
-            <tr className="bg-mainBlue text-white">
-              <th className="p-3 outline outline-1 outline-white">Full Name</th>
-              <th className="p-3 outline outline-1 outline-white">ID</th>
-              <th className="p-3 outline outline-1 outline-white">Registration Date</th>
-              <th className="p-3 outline outline-1 outline-white">Course Name</th>
-              <th className="p-3 outline outline-1 outline-white">Session</th>
-              <th className="p-3 outline outline-1 outline-white" colSpan={2}>Validation</th>
-              <th className="p-3 outline outline-1 outline-white">Notes</th>
-            </tr>
-          </thead>
-          <tbody>
-            {paginatedData.length > 0 ? (
-              paginatedData.map((item) => (
-                <tr key={item.id} className="text-center border-t">
-                  <td className="p-3 border-2 border-lightBlue">{item.name}</td>
-                  <td className="p-3 border-2 border-lightBlue">{item.id}</td>
-                  <td className="p-3 border-2 border-lightBlue">{item.date}</td>
-                  <td className="p-3 border-2 border-lightBlue">{item.course}</td>
-                  <td className="p-3 border-2 border-lightBlue">{item.session}</td>
-                  <td className="p-3 border-2 border-lightBlue text-center">
-                    <button
-                      onClick={() => handleValidation("processed", item.id, "accepted")}
-                      disabled={item.validation === "accepted"}
-                    >
-                      <Image
-                        src={checkIcon}
-                        alt="Approve"
-                        width={40}
-                        height={40}
-                        className={item.validation === "accepted" ? "opacity-50" : ""}
-                      />
-                    </button>
-                  </td>
-                  <td className="p-3 border-2 border-lightBlue text-center">
-                    <button
-                      onClick={() => handleValidation("processed", item.id, "rejected")}
-                      disabled={item.validation === "rejected"}
-                    >
-                      <Image
-                        src={crossIcon}
-                        alt="Reject"
-                        width={40}
-                        height={40}
-                        className={item.validation === "rejected" ? "opacity-50" : ""}
-                      />
-                    </button>
-                  </td>
-                  <td className="p-3 border-2 border-lightBlue">
-                    {item.validation === "rejected" ? "Session Schedule is Full" : "Notes"}
+        <div className="overflow-x-auto">
+          <table className="min-w-[800px] w-full border-collapse rounded-xl overflow-hidden text-sm md:text-base">
+            <thead>
+              <tr className="bg-secondBlue text-white">
+                <th className="p-3 outline outline-1 outline-white">Full Name</th>
+                <th className="p-3 outline outline-1 outline-white">ID</th>
+                <th className="p-3 outline outline-1 outline-white">Registration Date</th>
+                <th className="p-3 outline outline-1 outline-white">Course Name</th>
+                <th className="p-3 outline outline-1 outline-white">Session</th>
+                <th className="p-3 outline outline-1 outline-white">Validation</th>
+                <th className="p-3 outline outline-1 outline-white">Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginatedData.length > 0 ? (
+                paginatedData.map((item) => (
+                  <tr key={item.id} className="text-center border-t">
+                    <td className="p-3 border-2 border-lightBlue">{item.name}</td>
+                    <td className="p-3 border-2 border-lightBlue">{item.id}</td>
+                    <td className="p-3 border-2 border-lightBlue">{item.date}</td>
+                    <td className="p-3 border-2 border-lightBlue">{item.course}</td>
+                    <td className="p-3 border-2 border-lightBlue">{item.session}</td>
+                    <td className="p-3 border-2 border-lightBlue">{item.validation}</td>
+                    <td className="p-3 border-2 border-lightBlue">Notes</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="7" className="text-center p-3 border-2 border-blue-200">
+                    No processed data available.
                   </td>
                 </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="8" className="text-center p-3 border-2 border-lightBlue">
-                  There is no processed data to display.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-        <div className="flex justify-end items-center mt-4 gap-4">
-        <button
-          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-          disabled={currentPage === 1}
-          className="p-2 rounded-full bg-gray-200 disabled:opacity-50"
-        >
-          <ChevronLeft size={24} />
-        </button>
-        <span>
-          Page {currentPage} of {totalPages}
-        </span>
-        <button
-          onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-          disabled={currentPage === totalPages}
-          className="p-2 rounded-full bg-gray-200 disabled:opacity-50"
-        >
-          <ChevronRight size={24} />
-        </button>
-      </div>
+              )}
+            </tbody>
+          </table>
+        </div>
+        {/* Pagination */}
+        <div className="flex justify-center items-center mt-4 space-x-2">
+          <button
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+            className={`p-2 rounded-full bg-gray-200 ${currentPage === 1 ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-300"}`}
+          >
+            <ChevronLeft />
+          </button>
+          <span className="text-sm text-gray-600">{`Page ${currentPage} of ${totalPages}`}</span>
+          <button
+            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+            disabled={currentPage === totalPages}
+            className={`p-2 rounded-full bg-gray-200 ${currentPage === totalPages ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-300"}`}
+          >
+            <ChevronRight />
+          </button>
+        </div>
       </div>
     </div>
-  );
+  );  
 };
 
 export default ValidationCoursePage;

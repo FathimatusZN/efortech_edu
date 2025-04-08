@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { FaUpload, FaFilePdf, FaCheckCircle, FaAsterisk } from "react-icons/fa";
+import { Button } from "@/components/ui/button";
 
 export default function UploadCertificate() {
   const [file, setFile] = useState(null);
@@ -99,12 +100,9 @@ export default function UploadCertificate() {
         />
       </div>
 
-      <button
-        onClick={handleSubmit}
-        className="mt-6 w-full max-w-[280px] mx-auto block text-center bg-lightBlue text-white py-2 rounded-md hover:bg-mainBlue"
-      >
+      <Button variant="lightBlue" onClick={handleSubmit} className="mt-6 block text-center w-full max-w-[280px] mx-auto">
         Submit
-      </button>
+      </Button>
 
       {showPopup && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
