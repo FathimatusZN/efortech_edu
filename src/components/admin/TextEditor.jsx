@@ -1,10 +1,13 @@
 import React from 'react';
 import { Editor } from '@tinymce/tinymce-react';
+const apiKey = process.env.NEXT_PUBLIC_TEXTEDITOR_API_KEY;
 
-export default function TextEditor() {
+
+export default function TextEditor({ onChange, value }) {
     return (
         <Editor
-            apiKey='ref5swl16qbonjvm7kvtps71svrbgxn01uu5t27eu20z9f9z'
+            value={value}
+            apiKey={apiKey}
             init={{
                 skin: "oxide",
                 content_css: "default",
@@ -36,12 +39,14 @@ export default function TextEditor() {
                 },
 
                 plugins: [
-                    'anchor', 'autolink', 'charmap', 'codesample', 'emoticons', 'image', 'link', 'lists', 'media', 'searchreplace', 'table', 'visualblocks', 'wordcount',
-                    'checklist', 'mediaembed', 'casechange', 'export', 'formatpainter', 'pageembed', 'a11ychecker', 'tinymcespellchecker', 'permanentpen', 'powerpaste', 'advtable', 'advcode', 'editimage', 'advtemplate', 'mentions', 'tableofcontents', 'footnotes', 'autocorrect', 'typography', 'inlinecss', 'markdown', 'importword', 'exportword', 'exportpdf'
+                    'anchor', 'autolink', 'charmap', 'codesample', 'emoticons', 'image', 'link', 'lists', 'media', 'searchreplace', 'table', 'visualblocks', 'wordcount'
                 ],
                 toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table mergetags | addcomment showcomments | spellcheckdialog a11ycheck typography | align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat',
                 tinycomments_mode: 'embedded',
                 tinycomments_author: 'Author name',
+            }}
+            onEditorChange={(newContent) => {
+                onChange(newContent);
             }}
         />
     );
