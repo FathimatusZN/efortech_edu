@@ -50,7 +50,7 @@ const AdminNavbar = () => {
 
     const handleLogout = () => {
         logout();
-        router.push("/login");
+        router.push("/home");
     };
 
     return (
