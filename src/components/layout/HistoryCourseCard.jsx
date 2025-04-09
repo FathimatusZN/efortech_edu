@@ -1,5 +1,6 @@
 "use client";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
 
 export default function HistoryCourseCard({ id, image, title, date, time, mode }) {
   const router = useRouter();
@@ -20,15 +21,12 @@ export default function HistoryCourseCard({ id, image, title, date, time, mode }
         </div>
 
         {/* TITLE */}
-        <h2 className="text-lg font-semibold text-blue-900 mt-3">{title}</h2>
+        <h2 className="text-lg font-semibold text-blue-900 my-3">{title}</h2>
 
         {/* BUTTON */}
-        <button
-          onClick={() => router.push(`/course/${id}`)}
-          className="bg-mainOrange text-white font-semibold px-6 py-2 mt-4 rounded-lg hover:bg-orange-600 transition-all"
-        >
-          See Details
-        </button>
+        <Button variant="orange">
+          <a href={`/course/${id}`}>See Details</a>
+        </Button>
       </div>
     </div>
   );
