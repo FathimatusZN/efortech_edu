@@ -30,6 +30,16 @@ const ArticlePage = () => {
         };
 
         fetchArticles();
+
+        const handleRefresh = () => {
+            fetchArticles(); // Panggil ulang fungsi fetch
+        };
+
+        window.addEventListener('refreshArticles', handleRefresh);
+
+        return () => {
+            window.removeEventListener('refreshArticles', handleRefresh);
+        };
     }, []);
 
     const loadMore = () => {
@@ -40,9 +50,9 @@ const ArticlePage = () => {
         }
     };
 
-    const handleDeleteArticle = (id) => {
-        setArticles(prevArticles => prevArticles.filter(article => article.article_id !== id));
-        setDisplayedArticles(prevDisplayed => prevDisplayed.filter(article => article.article_id !== id));
+    const handleDeleteArticle = (deletedId) => {
+        setArticles(prev => prev.filter(article => article.article_id !== deletedId));
+        dispatchEvent(new Event('refreshArticles'));
     };
 
     return (

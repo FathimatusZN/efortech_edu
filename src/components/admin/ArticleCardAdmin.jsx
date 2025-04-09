@@ -8,7 +8,7 @@ const categoryMap = {
     3: "Success Case",
 };
 
-function ArticleCardAdmin({ article_id, title, category, content_body, views, imageUrl }) {
+function ArticleCardAdmin({ article_id, title, category, content_body, views, imageUrl, onDelete }) {
     const categoryName = categoryMap[category] || "Unknown";
 
     const stripHtml = (html) => {
@@ -20,9 +20,10 @@ function ArticleCardAdmin({ article_id, title, category, content_body, views, im
     };
 
     const getImageSrc = (imageUrl) => {
-        if (!imageUrl || typeof imageUrl !== "string") return "/assets/Gambar2.jpg";
-        if (imageUrl.startsWith("data:image")) return imageUrl;
-        return imageUrl;
+        if (!imageUrl) return "/assets/Gambar2.jpg"; // fallback image
+        if (imageUrl.startsWith("data:image")) return imageUrl; // already base64
+        if (imageUrl.length > 100) return `data:image/jpeg;base64,${imageUrl}`; // assumed base64 from backend
+        return imageUrl; // URL biasa
     };
 
     const plainContent = stripHtml(content_body);
@@ -80,18 +81,21 @@ function ArticleCardAdmin({ article_id, title, category, content_body, views, im
             </div>
 
             {/* Actions */}
-            <div className="absolute bottom-2 right-4 flex space-x-4 mt-4">
+            <div className="absolute bottom-4 right-4 flex gap-4">
                 <button
-                    className="flex items-center bg-lightBlue text-white px-3 py-1 sm:px-6 sm:py-2 rounded-lg text-xs sm:text-sm hover:bg-mainBlue hover:text-white gap-2"
                     onClick={() => router.push(`/article-admin/${article_id}`)}
+                    className="text-white bg-mainBlue hover:bg-lightBlue px-3 py-1 rounded-lg flex items-center gap-2"
                 >
-                    <FaEdit /> Edit
+                    <FaEdit />
+                    <span className="hidden sm:inline">Edit</span>
                 </button>
+
                 <button
-                    className="text-error1 p-2 rounded-md hover:bg-error1 hover:text-white"
                     onClick={handleDelete}
+                    className="text-white bg-error1 hover:bg-red-700 px-3 py-1 rounded-lg flex items-center gap-2"
                 >
                     <FaTrash />
+                    <span className="hidden sm:inline">Delete</span>
                 </button>
             </div>
         </div>

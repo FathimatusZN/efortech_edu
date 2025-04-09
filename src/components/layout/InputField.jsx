@@ -113,6 +113,10 @@ const ImageUploader = ({ maxImages = 3, images, setImages }) => {
     const handleUpload = async (event, index) => {
         const file = event.target.files[0];
         if (file) {
+            if (file.size > 1048576) {
+                alert("File size exceeds 1MB. Please upload a smaller file.");
+                return;
+            }
             const base64 = await convertToBase64(file);
             const newImages = [...images];
             newImages[index] = {
