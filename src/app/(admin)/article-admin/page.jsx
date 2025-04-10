@@ -14,33 +14,62 @@ const ArticlePage = () => {
     const [searchQuery, setSearchQuery] = useState("");
 
     useEffect(() => {
-        const fetchArticles = async () => {
-            try {
-                const response = await fetch("http://localhost:5000/api/articles");
-                if (!response.ok) {
-                    throw new Error("Failed to fetch articles");
-                }
-                const data = await response.json();
-                console.log("Fetched articles:", data);
-                setArticles(data);
-                setDisplayedArticles(data.slice(0, PAGE_SIZE));
-            } catch (error) {
-                console.error("Error fetching articles:", error);
-            }
-        };
-
-        fetchArticles();
+        fetchAllArticles();
 
         const handleRefresh = () => {
-            fetchArticles(); // Panggil ulang fungsi fetch
+            fetchAllArticles();
         };
 
-        window.addEventListener('refreshArticles', handleRefresh);
+        window.addEventListener("refreshArticles", handleRefresh);
 
         return () => {
-            window.removeEventListener('refreshArticles', handleRefresh);
+            window.removeEventListener("refreshArticles", handleRefresh);
         };
     }, []);
+
+    const fetchAllArticles = async () => {
+        try {
+            const response = await fetch("http://localhost:5000/api/articles");
+            if (!response.ok) throw new Error("Failed to fetch articles");
+
+            const data = await response.json();
+            setArticles(data);
+            setDisplayedArticles(data.slice(0, PAGE_SIZE));
+            setLoadedCount(PAGE_SIZE);
+        } catch (error) {
+            console.error("Error fetching articles:", error);
+        }
+    };
+
+    const handleSearch = async () => {
+        if (!searchQuery.trim()) return fetchAllArticles();
+
+        try {
+            const response = await fetch(`http://localhost:5000/api/articles/search?query=${encodeURIComponent(searchQuery)}`);
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.warn("Search error:", errorData.message);
+                setArticles([]);
+                setDisplayedArticles([]);
+                setLoadedCount(0);
+                return;
+            }
+
+            const data = await response.json();
+            setArticles(data);
+            setDisplayedArticles(data.slice(0, PAGE_SIZE));
+            setLoadedCount(PAGE_SIZE);
+        } catch (error) {
+            console.error("Error searching articles:", error);
+        }
+    };
+
+    const handleKeyDown = (e) => {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            handleSearch();
+        }
+    };
 
     const loadMore = () => {
         if (loadedCount < articles.length) {
@@ -52,7 +81,7 @@ const ArticlePage = () => {
 
     const handleDeleteArticle = (deletedId) => {
         setArticles(prev => prev.filter(article => article.article_id !== deletedId));
-        dispatchEvent(new Event('refreshArticles'));
+        dispatchEvent(new Event("refreshArticles"));
     };
 
     return (
@@ -65,15 +94,21 @@ const ArticlePage = () => {
                     {/* Search & Add Button */}
                     <div className="flex flex-wrap items-center gap-3 sm:gap-4 w-full sm:w-auto">
                         {/* Search Bar */}
-                        <div className="relative w-full sm:w-[260px] md:w-[330px]">
+                        <div className="relative flex w-full sm:w-[330px]">
                             <input
                                 type="text"
                                 placeholder="Search"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full h-[42px] pl-5 pr-10 rounded-lg border border-mainOrange shadow-sm focus:ring-1 focus:ring-mainOrange outline-none"
+                                onKeyDown={handleKeyDown}
+                                className="w-full h-[42px] pl-5 pr-10 rounded-l-lg border border-mainOrange shadow-sm focus:ring-1 focus:ring-mainOrange outline-none"
                             />
-                            <FaSearch className="absolute right-4 top-1/2 transform -translate-y-1/2 text-neutral3" />
+                            <button
+                                onClick={handleSearch}
+                                className="px-4 bg-mainOrange text-white rounded-r-lg hover:bg-secondOrange"
+                            >
+                                <FaSearch />
+                            </button>
                         </div>
 
                         {/* Add New Button */}
