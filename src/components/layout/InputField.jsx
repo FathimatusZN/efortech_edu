@@ -131,10 +131,6 @@ const ImageUploader = ({ maxImages = 3, images, setImages, onImageUpload }) => {
             updatedImages[index] = data.imageUrl;
             setImages(updatedImages);
 
-            // ⛔ Jangan push lagi via onImageUpload, biar gak dobel slot
-            // if (onImageUpload) {
-            //     onImageUpload(data.imageUrl);
-            // }
         } catch (error) {
             console.error('Upload error:', error);
             alert('There was an error uploading the image.');
@@ -181,6 +177,19 @@ const ImageUploader = ({ maxImages = 3, images, setImages, onImageUpload }) => {
                                 </>
                             )}
                         </label>
+                        {!image && (
+                            <button
+                                onClick={() => {
+                                    const updatedImages = [...images];
+                                    updatedImages.splice(index, 1);
+                                    setImages(updatedImages);
+                                }}
+                                className="absolute top-1 right-1 bg-error1 text-white rounded-full p-1 hover:bg-error2 z-10"
+                                title="Remove slot"
+                            >
+                                <FaTrash className="text-xs" />
+                            </button>
+                        )}
                     </div>
                 ))}
 

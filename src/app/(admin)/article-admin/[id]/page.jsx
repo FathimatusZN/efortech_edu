@@ -20,6 +20,7 @@ export default function EditArticle() {
     const [tags, setTags] = useState([]);
     const [content, setContent] = useState("");
     const [images, setImages] = useState([]);
+    const [author, setAuthor] = useState("");
 
     const isFormValid = title.trim() !== "" && content.trim() !== "" && category !== 0;
 
@@ -60,7 +61,7 @@ export default function EditArticle() {
                 category,
                 content_body: content,
                 admin_id: user?.user_id,
-                author: user?.full_name || user?.email,
+                author: author || user?.full_name || user?.email,
                 tags: tags.filter(tag => tag.trim() !== ""),
                 sources: sources.filter(src => src.preview_text && src.source_link),
                 images: cleanImages,
@@ -93,14 +94,20 @@ export default function EditArticle() {
             setContent("");
             setImages([]);
             setSources([{ preview_text: "", source_link: "" }]);
+            setAuthor(data.author || "");
         } catch (err) {
             console.error("❌ Update error:", err);
             alert("Failed to update article.");
         }
     };
 
+    const handleImageUpload = (imageUrl) => {
+        setImages((prevImages) => [...prevImages, imageUrl]);
+    };
+
     const resetForm = () => {
         setTitle("");
+        setAuthor("");
         setCategory(0);
         setTags([]);
         setContent("");
@@ -145,6 +152,16 @@ export default function EditArticle() {
                         {/* Category and Tags Section */}
                         <div className="flex flex-wrap md:flex-nowrap gap-8 mt-2">
                             <div className="w-full md:w-[40%] flex flex-col space-y-4">
+
+                                {/* Author Input Section */}
+                                <InputField
+                                    label="Author"
+                                    placeholder="Author's name.."
+                                    className="mt-4"
+                                    value={author}
+                                    onChange={(e) => setAuthor(e.target.value)}
+                                />
+
                                 {/* Category Dropdown */}
                                 <SelectDropdown
                                     label="Category"
@@ -170,14 +187,13 @@ export default function EditArticle() {
                             </div>
 
                             {/* Image Upload Section */}
-                            <div className="w-full md:w-[60%] flex flex-col space-y-2">
-                                <ImageUploader
-                                    className="mt-2"
-                                    maxImages={3}
-                                    images={images}
-                                    setImages={setImages}
-                                />
-                            </div>
+                            <ImageUploader
+                                className="mt-2"
+                                maxImages={3}
+                                images={images}
+                                setImages={setImages}
+                                onImageUpload={handleImageUpload}
+                            />
                         </div>
 
                         {/* Content Editor Section */}

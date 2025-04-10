@@ -13,6 +13,7 @@ export default function AddArticle() {
     const [tags, setTags] = useState([]);
     const [content, setContent] = useState("");
     const [images, setImages] = useState([]);
+    const [author, setAuthor] = useState("");
 
     const isFormValid = title.trim() !== "" && content.trim() !== "" && category !== 0;
 
@@ -30,7 +31,7 @@ export default function AddArticle() {
                 category,
                 content_body: content,
                 admin_id: user?.user_id,
-                author: user?.full_name || user?.email,
+                author: author || user?.full_name || user?.email,
                 tags: tags.filter(tag => tag.trim() !== ""),
                 sources: sources.filter(src => src.preview_text && src.source_link),
                 images: cleanImages,
@@ -74,6 +75,7 @@ export default function AddArticle() {
 
     const resetForm = () => {
         setTitle("");
+        setAuthor("");
         setCategory(0);
         setTags([]);
         setContent("");
@@ -115,6 +117,14 @@ export default function AddArticle() {
                     {/* Category and Tags Section */}
                     <div className="flex flex-wrap md:flex-nowrap gap-8 mt-2">
                         <div className="w-full md:w-[40%] flex flex-col space-y-4">
+                            {/* Author Input Section */}
+                            <InputField
+                                label="Author"
+                                placeholder="Author's name.."
+                                className="mt-4"
+                                value={author}
+                                onChange={(e) => setAuthor(e.target.value)}
+                            />
                             {/* Category Dropdown */}
                             <SelectDropdown
                                 label="Category"
@@ -162,6 +172,7 @@ export default function AddArticle() {
                     {/* Sources Input Section */}
                     <label className="font-semibold mt-6 block">Sources</label>
                     <SourcesInput sources={sources} setSources={setSources} />
+
                 </div>
             </div>
         </ProtectedRoute>
