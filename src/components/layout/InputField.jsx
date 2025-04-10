@@ -98,36 +98,49 @@ const SelectDropdown = ({ label, required, children, className, value, onChange 
 };
 
 // Image Uploader Component
-const ImageUploader = ({ maxImages = 3, images, setImages }) => {
+const ImageUploader = ({ maxImages = 3, images, setImages, onImageUpload }) => {
     const [previewImage, setPreviewImage] = useState(null);
-
-    const convertToBase64 = (file) => {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = (error) => reject(error);
-        });
-    };
+    const [currentUploadIndex, setCurrentUploadIndex] = useState(null);
 
     const handleUpload = async (event, index) => {
         const file = event.target.files[0];
-        if (file) {
-            if (file.size > 1048576) {
-                alert("File size exceeds 1MB. Please upload a smaller file.");
+        if (!file) return;
+
+        if (file.size > 1 * 1024 * 1024) {
+            alert('Image size exceeds 1MB. Please choose a smaller image.');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('images', file);
+
+        try {
+            const res = await fetch('http://localhost:5000/api/articles/upload-image', {
+                method: 'POST',
+                body: formData,
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                alert(data.message || 'Failed to upload image. Please try again.');
                 return;
             }
-            const base64 = await convertToBase64(file);
-            const newImages = [...images];
-            newImages[index] = {
-                base64,
-                name: file.name,
-                type: file.type,
-                size: file.size,
-            };
-            setImages(newImages);
+
+            const updatedImages = [...images];
+            updatedImages[index] = data.imageUrl;
+            setImages(updatedImages);
+
+            // ⛔ Jangan push lagi via onImageUpload, biar gak dobel slot
+            // if (onImageUpload) {
+            //     onImageUpload(data.imageUrl);
+            // }
+        } catch (error) {
+            console.error('Upload error:', error);
+            alert('There was an error uploading the image.');
         }
     };
+
 
     const addImageSlot = () => {
         if (images.length < maxImages) {
@@ -135,8 +148,10 @@ const ImageUploader = ({ maxImages = 3, images, setImages }) => {
         }
     };
 
-    const removeImage = (index) => {
-        setImages(images.filter((_, i) => i !== index));
+    const removeImage = (urlToRemove) => {
+        const updatedImages = images.map((img) => (img === urlToRemove ? null : img));
+        setImages(updatedImages);
+        setPreviewImage(null);
     };
 
     return (
@@ -145,32 +160,26 @@ const ImageUploader = ({ maxImages = 3, images, setImages }) => {
             <div className="flex gap-4 flex-wrap mt-1.5">
                 {images.map((image, index) => (
                     <div key={index} className="relative w-[30%]">
-                        <label className="cursor-pointer flex flex-col items-center justify-center outline outline-1 outline-dashed outline-mainBlue rounded-md w-full h-32">
+                        <label className="cursor-pointer flex flex-col items-center justify-center outline outline-1 outline-dashed outline-mainBlue rounded-md w-full h-32 overflow-hidden">
                             {image ? (
-                                <>
-                                    <img
-                                        src={image.base64}
-                                        alt="Uploaded"
-                                        className="w-full h-full object-cover rounded-md"
-                                        onClick={() => setPreviewImage(image.base64)}
-                                    />
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            removeImage(index);
-                                        }}
-                                        className="absolute top-2 right-2 bg-error1 text-white p-1 rounded-full hover:bg-white hover:text-error1"
-                                    >
-                                        <FaTrash />
-                                    </button>
-                                </>
+                                <img
+                                    src={image}
+                                    alt="Uploaded"
+                                    className="w-full h-full object-cover rounded-md"
+                                    onClick={() => setPreviewImage(image)}
+                                />
                             ) : (
                                 <>
                                     <FaCloudUploadAlt className="text-mainOrange text-6xl mb-2" />
                                     <span className="text-sm text-gray-500">Upload image</span>
+                                    <input
+                                        type="file"
+                                        className="hidden"
+                                        onChange={(e) => handleUpload(e, index)}
+                                        onClick={() => setCurrentUploadIndex(index)}
+                                    />
                                 </>
                             )}
-                            <input type="file" className="hidden" onChange={(e) => handleUpload(e, index)} />
                         </label>
                     </div>
                 ))}
@@ -188,7 +197,7 @@ const ImageUploader = ({ maxImages = 3, images, setImages }) => {
                 )}
             </div>
 
-            {/* Modal Preview */}
+            {/* Modal Preview with Delete Button */}
             {previewImage && (
                 <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50">
                     <div className="relative bg-white p-4 rounded-lg">
@@ -199,6 +208,12 @@ const ImageUploader = ({ maxImages = 3, images, setImages }) => {
                             <FaTimes />
                         </button>
                         <img src={previewImage} alt="Preview" className="max-w-[90vw] max-h-[80vh] rounded-md" />
+                        <button
+                            onClick={() => removeImage(previewImage)}
+                            className="mt-4 bg-error1 text-white px-4 py-2 rounded hover:bg-error2"
+                        >
+                            Delete Image
+                        </button>
                     </div>
                 </div>
             )}

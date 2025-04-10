@@ -23,7 +23,7 @@ export default function AddArticle() {
 
         try {
             const token = localStorage.getItem("token");
-            const cleanImages = images.map((img) => img?.base64).filter(Boolean);
+            const cleanImages = images.filter((url) => typeof url === 'string' && url.startsWith('https'));
 
             const payload = {
                 title,
@@ -66,6 +66,10 @@ export default function AddArticle() {
             console.error("❌ Submit error:", err);
             alert("Failed to submit article.");
         }
+    };
+
+    const handleImageUpload = (imageUrl) => {
+        setImages((prevImages) => [...prevImages, imageUrl]);
     };
 
     const resetForm = () => {
@@ -142,6 +146,7 @@ export default function AddArticle() {
                                 maxImages={3}
                                 images={images}
                                 setImages={setImages}
+                                onImageUpload={handleImageUpload}
                             />
                         </div>
                     </div>

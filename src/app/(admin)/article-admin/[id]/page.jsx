@@ -36,7 +36,7 @@ export default function EditArticle() {
                 setCategory(data.category);
                 setContent(data.content_body);
                 setTags(data.tags || []);
-                setImages((data.images || []).map((img) => ({ base64: img })));
+                setImages(data.images || []);
                 setSources(data.sources || []);
             } catch (err) {
                 console.error("Error fetching article:", err);
@@ -53,7 +53,7 @@ export default function EditArticle() {
 
         try {
             const token = localStorage.getItem("token");
-            const cleanImages = images.map((img) => img?.base64).filter(Boolean);
+            const cleanImages = images.filter((url) => typeof url === "string" && url.startsWith("http"));
 
             const payload = {
                 title,
