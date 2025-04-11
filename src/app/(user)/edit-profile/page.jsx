@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { FaSave, FaCalendarAlt, FaEdit } from "react-icons/fa";
 import HistoryCardCourse from "@/components/layout/HistoryCourseCard";
+import { Button } from "@/components/ui/button";
 
 const userProfile = {
   fullName: "Azzahra Rahmadani",
@@ -141,9 +142,9 @@ export default function EditProfile() {
         </div>
 
         <div className="flex justify-end mt-4">
-          <button className="bg-orange-500 text-white px-4 py-2 rounded flex items-center justify-center gap-2 w-52">
-            <FaSave /> Save Changes
-          </button>
+          <Button variant="orange">
+            <FaSave/>Save Changes
+          </Button>
         </div>
       </div>
 

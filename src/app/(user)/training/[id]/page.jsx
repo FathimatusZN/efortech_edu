@@ -110,7 +110,7 @@ const TrainingDetail = () => {
         <div>
           <h1 className="text-3xl font-bold text-blue-900">{trainingData.title}</h1>
           <p className="text-xl text-black font-semibold pt-2">{trainingData.price}</p>
-          <div className="mt-4 flex w-full md:w-2/3 grid grid-cols-3">
+          <div className="mt-4 flex w-full md:w-2/3 grid-cols-3">
             <div className="flex-1">
               <p className="text-lg text-mainOrange font-bold whitespace-nowrap">Level</p>
               <p className="text-sm text-black font-semibold whitespace-nowrap">{trainingData.level}</p>
@@ -132,7 +132,7 @@ const TrainingDetail = () => {
               </span>
             ))}
           </div>
-          <div className="mt-4 flex w-full md:w-2/3 grid grid-cols-3">
+          <div className="mt-4 flex w-full md:w-2/3 grid-cols-3">
             <div className="flex-1">
               <p className="text-lg text-mainOrange font-bold whitespace-nowrap">Duration</p>
               <p className="text-sm text-black font-semibold whitespace-nowrap">{trainingData.duration}</p>
@@ -167,7 +167,7 @@ const TrainingDetail = () => {
         </div>
       </div>
       
-      <div className="mt-8 border border-2 border-mainBlue p-6 rounded-lg shadow-md">
+      <div className="mt-8 border-2 border-mainBlue p-6 rounded-lg shadow-md">
       <div className="flex flex-col md:flex-row md:justify-between items-start md:items-center">
         <h2 className="w-full md:w-auto">
           <span className="text-2xl font-bold text-mainOrange">Review</span>{" "}

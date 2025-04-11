@@ -19,7 +19,7 @@ const AdminNavbar = () => {
     let navLinks = [
         { name: "Dashboard", path: "/dashboard" },
         { name: "Training", path: "/training-admin" },
-        { name: "Validation", path: "/validation-admin" },
+        { name: "Validation", path: "/validation" },
         { name: "Certificate", path: "/certificate-admin" },
         { name: "Article", path: "/article-admin" },
         { name: "Manage Admin", path: "/manage-admin" }
@@ -50,7 +50,7 @@ const AdminNavbar = () => {
 
     const handleLogout = () => {
         logout();
-        router.push("/login");
+        router.push("/home");
     };
 
     return (

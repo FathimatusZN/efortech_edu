@@ -1,53 +1,109 @@
 import React from "react";
 import { FaEdit, FaTrash, FaEye, FaShapes } from "react-icons/fa";
+import { useRouter } from "next/navigation";
 
-function ArticleCard({ title, description, category, views = Math.floor(Math.random() * 1000), imageUrl }) {
-    const truncatedDescription = description.length > 100 ? description.slice(0, 120) + "..." : description;
+const categoryMap = {
+    1: "Education",
+    2: "Event",
+    3: "Success Case",
+};
+
+function ArticleCardAdmin({ article_id, title, category, content_body, views, imageUrl, onDelete }) {
+    const categoryName = categoryMap[category] || "Unknown";
+
+    const stripHtml = (html) => {
+        if (typeof window !== "undefined") {
+            const doc = new DOMParser().parseFromString(html, "text/html");
+            return doc.body.textContent || "";
+        }
+        return "";
+    };
+
+    const getImageSrc = (imageUrl) => {
+        try {
+            if (!imageUrl) throw new Error("No image URL");
+            const url = new URL(imageUrl);
+            return url.href;
+        } catch (e) {
+            return "/assets/Gambar2.jpg";
+        }
+    };
+
+    const plainContent = stripHtml(content_body);
+    const truncatedContent = plainContent.length > 120
+        ? plainContent.slice(0, 140) + "..."
+        : plainContent;
+
+    const router = useRouter();
+
+    const handleDelete = async () => {
+        if (!confirm("Are you sure you want to delete this article?")) return;
+
+        try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/articles/${article_id}`, {
+                method: "DELETE",
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to delete article");
+            }
+
+            onDelete(article_id);
+        } catch (error) {
+            console.error("Error deleting article:", error);
+        }
+    };
 
     return (
-        <div className="w-full max-w-[666px] border-2 border-mainBlue rounded-lg p-4 flex gap-4 shadow-[8px_8px_0px_0px_#157ab2] relative bg-white">
-            {/* Image + Category & Views */}
-            <div className="flex flex-col items-center w-{40%} h-full">
-                {/* Image */}
-                <div className="flex-1 w-full rounded-[10px] overflow-hidden">
-                    <img src={imageUrl} alt="Article" className="w-full h-full object-cover" />
+        <div className="w-full max-w-4xl border-2 border-mainBlue rounded-lg p-4 flex flex-col md:flex-row gap-4 shadow-[8px_8px_0px_0px_#157ab2] bg-white relative">
+            {/* Image & Info */}
+            <div className="w-full md:w-3/5 flex flex-col items-center">
+                <div className="w-full h-[200px] sm:h-[250px] md:h-[200px] rounded-[10px] overflow-hidden">
+                    <img src={getImageSrc(imageUrl)} alt="Article" className="w-full h-full object-cover" />
                 </div>
-
-                {/* Category & Views - Moved Below Image */}
-                <div className="flex items-center justify-center w-full text-mainBlack text-[clamp(10px,1vw,14px)] mt-2 gap-4">
-                    <span className="flex items-center">
-                        <span className="text-mainOrange mr-2"><FaShapes /></span> {category}
+                <div className="flex justify-center mt-2 gap-4 text-[clamp(10px,2.5vw,14px)] text-mainBlack">
+                    <span className="flex items-center gap-1">
+                        <FaShapes className="text-mainOrange" /> {categoryName}
                     </span>
-                    <span className="flex items-center">
-                        <span className="text-mainOrange mr-2"><FaEye /></span> {views}
+                    <span className="flex items-center gap-1">
+                        <FaEye className="text-mainOrange" /> {views}
                     </span>
                 </div>
             </div>
 
             {/* Content */}
-            <div className="flex flex-col flex-grow">
-                {/* Title */}
-                <h2 className="text-mainBlack font-montserrat font-medium text-[clamp(14px,1.8vw,28px)] leading-tight mb-2 text-justify">
-                    {title}
-                </h2>
+            <div className="flex flex-col flex-grow justify-between w-full">
+                <div>
+                    <h2 className="text-mainBlack font-montserrat font-semibold text-[clamp(16px,2vw,20px)] leading-tight mb-2 text-justify">
+                        {title}
+                    </h2>
+                    <p className="text-mainBlack font-montserrat text-[clamp(12px,1.5vw,16px)] text-justify">
+                        {truncatedContent}
+                    </p>
+                </div>
+                {/* Actions */}
+                <div className="flex flex-grow flex-col justify-end items-end">
+                    <div className="flex gap-3 mt-4">
+                        <button
+                            onClick={() => router.push(`/article-admin/${article_id}`)}
+                            className="text-white bg-mainBlue hover:bg-lightBlue px-4 py-2 rounded-lg flex items-center gap-2 text-sm"
+                        >
+                            <FaEdit />
+                            <span className="hidden sm:inline">Edit</span>
+                        </button>
+                        <button
+                            onClick={handleDelete}
+                            className="text-white bg-error1 hover:bg-red-700 px-4 py-2 rounded-lg flex items-center gap-2 text-sm"
+                        >
+                            <FaTrash />
+                            <span className="hidden sm:inline">Delete</span>
+                        </button>
+                    </div>
+                </div>
 
-                {/* Description */}
-                <p className="text-mainBlack font-montserrat text-[clamp(12px,1.5vw,20px)] mb-10 text-justify">
-                    {truncatedDescription}
-                </p>
-            </div>
-
-            {/* Actions */}
-            <div className="absolute bottom-2 right-4 flex space-x-4 mt-4">
-                <button className="flex items-center bg-lightBlue text-white px-3 py-1 sm:px-6 sm:py-2 rounded-lg text-xs sm:text-sm hover:bg-mainBlue hover:text-white gap-2">
-                    <FaEdit /> Edit
-                </button>
-                <button className="text-error1 p-2 rounded-md hover:bg-error1 hover:text-white">
-                    <FaTrash />
-                </button>
             </div>
         </div>
     );
 };
 
-export default ArticleCard;
+export default ArticleCardAdmin;

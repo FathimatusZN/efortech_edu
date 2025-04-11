@@ -7,11 +7,15 @@ const PageTitle = ({ title }) => {
 };
 
 // Save Button Component
-const SaveButton = ({ onClick }) => {
+export const SaveButton = ({ onClick, disabled = false }) => {
     return (
         <button
-            className="flex items-center gap-2 bg-neutral2 text-neutral3 px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg shadow hover:bg-mainBlue hover:text-white"
+            className={`flex items-center gap-2 px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg shadow transition-colors duration-200
+                ${disabled
+                    ? "bg-neutral2 text-neutral4 cursor-not-allowed"
+                    : "bg-mainBlue text-white hover:bg-lightBlue"}`}
             onClick={onClick}
+            disabled={disabled}
         >
             <FaEdit />
             <span>Save</span>
@@ -20,11 +24,16 @@ const SaveButton = ({ onClick }) => {
 };
 
 // Discard Button Component
-const DiscardButton = ({ onClick }) => {
+export const DiscardButton = ({ onClick }) => {
+    const handleClick = () => {
+        const confirmReset = window.confirm("Are you sure you want to discard all changes?");
+        if (confirmReset) onClick();
+    };
+
     return (
         <button
             className="flex items-center gap-2 bg-neutral2 text-neutral3 px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg shadow hover:bg-error1 hover:text-white"
-            onClick={onClick}
+            onClick={handleClick}
         >
             <FaTrash />
             <span>Discard</span>
@@ -46,7 +55,7 @@ const AddPageHeader = ({ title, onSave, onDiscard }) => {
 };
 
 // Input Field Component
-const InputField = ({ label, placeholder, required, className }) => {
+const InputField = ({ label, placeholder, required, className, value, onChange }) => {
     return (
         <div className={`flex flex-col ${className}`}>
             {label && (
@@ -58,6 +67,8 @@ const InputField = ({ label, placeholder, required, className }) => {
                 type="text"
                 placeholder={placeholder}
                 required={required}
+                value={value}
+                onChange={onChange}
                 className="p-2 border rounded-md outline outline-1 outline-mainBlue focus:ring-1 focus:ring-mainBlue"
             />
         </div>
@@ -65,7 +76,7 @@ const InputField = ({ label, placeholder, required, className }) => {
 };
 
 // Select Component
-const SelectDropdown = ({ label, required, children, className }) => {
+const SelectDropdown = ({ label, required, children, className, value, onChange }) => {
     return (
         <div className={`flex flex-col relative ${className}`}>
             {label && (
@@ -74,7 +85,10 @@ const SelectDropdown = ({ label, required, children, className }) => {
                 </label>
             )}
             <div className="relative">
-                <select className="w-full p-2 pr-8 border rounded-md outline outline-1 outline-mainBlue focus:ring-1 focus:ring-mainBlue appearance-none">
+                <select
+                    value={value}
+                    onChange={onChange}
+                    className="w-full p-2 pr-8 border rounded-md outline outline-1 outline-mainBlue focus:ring-1 focus:ring-mainBlue appearance-none">
                     {children}
                 </select>
                 <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-mainBlue pointer-events-none" />
@@ -84,19 +98,45 @@ const SelectDropdown = ({ label, required, children, className }) => {
 };
 
 // Image Uploader Component
-const ImageUploader = ({ maxImages }) => {
-    const [images, setImages] = useState([null]); // Menyimpan URL gambar
-    const [previewImage, setPreviewImage] = useState(null); // Gambar yang dipreview
+const ImageUploader = ({ maxImages = 3, images, setImages, onImageUpload }) => {
+    const [previewImage, setPreviewImage] = useState(null);
+    const [currentUploadIndex, setCurrentUploadIndex] = useState(null);
 
-    const handleUpload = (event, index) => {
+    const handleUpload = async (event, index) => {
         const file = event.target.files[0];
-        if (file) {
-            const imageUrl = URL.createObjectURL(file);
-            const newImages = [...images];
-            newImages[index] = imageUrl;
-            setImages(newImages);
+        if (!file) return;
+
+        if (file.size > 1 * 1024 * 1024) {
+            alert('Image size exceeds 1MB. Please choose a smaller image.');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('images', file);
+
+        try {
+            const res = await fetch('http://localhost:5000/api/articles/upload-image', {
+                method: 'POST',
+                body: formData,
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                alert(data.message || 'Failed to upload image. Please try again.');
+                return;
+            }
+
+            const updatedImages = [...images];
+            updatedImages[index] = data.imageUrl;
+            setImages(updatedImages);
+
+        } catch (error) {
+            console.error('Upload error:', error);
+            alert('There was an error uploading the image.');
         }
     };
+
 
     const addImageSlot = () => {
         if (images.length < maxImages) {
@@ -104,11 +144,10 @@ const ImageUploader = ({ maxImages }) => {
         }
     };
 
-    const removeImage = (index) => {
-        if (images[index]) {
-            URL.revokeObjectURL(images[index]); // Bebaskan URL dari memory
-        }
-        setImages(images.filter((_, i) => i !== index));
+    const removeImage = (urlToRemove) => {
+        const updatedImages = images.map((img) => (img === urlToRemove ? null : img));
+        setImages(updatedImages);
+        setPreviewImage(null);
     };
 
     return (
@@ -117,37 +156,43 @@ const ImageUploader = ({ maxImages }) => {
             <div className="flex gap-4 flex-wrap mt-1.5">
                 {images.map((image, index) => (
                     <div key={index} className="relative w-[30%]">
-                        <label className="cursor-pointer flex flex-col items-center justify-center outline outline-1 outline-dashed outline-mainBlue rounded-md w-full h-32">
+                        <label className="cursor-pointer flex flex-col items-center justify-center outline outline-1 outline-dashed outline-mainBlue rounded-md w-full h-32 overflow-hidden">
                             {image ? (
-                                <>
-                                    <img
-                                        src={image}
-                                        alt="Uploaded"
-                                        className="w-full h-full object-cover rounded-md"
-                                        onClick={() => setPreviewImage(image)}
-                                    />
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            removeImage(index);
-                                        }}
-                                        className="absolute top-2 right-2 bg-error1 text-white p-1 rounded-full hover:bg-white hover:text-error1"
-                                    >
-                                        <FaTrash />
-                                    </button>
-                                </>
+                                <img
+                                    src={image}
+                                    alt="Uploaded"
+                                    className="w-full h-full object-cover rounded-md"
+                                    onClick={() => setPreviewImage(image)}
+                                />
                             ) : (
                                 <>
                                     <FaCloudUploadAlt className="text-mainOrange text-6xl mb-2" />
                                     <span className="text-sm text-gray-500">Upload image</span>
+                                    <input
+                                        type="file"
+                                        className="hidden"
+                                        onChange={(e) => handleUpload(e, index)}
+                                        onClick={() => setCurrentUploadIndex(index)}
+                                    />
                                 </>
                             )}
-                            <input type="file" className="hidden" onChange={(e) => handleUpload(e, index)} />
                         </label>
+                        {!image && (
+                            <button
+                                onClick={() => {
+                                    const updatedImages = [...images];
+                                    updatedImages.splice(index, 1);
+                                    setImages(updatedImages);
+                                }}
+                                className="absolute top-1 right-1 bg-error1 text-white rounded-full p-1 hover:bg-error2 z-10"
+                                title="Remove slot"
+                            >
+                                <FaTrash className="text-xs" />
+                            </button>
+                        )}
                     </div>
                 ))}
 
-                {/* Add More Image */}
                 {images.length < maxImages && (
                     <div
                         className="w-[30%] flex flex-col items-center justify-center p-4 cursor-pointer outline outline-1 outline-dashed outline-mainBlue rounded-md h-32"
@@ -161,7 +206,7 @@ const ImageUploader = ({ maxImages }) => {
                 )}
             </div>
 
-            {/* Modal Preview */}
+            {/* Modal Preview with Delete Button */}
             {previewImage && (
                 <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50">
                     <div className="relative bg-white p-4 rounded-lg">
@@ -172,6 +217,12 @@ const ImageUploader = ({ maxImages }) => {
                             <FaTimes />
                         </button>
                         <img src={previewImage} alt="Preview" className="max-w-[90vw] max-h-[80vh] rounded-md" />
+                        <button
+                            onClick={() => removeImage(previewImage)}
+                            className="mt-4 bg-error1 text-white px-4 py-2 rounded hover:bg-error2"
+                        >
+                            Delete Image
+                        </button>
                     </div>
                 </div>
             )}
@@ -180,9 +231,15 @@ const ImageUploader = ({ maxImages }) => {
 };
 
 // Add Label Component
-const AddLabel = ({ label = "Labels", placeholder = "Enter label", onChange }) => {
+const AddLabel = ({ label = "Labels", placeholder = "Enter label", onChange, value }) => {
     const [labels, setLabels] = useState([""]);
     const inputRefs = useRef([]);
+
+    useEffect(() => {
+        if (Array.isArray(value)) {
+            setLabels(value.length > 0 ? value : [""]);
+        }
+    }, [value]);
 
     // Fungsi untuk menghitung lebar input berdasarkan teks
     const calculateWidth = (text, placeholder) => {
@@ -264,7 +321,7 @@ const AddLabel = ({ label = "Labels", placeholder = "Enter label", onChange }) =
 const SourcesInput = ({ sources, setSources }) => {
     // Menambahkan source baru
     const addSource = () => {
-        setSources([...sources, { previewText: "", link: "" }]);
+        setSources([...sources, { preview_text: "", source_link: "" }]);
     };
 
     // Menghapus source berdasarkan index
@@ -288,8 +345,8 @@ const SourcesInput = ({ sources, setSources }) => {
                     <input
                         type="text"
                         placeholder="Text Preview"
-                        value={source.previewText}
-                        onChange={(e) => updateSource(index, "previewText", e.target.value)}
+                        value={source.preview_text}
+                        onChange={(e) => updateSource(index, "preview_text", e.target.value)}
                         className="w-3/5 p-2 text-[14px] rounded-md shadow-[0px_4px_4px_rgba(21,122,178,0.25)]"
                     />
 
@@ -299,8 +356,8 @@ const SourcesInput = ({ sources, setSources }) => {
                         <input
                             type="text"
                             placeholder="Enter a link"
-                            value={source.link}
-                            onChange={(e) => updateSource(index, "link", e.target.value)}
+                            value={source.source_link}
+                            onChange={(e) => updateSource(index, "source_link", e.target.value)}
                             className="w-full p-2 pl-9 text-[14px] rounded-md shadow-[0px_4px_4px_rgba(21,122,178,0.25)] text-lightBlue"
                         />
                     </div>
