@@ -142,7 +142,7 @@ export default function ManageAdmin() {
             ),
             cell: ({ row }) => (
                 <span
-                    className={`text-sm font-medium ${row.original.status === "active"
+                    className={`text-sm font-medium ${row.original.status === "Active"
                         ? "text-green-600"
                         : "text-red-500"
                         }`}
@@ -308,7 +308,7 @@ export default function ManageAdmin() {
                 </div>
 
                 {/* Table */}
-                <div className="border rounded-md overflow-x-auto">
+                <div className=" rounded-md overflow-x-auto">
                     <Table>
                         <TableHeader>
                             {table.getHeaderGroups().map((headerGroup) => (
