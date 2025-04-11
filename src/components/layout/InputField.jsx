@@ -156,7 +156,7 @@ const ImageUploader = ({ maxImages = 3, images, setImages, onImageUpload }) => {
             <div className="flex gap-4 flex-wrap mt-1.5">
                 {images.map((image, index) => (
                     <div key={index} className="relative w-[30%]">
-                        <label className="cursor-pointer flex flex-col items-center justify-center outline outline-1 outline-dashed outline-mainBlue rounded-md w-full h-32 overflow-hidden">
+                        <label className="cursor-pointer flex flex-col items-center justify-center outline-1 outline-dashed outline-mainBlue rounded-md w-full h-32">
                             {image ? (
                                 <img
                                     src={image}
@@ -195,7 +195,7 @@ const ImageUploader = ({ maxImages = 3, images, setImages, onImageUpload }) => {
 
                 {images.length < maxImages && (
                     <div
-                        className="w-[30%] flex flex-col items-center justify-center p-4 cursor-pointer outline outline-1 outline-dashed outline-mainBlue rounded-md h-32"
+                        className="w-[30%] flex flex-col items-center justify-center p-4 cursor-pointer outline-1 outline-dashed outline-mainBlue rounded-md h-32"
                         onClick={addImageSlot}
                     >
                         <div className="bg-mainOrange text-white p-4 rounded-md">
