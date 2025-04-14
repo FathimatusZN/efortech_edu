@@ -44,7 +44,7 @@ export default function AddArticle() {
                 return;
             }
 
-            const res = await fetch("http://localhost:5000/api/articles/add", {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/articles/add`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -56,7 +56,7 @@ export default function AddArticle() {
             if (!res.ok) throw new Error("Failed to submit article");
 
             const data = await res.json();
-            alert("✅ Article added! ID: " + data.article_id);
+            alert("✅ Article added! ID: " + data.data.article_id);
             setTitle("");
             setCategory(0);
             setTags([]);
