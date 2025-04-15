@@ -58,8 +58,8 @@ export default function EditProfile() {
     };
   
     const filteredCourses =
-      activeTab === "All" ? courses : courses.filter((course) => course.status === activeTab);
-  
+    activeTab === "All" ? courses : courses.filter((course) => course.status.toUpperCase() === activeTab.toUpperCase());
+    
     const toggleMenu = () => {
       setIsMenuOpen(!isMenuOpen);
     };

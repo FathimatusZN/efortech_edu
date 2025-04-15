@@ -4,6 +4,7 @@ import { useParams } from "next/navigation";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { trainingList } from "../Data";
 
 const TrainingDetail = () => {
   const { id } = useParams();
@@ -12,51 +13,17 @@ const TrainingDetail = () => {
   const [filterRating, setFilterRating] = useState(null);
   const router = useRouter();
 
-  const trainingData = {
-    title: "Accelerating Digital O&M using DeviceOn/BI and Patrol Inspection",
-    price: "Rp 2.300.000",
-    level: "Beginner",
-    certificate: "3 years",
-    tags: [
-      "Risk Management",
-      "Quality Management",
-      "Cost & Budget Management",
-      "Scope Management",
-      "Project Planning & Scheduling",
-    ],
-    duration: "10 Hours",
-    date: "23 February 2025 - 13 March 2025",
-    description:
-      `This training program is designed to provide an in-depth understanding of project management principles, including risk management, quality control, and budget planning. Participants will explore real-world case studies, best practices, and interactive exercises to enhance their skills.
+  // Ambil data berdasarkan id
+  const trainingData = trainingList.find((training) => training.id === id);
 
-      The course covers:
-      - Introduction to Project Management
-      - Effective Stakeholder Communication
-      - Budget Planning and Cost Management
-      - Risk Assessment and Mitigation Strategies
-      - Agile and Waterfall Methodologies
-
-      By the end of this course, participants will be equipped with the necessary knowledge and tools to successfully manage projects, mitigate risks, and optimize resources. This training is ideal for professionals looking to enhance their project management capabilities.
-
-      Additionally, this course provides hands-on experience through group discussions, case study analysis, and scenario-based exercises, ensuring participants can apply their knowledge effectively in real-world scenarios.
-
-      Join us today and take your project management skills to the next level!`,
-    images: [
-      "/assets/gambar1.jpg",
-      "/assets/Gambar2.jpg",
-      "/assets/dashboard-bg.png",
-    ],
-    reviews: [
-      { name: "Thom Haye", rating: 5.00, comment: "Training yang sangat bermanfaat!", avatar: "https://source.unsplash.com/50x50/?man" },
-      { name: "Rachel Venya", rating: 4.00, comment: "Sangat direkomendasikan untuk pemula.", avatar: "https://source.unsplash.com/50x50/?woman" },
-      { name: "Thom Haye", rating: 5.00, comment: "Pelatihan yang luar biasa!", avatar: "https://source.unsplash.com/50x50/?man" },
-      { name: "Rachel Venya", rating: 4.00, comment: "Sangat direkomendasikan untuk pemula.", avatar: "https://source.unsplash.com/50x50/?woman" },
-      { name: "Thom Haye", rating: 3.00, comment: "Training yang sangat bermanfaat!", avatar: "https://source.unsplash.com/50x50/?man" },
-      { name: "Rachel Venya", rating: 4.00, comment: "Sangat direkomendasikan untuk pemula.", avatar: "https://source.unsplash.com/50x50/?woman" },
-      { name: "Thom Haye", rating: 5.00, comment: "Pelatihan yang luar biasa!", avatar: "https://source.unsplash.com/50x50/?man" },
-      { name: "Rachel Venya", rating: 4.00, comment: "Sangat direkomendasikan untuk pemula.", avatar: "https://source.unsplash.com/50x50/?woman" },  
-    ],
-  };
+  // Handle jika data tidak ditemukan
+  if (!trainingData) {
+    return (
+      <div className="p-10 text-center text-red-600 font-bold text-xl">
+        Training not found.
+      </div>
+    );
+  }
 
   const averageRating = (
     trainingData.reviews.reduce((acc, review) => acc + review.rating, 0) /
@@ -151,7 +118,7 @@ const TrainingDetail = () => {
             </div>
           </div>
           <div 
-             onClick={() => router.push("/training/registration")}
+             onClick={() => router.push("/training/[id]/registration")}
             className="mt-4 flex gap-4 w-full">
             <button className="px-6 py-1 border-2 border-mainOrange text-mainOrange font-semibold rounded-lg w-full md:w-[310px] 
             transition duration-300 ease-in-out hover:bg-mainOrange hover:text-white active:scale-95"> 
