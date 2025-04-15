@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Switch } from "@/components/ui/switch"
+import { Button } from "@/components/ui/button";
 import { FaClock, FaMoneyBill, FaTag, FaCheckCircle, FaTimesCircle, FaPlusCircle, FaCloudUploadAlt, FaPlus, FaTrash } from 'react-icons/fa';
 
 export default function TrainingForm({ onSubmit, onValidationChange, initialData = {} }) {
@@ -22,39 +23,29 @@ export default function TrainingForm({ onSubmit, onValidationChange, initialData
   const [errors, setErrors] = useState({});
   const [images, setImages] = useState(formData.images || []);
   const [previewImage, setPreviewImage] = useState(null);
+  const [formIsValid, setIsValid] = useState(false);
   const maxImages = 3;
 
-  // Sync images ke formData.images
   useEffect(() => {
     setFormData(prev => ({ ...prev, images }));
   }, [images]);
 
-  // Validasi otomatis & informasikan ke parent
   useEffect(() => {
-      const isValid =
-        formData.name.trim() !== '' &&
-        formData.description.trim() !== '' &&
-        formData.level.trim() !== '' &&
-        formData.duration.trim() !== '' &&
-        !isNaN(formData.duration) &&
-        formData.fee.trim() !== '' &&
-        !isNaN(formData.fee) &&
-        (formData.discount === '' || !isNaN(formData.discount)) &&
-        formData.validity.trim() !== '' &&
-        !isNaN(formData.validity) &&
-        Array.isArray(formData.skills) &&
-        formData.skills.every(skill => skill.trim() !== '') &&
-        Array.isArray(formData.terms) &&
-        formData.terms.every(term => term.trim() !== '') &&
-        images.length > 0;
-    
-      console.log("isValid:", isValid);
-      console.log("Images count:", images.length);
-      console.log("FormData:", formData);
-    
-      onValidationChange?.(isValid);
-    }, [formData, images, onValidationChange]);
-    
+    const isValid =
+      formData.name.trim() !== '' &&
+      formData.description.trim() !== '' &&
+      formData.level.trim() !== '' &&
+      formData.duration.trim() !== '' && !isNaN(formData.duration) &&
+      formData.fee.trim() !== '' && !isNaN(formData.fee) &&
+      (formData.discount === '' || !isNaN(formData.discount)) &&
+      formData.validity.trim() !== '' && !isNaN(formData.validity) &&
+      formData.skills.every(skill => skill.trim() !== '') &&
+      formData.terms.every(term => term.trim() !== '') &&
+      images.length > 0;
+
+    setIsValid(isValid);
+    onValidationChange?.(isValid);
+  }, [formData, images, onValidationChange]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -66,7 +57,7 @@ export default function TrainingForm({ onSubmit, onValidationChange, initialData
 
   const handleChange2 = (e) => {
     const { name, value } = e.target;
-  
+
     if (['duration', 'fee', 'validity', 'discount'].includes(name)) {
       if (value !== '' && isNaN(value)) {
         setErrors((prev) => ({ ...prev, [name]: 'This field must be a number' }));
@@ -74,12 +65,12 @@ export default function TrainingForm({ onSubmit, onValidationChange, initialData
         setErrors((prev) => ({ ...prev, [name]: '' }));
       }
     }
-  
+
     setFormData({
       ...formData,
       [name]: value,
     });
-  };  
+  };
 
   const handleSwitchChange = (checked) => {
     setFormData({ ...formData, isActive: checked });
@@ -134,7 +125,7 @@ export default function TrainingForm({ onSubmit, onValidationChange, initialData
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    const isValid =
+    const formIsValid =
       formData.name.trim() !== '' &&
       formData.description.trim() !== '' &&
       formData.level.trim() !== '' &&
@@ -146,7 +137,7 @@ export default function TrainingForm({ onSubmit, onValidationChange, initialData
       formData.terms.every(term => term.trim() !== '') &&
       images.length > 0;
 
-    if (!isValid) {
+    if (!formIsValid) {
       alert("Please fill all required fields correctly.");
       return;
     }
@@ -173,7 +164,7 @@ export default function TrainingForm({ onSubmit, onValidationChange, initialData
 
         <div className="w-full sm:w-40">
         <label className="text-lg font-semibold block mb-1">Training Status</label>
-        <div className="flex items-center justify-start gap-x-4">
+        <div className="flex items-center justify-start gap-x-4 mb-1">
           <span className="text-sm text-gray-600 min-w-[70px] text-left">
             {formData.isActive ? 'Active' : 'Archived'}
           </span>
@@ -182,7 +173,7 @@ export default function TrainingForm({ onSubmit, onValidationChange, initialData
             onCheckedChange={handleSwitchChange}
             className="data-[state=checked]:bg-mainBlue bg-gray-300"
           />
-          </div>
+        </div>
         </div>
       </div>
       
@@ -376,14 +367,17 @@ export default function TrainingForm({ onSubmit, onValidationChange, initialData
               </button>
             </div>
           ))}
-          <button
+          
+          <Button
             type="button"
             onClick={addSkill}
-            className="mt-4 mb-8 flex items-center gap-2 bg-mainBlue text-white px-3 py-1.5 rounded-lg hover:bg-blue-600 text-sm"
+            variant="mainBlue"
+            size="sm"
+            className="mt-4 mb-8"
           >
-            <FaPlusCircle size={16} className="text-white" />
+            <FaPlusCircle />
             Add More Skills
-          </button>
+          </Button>
         </div>
       </div>
 

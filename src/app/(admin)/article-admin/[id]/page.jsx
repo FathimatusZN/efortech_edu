@@ -29,16 +29,16 @@ export default function EditArticle() {
     useEffect(() => {
         const fetchArticle = async () => {
             try {
-                const response = await fetch(`http://localhost:5000/api/articles/${articleId}`);
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/articles/${articleId}`);
                 if (!response.ok) throw new Error("Failed to fetch article data");
                 const data = await response.json();
 
-                setTitle(data.title);
-                setCategory(data.category);
-                setContent(data.content_body);
-                setTags(data.tags || []);
-                setImages(data.images || []);
-                setSources(data.sources || []);
+                setTitle(data.data.title);
+                setCategory(data.data.category);
+                setContent(data.data.content_body);
+                setTags(data.data.tags || []);
+                setImages(data.data.images || []);
+                setSources(data.data.sources || []);
             } catch (err) {
                 console.error("Error fetching article:", err);
             } finally {
@@ -74,7 +74,7 @@ export default function EditArticle() {
                 return;
             }
 
-            const res = await fetch(`http://localhost:5000/api/articles/update/${articleId}`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/articles/update/${articleId}`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
@@ -94,7 +94,7 @@ export default function EditArticle() {
             setContent("");
             setImages([]);
             setSources([{ preview_text: "", source_link: "" }]);
-            setAuthor(data.author || "");
+            setAuthor(data.data.author || "");
         } catch (err) {
             console.error("❌ Update error:", err);
             alert("Failed to update article.");

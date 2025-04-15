@@ -30,12 +30,12 @@ const ArticlePage = () => {
 
     const fetchAllArticles = async () => {
         try {
-            const response = await fetch("http://localhost:5000/api/articles");
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/articles`);
             if (!response.ok) throw new Error("Failed to fetch articles");
 
             const data = await response.json();
-            setArticles(data);
-            setDisplayedArticles(data.slice(0, PAGE_SIZE));
+            setArticles(data.data);
+            setDisplayedArticles(data.data.slice(0, PAGE_SIZE));
             setLoadedCount(PAGE_SIZE);
         } catch (error) {
             console.error("Error fetching articles:", error);
@@ -46,7 +46,7 @@ const ArticlePage = () => {
         if (!searchQuery.trim()) return fetchAllArticles();
 
         try {
-            const response = await fetch(`http://localhost:5000/api/articles/search?query=${encodeURIComponent(searchQuery)}`);
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/articles/search?query=${encodeURIComponent(searchQuery)}`);
             if (!response.ok) {
                 const errorData = await response.json();
                 console.warn("Search error:", errorData.message);
@@ -57,8 +57,8 @@ const ArticlePage = () => {
             }
 
             const data = await response.json();
-            setArticles(data);
-            setDisplayedArticles(data.slice(0, PAGE_SIZE));
+            setArticles(data.data);
+            setDisplayedArticles(data.data.slice(0, PAGE_SIZE));
             setLoadedCount(PAGE_SIZE);
         } catch (error) {
             console.error("Error searching articles:", error);
