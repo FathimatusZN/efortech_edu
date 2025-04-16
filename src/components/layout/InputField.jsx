@@ -117,13 +117,13 @@ const ImageUploader = ({ maxImages = 3, images, setImages, onImageUpload }) => {
 
             const data = await res.json();
 
-            if (!res.ok) {
+            if (!res.ok || data.status !== "success") {
                 alert(data.message || 'Failed to upload image. Please try again.');
                 return;
             }
 
             const updatedImages = [...images];
-            updatedImages[index] = data.imageUrl;
+            updatedImages[index] = data.data.imageUrl;
             setImages(updatedImages);
 
         } catch (error) {
