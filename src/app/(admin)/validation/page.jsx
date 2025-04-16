@@ -13,8 +13,10 @@ const ValidationPage = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const filterRef = useRef(null);
 
-  const needToBeProcessedCourse = dummyCourseData.filter(
-    (item) => !item.validation
+  const needToBeProcessedCourse = courseData.filter(
+    (item) =>
+      item.validation === "pending" ||
+      item.validation === "waiting for payment"
   );
   const needToBeProcessedCertificate = dummyCertificateData.filter(
     (item) => !item.validation
@@ -44,6 +46,14 @@ const ValidationPage = () => {
     }
   };
 
+  const handleStatusChange = (id, status) => {
+    setCourseData((prev) =>
+      prev.map((item) =>
+        item.id === id ? { ...item, validation: status } : item
+      )
+    );
+  };  
+
   return (
     <div className="max-w-screen mx-auto px-4 sm:px-6 md:px-8 py-6 space-y-12">
       <h1 className="text-xl md:text-2xl font-bold text-left mt-4">Validation</h1>
@@ -65,9 +75,9 @@ const ValidationPage = () => {
                 <div className="absolute top-full z-50 mt-2 right-0 bg-white border border-gray-300 rounded-xl shadow-md w-40">
                   <p className="text-secondBlue font-bold p-2">Sort by</p>
                   <div className="border-t border-gray-300">
-                    <p className="cursor-pointer hover:bg-gray-200 text-secondBlue p-2">Name</p>
-                    <p className="cursor-pointer hover:bg-gray-200 text-secondBlue p-2">Request Date</p>
-                    <p className="cursor-pointer hover:bg-gray-200 text-secondBlue p-2">Issued Date</p>
+                    <p className="cursor-pointer hover:bg-gray-200 text-secondBlue p-2">Name(A-Z)</p>
+                    <p className="cursor-pointer hover:bg-gray-200 text-secondBlue p-2">Registration Date</p>
+                    <p className="cursor-pointer hover:bg-gray-200 text-secondBlue p-2">Payment Status</p>
                   </div>
                 </div>
               )}
@@ -76,12 +86,11 @@ const ValidationPage = () => {
         </div>
 
         <ValidationTable
-          dataType="course"
-          statusType="needToProcess"
-          data={needToBeProcessedCourse.slice(0, 5)}
-          onAccept={(id) => handleValidation("course", id)}
-          onReject={(id) => handleValidation("course", id)}
-        />
+            dataType="course"
+            statusType="needToProcess"
+            data={needToBeProcessedCourse.slice(0, 5)}
+            onStatusChange={handleStatusChange}
+          />
 
         <div className="flex justify-end mt-4">
           <a href="/validation/course" className="text-black underline cursor-pointer text-sm sm:text-base">
@@ -108,7 +117,7 @@ const ValidationPage = () => {
                   <p className="text-secondBlue font-bold p-2">Sort by</p>
                   <div className="border-t border-gray-300">
                     <p className="cursor-pointer hover:bg-gray-200 text-secondBlue p-2">Name</p>
-                    <p className="cursor-pointer hover:bg-gray-200 text-secondBlue p-2">Request Date</p>
+                    <p className="cursor-pointer hover:bg-gray-200 text-secondBlue p-2">ID</p>
                     <p className="cursor-pointer hover:bg-gray-200 text-secondBlue p-2">Issued Date</p>
                   </div>
                 </div>

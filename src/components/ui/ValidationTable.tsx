@@ -7,8 +7,10 @@ import {
   TableHead,
   TableCell,
 } from "@/components/ui/table";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { BsCheckCircleFill, BsFillXCircleFill } from "react-icons/bs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export type ValidationCourseData = {
   id: string;
@@ -17,7 +19,7 @@ export type ValidationCourseData = {
   courseName: string;
   session: string;
   notes: string;
-  validation?: "accepted" | "rejected";
+  validation?: "pending" | "waiting for payment" | "validated";
 };
 
 export type ValidationCertificateData = {
@@ -36,6 +38,7 @@ type Props = {
   statusType: "needToProcess" | "processed";
   onAccept?: (id: string) => void;
   onReject?: (id: string) => void;
+  onStatusChange?: (id: string, newStatus: "pending" | "waiting for payment" | "validated") => void;
 };
 
 export const ValidationTable: React.FC<Props> = ({
@@ -44,6 +47,7 @@ export const ValidationTable: React.FC<Props> = ({
   statusType,
   onAccept,
   onReject,
+  onStatusChange,
 }) => {
   return (
     <Table>
@@ -64,7 +68,7 @@ export const ValidationTable: React.FC<Props> = ({
               <TableHead>Expired Date</TableHead>
             </>
           )}
-          <TableHead>Validation</TableHead>
+          <TableHead>{dataType === "course" ? "Status" : "Validation"}</TableHead>
           <TableHead>Notes</TableHead>
         </TableRow>
       </TableHeader>
@@ -90,7 +94,30 @@ export const ValidationTable: React.FC<Props> = ({
             )}
 
             <TableCell>
-              {statusType === "needToProcess" && !item.validation ? (
+              {dataType === "course" && statusType === "needToProcess" ? (
+                <Select
+                onValueChange={(value) =>
+                  onStatusChange?.(item.id, value as "pending" | "waiting for payment" | "validated")
+                }
+                defaultValue={item.validation}
+              >
+                <SelectTrigger
+                  className={cn(
+                    "w-[180px] rounded-2xl mx-auto border-2",
+                    item.validation === "pending"
+                      ? "border-neutral-400"
+                      : "border-mainOrange"
+                  )}
+                >
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="waiting for payment">Waiting for Payment</SelectItem>
+                  <SelectItem value="validated">Validated</SelectItem>
+                </SelectContent>
+              </Select>
+              ) : statusType === "needToProcess" && !(item as ValidationCertificateData).validation ? (
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-start sm:justify-center gap-2">
                   <Button
                     variant="ghost"
@@ -112,10 +139,15 @@ export const ValidationTable: React.FC<Props> = ({
               ) : (
                 <span
                   className={`px-3 py-1 rounded-full text-white text-xs font-medium ${
-                    item.validation === "accepted" ? "bg-green-600" : "bg-red-600"
+                    (dataType === "course" && (item as ValidationCourseData).validation === "validated") ||
+                    (dataType === "certificate" && (item as ValidationCertificateData).validation === "accepted")
+                      ? "bg-green-600"
+                      : "bg-red-600"
                   }`}
                 >
-                  {item.validation}
+                  {dataType === "course"
+                    ? (item as ValidationCourseData).validation
+                    : (item as ValidationCertificateData).validation}
                 </span>
               )}
             </TableCell>
