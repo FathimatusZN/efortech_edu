@@ -25,15 +25,10 @@ export const SaveButton = ({ onClick, disabled = false }) => {
 
 // Discard Button Component
 export const DiscardButton = ({ onClick }) => {
-    const handleClick = () => {
-        const confirmReset = window.confirm("Are you sure you want to discard all changes?");
-        if (confirmReset) onClick();
-    };
-
     return (
         <button
             className="flex items-center gap-2 bg-neutral2 text-neutral3 px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg shadow hover:bg-error1 hover:text-white"
-            onClick={handleClick}
+            onClick={onClick}
         >
             <FaTrash />
             <span>Discard</span>

@@ -1,11 +1,16 @@
 "use client";
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { useAuth } from "@/app/context/AuthContext";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import TextEditor from "../../../components/admin/TextEditor";
 import { PageTitle, SaveButton, DiscardButton, InputField, SelectDropdown, ImageUploader, AddLabel, SourcesInput } from "@/components/layout/InputField";
+import { useParams, useRouter } from "next/navigation";
+import ConfirmDialog from "@/components/admin/ConfirmDialog";
 
 export default function AddArticle() {
+    const params = useParams();
+    const router = useRouter();
+
     // State for managing sources list
     const [sources, setSources] = useState([{ preview_text: "", source_link: "" }]);
     const [title, setTitle] = useState("");
@@ -14,6 +19,8 @@ export default function AddArticle() {
     const [content, setContent] = useState("");
     const [images, setImages] = useState([]);
     const [author, setAuthor] = useState("");
+
+    const [openDialog, setOpenDialog] = useState(false);
 
     const isFormValid = title.trim() !== "" && content.trim() !== "" && category !== 0;
 
@@ -83,6 +90,12 @@ export default function AddArticle() {
         setSources([{ preview_text: "", source_link: "" }]);
     };
 
+    const handleDiscard = () => {
+        resetForm();
+        setOpenDialog(false);
+        router.push("/article-admin");
+    };
+
     return (
         <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
             <div className="relative pt-4 px-4 sm:px-6 lg:px-8 max-w-[1440px] mx-auto min-h-screen">
@@ -97,10 +110,17 @@ export default function AddArticle() {
                             <SaveButton onClick={handleSubmit} disabled={!isFormValid} />
 
                             {/* Discard Button */}
-                            <DiscardButton onClick={resetForm} />
+                            <DiscardButton onClick={() => setOpenDialog(true)} />
                         </div>
                     </div>
                 </div>
+
+                <ConfirmDialog
+                    open={openDialog}
+                    onCancel={() => setOpenDialog(false)}
+                    onConfirm={handleSubmit}
+                    onDiscard={handleDiscard}
+                />
 
                 {/* Main Article Form */}
                 <div className="outline outline-3 outline-mainBlue p-6 bg-white shadow-md rounded-lg border w-full">
