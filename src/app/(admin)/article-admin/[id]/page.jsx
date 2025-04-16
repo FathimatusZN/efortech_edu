@@ -5,6 +5,7 @@ import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import TextEditor from "@/components/admin/TextEditor";
 import { PageTitle, SaveButton, DiscardButton, InputField, SelectDropdown, ImageUploader, AddLabel, SourcesInput } from "@/components/layout/InputField";
 import { useParams, useRouter } from "next/navigation";
+import ConfirmDialog from "@/components/admin/ConfirmDialog";
 
 export default function EditArticle() {
     const params = useParams();
@@ -22,6 +23,8 @@ export default function EditArticle() {
     const [images, setImages] = useState([]);
     const [author, setAuthor] = useState("");
 
+    const [openDialog, setOpenDialog] = useState(false);
+
     const isFormValid = title.trim() !== "" && content.trim() !== "" && category !== 0;
 
     const { user } = useAuth();
@@ -34,6 +37,7 @@ export default function EditArticle() {
                 const data = await response.json();
 
                 setTitle(data.data.title);
+                setAuthor(data.data.author || user?.fullname || user?.email);
                 setCategory(data.data.category);
                 setContent(data.data.content_body);
                 setTags(data.data.tags || []);
@@ -61,7 +65,7 @@ export default function EditArticle() {
                 category,
                 content_body: content,
                 admin_id: user?.user_id,
-                author: author || user?.full_name || user?.email,
+                author: author || user?.fullname || user?.email,
                 tags: tags.filter(tag => tag.trim() !== ""),
                 sources: sources.filter(src => src.preview_text && src.source_link),
                 images: cleanImages,
@@ -94,7 +98,7 @@ export default function EditArticle() {
             setContent("");
             setImages([]);
             setSources([{ preview_text: "", source_link: "" }]);
-            setAuthor(data.data.author || "");
+            setAuthor("");
         } catch (err) {
             console.error("❌ Update error:", err);
             alert("Failed to update article.");
@@ -115,6 +119,12 @@ export default function EditArticle() {
         setSources([{ preview_text: "", source_link: "" }]);
     };
 
+    const handleDiscard = () => {
+        resetForm();
+        setOpenDialog(false);
+        router.push("/article-admin");
+    };
+
     return (
         <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
             {isLoading ? (
@@ -132,10 +142,17 @@ export default function EditArticle() {
                                 <SaveButton onClick={handleSubmit} disabled={!isFormValid} />
 
                                 {/* Discard Button */}
-                                <DiscardButton onClick={resetForm} />
+                                <DiscardButton onClick={() => setOpenDialog(true)} />
                             </div>
                         </div>
                     </div>
+
+                    <ConfirmDialog
+                        open={openDialog}
+                        onCancel={() => setOpenDialog(false)}
+                        onConfirm={handleSubmit}
+                        onDiscard={handleDiscard}
+                    />
 
                     {/* Main Article Form */}
                     <div className="outline outline-3 outline-mainBlue p-6 bg-white shadow-md rounded-lg border w-full">

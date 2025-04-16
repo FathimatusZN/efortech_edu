@@ -26,11 +26,11 @@ export const AuthProvider = ({ children }) => {
                         const idToken = await currentUser.getIdToken(true);
 
                         try {
-                            const res = await axios.get("http://localhost:5000/api/user/me", {
+                            const res = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user/me`, {
                                 headers: { Authorization: `Bearer ${idToken}` }
                             });
-                            setUser(res.data);
-                            localStorage.setItem("user", JSON.stringify(res.data));
+                            setUser(res.data.data);
+                            localStorage.setItem("user", JSON.stringify(res.data.data));
                             localStorage.setItem("token", idToken);
                         } catch (error) {
                             console.error("Error fetching user data", error);
@@ -52,21 +52,23 @@ export const AuthProvider = ({ children }) => {
     const login = async (email, password) => {
         try {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
-
             const user = userCredential.user;
             const idToken = await user.getIdToken(true);
 
-            const res = await axios.post("http://localhost:5000/api/auth/login", { idToken });
+            const res = await axios.post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/login`, { idToken });
 
-            console.log("✅ Backend response:", res.data);
-            setUser(res.data.user);
+            const userData = res.data.data;
+
+            setUser(userData);
             localStorage.setItem("token", idToken);
-            localStorage.setItem("role", res.data.user.role);
+            localStorage.setItem("role", userData.role);
+            localStorage.setItem("user", JSON.stringify(userData));
+
+            return userData;
         } catch (error) {
             throw error;
         }
     };
-
 
     const logout = async () => {
         try {
