@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useRouter } from "next/navigation";
 import Link from 'next/link';
+import { toast } from 'react-hot-toast';
 
 const RegisterPage = () => {
     const [fullName, setFullName] = useState('');
@@ -26,15 +27,20 @@ const RegisterPage = () => {
         if (password !== confirmPassword) return setError("Passwords do not match.");
 
         try {
-            const res = await fetch("http://localhost:5000/api/auth/register", {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/register`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ fullName, email, password }),
             });
 
-            if (!res.ok) throw new Error(await res.text());
+            const data = await res.json();
 
-            alert("Registration successful!");
+            console.log("Register response:", data);
+            if (!res.ok || data.success === false) {
+                throw new Error(data.message || "Registration failed.");
+            }
+
+            toast.success("Registration successful!");
             router.push("/auth/signin");
         } catch (e) {
             setError(e.message);

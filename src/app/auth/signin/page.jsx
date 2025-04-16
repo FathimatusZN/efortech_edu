@@ -42,7 +42,7 @@ const SigninPage = () => {
             console.log("✅ Login success!");
 
             // Ambil user dari sessionStorage
-            const role = sessionStorage.getItem("role");
+            const role = localStorage.getItem("role");
 
             router.push(role === "admin" || role === "superadmin" ? "/dashboard" : "/home");
         } catch (err) {
