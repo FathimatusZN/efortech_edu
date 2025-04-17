@@ -1,0 +1,63 @@
+// HistoryCourseData.js
+export const historyCourses = [
+    {
+      id: 'hc001',
+      trainingId: 'training001',
+      title: 'UI/UX Design Basics',
+      status: 'waiting for payment',
+      isCompleted: false,
+      hasCertificate: false,
+      date: '2025-05-10',
+      time: '09:00 AM',
+      image: '/images/uiux.png',
+      mode: 'Online',
+    },
+    {
+      id: 'hc002',
+      trainingId: 'training002',
+      title: 'React for Beginners',
+      status: 'pending',
+      isCompleted: false,
+      hasCertificate: false,
+      date: '2025-05-15',
+      time: '01:00 PM',
+      image: '/images/react.png',
+      mode: 'Online',
+    },
+    {
+      id: 'hc003',
+      trainingId: 'training003',
+      title: 'Digital Marketing Masterclass',
+      status: 'validated',
+      isCompleted: false, // belum selesai
+      hasCertificate: false,
+      date: '2025-05-20',
+      time: '10:00 AM',
+      image: '/images/marketing.png',
+      mode: 'Offline',
+    },
+    {
+      id: 'hc004',
+      trainingId: 'training004',
+      title: 'Advanced JavaScript',
+      status: 'validated',
+      isCompleted: true,
+      hasCertificate: true,
+      date: '2025-04-01',
+      time: '02:00 PM',
+      image: '/images/js.png',
+      mode: 'Online',
+    },
+    {
+      id: 'hc005',
+      trainingId: 'training005',
+      title: 'Data Analysis with Python',
+      status: 'validated',
+      isCompleted: true,
+      hasCertificate: false, // belum ada sertifikatnya meski sudah selesai
+      date: '2025-04-10',
+      time: '08:00 AM',
+      image: '/images/python.png',
+      mode: 'Offline',
+    }
+  ];  
