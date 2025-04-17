@@ -118,7 +118,7 @@ const TrainingDetail = () => {
             </div>
           </div>
           <div 
-             onClick={() => router.push("/training/[id]/registration")}
+             onClick={() => router.push(`/training/${id}/registration`)}
             className="mt-4 flex gap-4 w-full">
             <button className="px-6 py-1 border-2 border-mainOrange text-mainOrange font-semibold rounded-lg w-full md:w-[310px] 
             transition duration-300 ease-in-out hover:bg-mainOrange hover:text-white active:scale-95"> 

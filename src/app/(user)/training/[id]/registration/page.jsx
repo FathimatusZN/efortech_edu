@@ -2,43 +2,52 @@
 
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
-import { Upload } from 'lucide-react';
-
-const trainingData = {
-  title: "Accelerating Digital O&M using DeviceOn/BI and Patrol Inspection",
-  images: [
-    "/assets/gambar1.jpg",
-    "/assets/Gambar2.jpg",
-    "/assets/dashboard-bg.png",
-  ],
-};
-
+import { useParams } from "next/navigation";
+import { trainingList } from "../../Data";
 
 const RegistrationPage = () => {
+  const { id } = useParams();
+  const training = trainingList.find((training) => training.id === id);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [formData, setFormData] = useState({ fullName: "", institution: "", date: "", payment: null });
+  const [formData, setFormData] = useState({
+    fullName: "",
+    email: "",
+    institution: "",
+    date: "",
+  });
+  const [participantCount, setParticipantCount] = useState(1);
+  const [additionalEmails, setAdditionalEmails] = useState([]);
   const [errors, setErrors] = useState({});
-  const [imagePreview, setImagePreview] = useState(null);
-  const [showModal, setShowModal] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
   
   useEffect(() => {
+    if (!training || !training.images) return;
+  
     const interval = setInterval(() => {
-      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % trainingData.images.length);
+      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % training.images.length);
     }, 3000);
     return () => clearInterval(interval);
-  }, []);
+  }, [training]);  
+
+  // Update jumlah kolom email peserta lain
+  useEffect(() => {
+    const count = Math.max(0, participantCount - 1);
+    setAdditionalEmails(Array(count).fill(""));
+  }, [participantCount]);
 
   const validateForm = () => {
-    let newErrors = {};
+    const newErrors = {};
     if (!formData.fullName) newErrors.fullName = "Full Name is required";
+    if (!formData.email) newErrors.email = "Email is required";
     if (!formData.institution) newErrors.institution = "Institution is required";
     if (!formData.date) newErrors.date = "Date is required";
-    if (!formData.payment) newErrors.payment = "Payment proof is required";
+    additionalEmails.forEach((email, idx) => {
+      if (!email) newErrors[`email${idx}`] = `Email peserta ke-${idx + 2} harus diisi`;
+    });
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
-  const [isSubmitted, setIsSubmitted] = useState(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -46,18 +55,56 @@ const RegistrationPage = () => {
     setIsSubmitted(true);
   };
 
+  const handleAdditionalEmailChange = (index, value) => {
+    const updatedEmails = [...formData.additionalEmails];
+    updatedEmails[index] = value;
+    setFormData({ ...formData, additionalEmails: updatedEmails });
+  };
+
+  if (!training) {
+    return <div className="text-center mt-10 text-red-600">Training not found.</div>;
+  }
+
+  const FormGroup = ({
+    label,
+    required = false,
+    type = "text",
+    value,
+    onChange,
+    error,
+    placeholder,
+    min
+  }) => (
+    <div className="mt-6 flex items-start">
+      <label className="w-1/4 text-black font-semibold pt-2">
+        {label} {required && <span className="text-red-500">*</span>}
+      </label>
+      <div className="w-3/4 flex flex-col">
+        <input
+          type={type}
+          min={min}
+          className="p-2 pl-4 border rounded-lg border-mainOrange placeholder:text-sm 
+            focus:border-orange-500 focus:ring-orange-500 focus:outline-none focus:ring-1"
+          placeholder={placeholder}
+          value={value}
+          onChange={onChange}
+        />
+        {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+      </div>
+    </div>
+  );
 
   return (
     <div>
       <div className="relative w-full h-64 overflow-hidden">
         <Image
-          src={trainingData.images[currentImageIndex]}
+          src={training.images[currentImageIndex]}
           alt="Training Header"
           layout="fill"
           objectFit="cover"
         />
         <h1 className="absolute inset-0 flex items-center justify-center text-3xl font-extrabold text-white drop-shadow-2xl bg-black/30 p-2 shadow-blue-900 shadow-xl">
-          {trainingData.title}
+          {training.title}
         </h1>
       </div>
 
@@ -66,149 +113,108 @@ const RegistrationPage = () => {
       <div className="max-w-3xl mb-20 mx-auto p-6 border-4 border-mainBlue rounded-lg bg-white shadow-2xl">
         <form onSubmit={handleSubmit}>
 
-          {/* Full Name */}
-          <div className="mt-4 flex items-start">
-            <label className="w-1/4 text-black font-semibold pt-2">
-              Full Name <span className="text-red-500">*</span>
-            </label>
-            <div className="w-3/4 flex flex-col">
-              <input
-                type="text"
-                className="p-2  pl-4 border rounded-lg border-mainOrange placeholder:text-sm 
-                          focus:border-orange-500 focus:ring-orange-500 focus:outline-none focus:ring-1"
-                placeholder="Type your name here"
-                value={formData.fullName}
-                onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-              />
-              {errors.fullName && <p className="text-red-500 text-sm mt-1 pl-1">{errors.fullName}</p>}
-            </div>
-          </div>
+        {/* Full Name */}
+        <FormGroup
+            label="Full Name"
+            required
+            value={formData.fullName}
+            onChange={(val) => setFormData({ ...formData, fullName: val })}
+            error={errors.fullName}
+            placeholder="Type your name here"
+          />
+
+          {/* Email */}
+          <FormGroup
+            label="Email"
+            required
+            type="email"
+            value={formData.email}
+            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            error={errors.email}
+            placeholder="Type your email here"
+          />
 
           {/* Institution */}
-          <div className="mt-6 flex items-start">
-            <label className="w-1/4 text-black font-semibold pt-2">
-              Institution <span className="text-red-500">*</span>
-            </label>
-            <div className="w-3/4 flex flex-col">
-              <input
-                type="text"
-                className="p-2 pl-4 border rounded-lg border-mainOrange placeholder:text-sm 
-                          focus:border-orange-500 focus:ring-orange-500 focus:outline-none focus:ring-1"
-                placeholder="Type your institution here"
-                value={formData.institution}
-                onChange={(e) => setFormData({ ...formData, institution: e.target.value })}
-              />
-              {errors.institution && <p className="text-red-500 text-sm mt-1 pl-1">{errors.institution}</p>}
-            </div>
-          </div>
+          <FormGroup
+            label="Institution"
+            required
+            value={formData.institution}
+            onChange={(e) => setFormData({ ...formData, institution: e.target.value })}
+            error={errors.institution}
+            placeholder="Type your institution here"
+          />
 
           {/* Date */}
-          <div className="mt-6 flex items-start">
-            <label className="w-1/4 text-black font-semibold pt-2">
-              Date <span className="text-red-500">*</span>
-            </label>
-            <div className="w-3/4 flex flex-col">
-            <input
-              type="date"
-              className={`p-2 pl-4 border rounded-lg border-mainOrange text-sm appearance-none
-                          focus:border-orange-500 focus:ring-orange-500 focus:outline-none focus:ring-1
-                          ${formData.date ? 'text-black' : 'text-gray-400'}`}
-              value={formData.date}
-              onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-            />
-              {errors.date && <p className="text-red-500 text-sm mt-1">{errors.date}</p>}
-            </div>
-          </div>
+          <FormGroup
+            label="Date"
+            required
+            type="date"
+            value={formData.date}
+            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+            error={errors.date}
+          />
 
-          {/* Payment */}
-          <div className="mt-6 flex items-start">
-          <label className="w-1/4 text-black font-semibold pt-2">
-            Payment <span className="text-red-500">*</span>
-          </label>
-          <div className="w-3/4 flex flex-col">
-            <label
-              htmlFor="payment"
-              className={`flex items-center gap-2 border rounded-lg p-2 px-4 cursor-pointer
-                border-mainOrange text-sm transition
-                ${formData.payment ? 'text-black' : 'text-gray-400'}`}
-            >
-              <Upload size={18} className={`${formData.payment ? 'text-black' : 'text-gray-400'}`} />
-              {formData.payment ? formData.payment.name : 'Upload JPG/PNG'}
-            </label>
-            <input
-              id="payment"
-              type="file"
-              accept=".jpg,.png"
-              className="hidden"
-              onChange={(e) => {
-                const file = e.target.files[0];
-                setFormData({ ...formData, payment: file });
-                setImagePreview(URL.createObjectURL(file)); // set preview img
-              }}
-            />
-            {imagePreview && (
-          <div className="mt-2 flex items-center gap-2">
-            <img
-              src={imagePreview}
-              alt="Preview"
-              onClick={() => setShowModal(true)}
-              className="w-32 h-20 object-cover rounded border border-gray-300"
-            />
-            <button
-              type="button"
-              onClick={() => {
-                setFormData({ ...formData, payment: null });
-                setImagePreview(null);
-              }}
-              className="mt-1 self-start text-xs bg-white border border-red-500 text-red-600 px-2 py-1 rounded-md hover:bg-red-100 transition"
-            >
-              Remove
-            </button>
-            {showModal && (
-              <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
-                <div className="relative bg-white rounded-lg p-4 max-w-full max-h-full">
-                  <button
-                    onClick={() => setShowModal(false)}
-                    className="absolute top-2 right-2 text-gray-500 hover:text-black text-xl"
-                  >
-                    &times;
-                  </button>
-                  <img
-                    src={imagePreview}
-                    alt="Full Preview"
-                    className="max-w-[90vw] max-h-[80vh] object-contain rounded"
+          {/* Participant Count */}
+          <FormGroup
+            label="Jumlah Peserta"
+            required
+            type="number"
+            min={1}
+            value={participantCount}
+            onChange={(e) => setParticipantCount(parseInt(e.target.value) || 1)}
+          />
+
+          {/* Additional Emails */}
+          {participantCount > 1 && (
+            <div className="mt-6">
+              <label className="block text-black font-semibold mb-2">
+                Email Peserta Lain <span className="text-red-500">*</span>
+              </label>
+              {additionalEmails.map((email, idx) => (
+                <div key={idx} className="mb-2">
+                  <input
+                    type="email"
+                    required
+                    className="w-full p-2 pl-4 border rounded-lg border-mainOrange placeholder:text-sm 
+                      focus:border-orange-500 focus:ring-orange-500 focus:outline-none focus:ring-1"
+                    placeholder={`Email peserta ke-${idx + 2}`}
+                    value={additionalEmails[idx]}
+                    onChange={(e) => {
+                      const newEmails = [...additionalEmails];
+                      newEmails[idx] = e.target.value;
+                      setAdditionalEmails(newEmails);
+                    }}
                   />
+                  {errors[`email${idx}`] && (
+                    <p className="text-red-500 text-sm mt-1">{errors[`email${idx}`]}</p>
+                  )}
                 </div>
-              </div>
-            )}
-          </div>
-        )}
-          </div>
-        </div>
+              ))}
+            </div>
+          )}
 
           {/* Terms */}
-        <div className="mt-12 ml-6 flex items-start gap-2">
-          <input
-            type="checkbox"
-            id="terms"
-            className="mt-1.5 accent-orange-500 w-4 h-4 border border-gray-400 rounded-sm"
-          />
-          <label htmlFor="terms" className="ml-1 text-gray-800 text-sm leading-snug">
-            Saya menyatakan Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam eu turpis
-            molestie, dictum est a, mattis tellus. Sed dignissim, metus nec fringilla accumsan, risus sem
-            sollicitudin lacus, ut interdum tellus elit sed risus.
-          </label>
-        </div>
+          <div className="mt-12 ml-6 flex items-start gap-2">
+            <input
+              type="checkbox"
+              id="terms"
+              className="mt-1.5 accent-orange-500 w-4 h-4 border border-gray-400 rounded-sm"
+              required
+            />
+            <label htmlFor="terms" className="ml-1 text-gray-800 text-sm leading-snug">
+              Saya menyatakan Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+            </label>
+          </div>
 
-          {/* Submit Button */}
-        <div className="flex justify-center mt-12">
-          <button
-            type="submit"
-            className="bg-orange-500 text-white px-16 py-2 rounded-lg font-semibold shadow-md hover:bg-orange-600 transition-all"
-          >
-            Submit
-          </button>
-        </div>
+          {/* Submit */}
+          <div className="flex justify-center mt-12">
+            <button
+              type="submit"
+              className="bg-orange-500 text-white px-16 py-2 rounded-lg font-semibold shadow-md hover:bg-orange-600 transition-all"
+            >
+              Submit
+            </button>
+          </div>
         </form>
 
         {/* Modal */}
