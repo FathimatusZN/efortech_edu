@@ -6,6 +6,7 @@ import { auth } from "@/app/firebase/config";
 import { getAuth, EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 export default function ChangePasswordPage() {
   const user = auth.currentUser;
@@ -27,22 +28,24 @@ export default function ChangePasswordPage() {
 
     if (newPassword.length < 8) {
       setError("New password must be at least 8 characters.");
+      toast.error("New password must be at least 8 characters.");
       return;
     }
 
     if (newPassword !== confirmPassword) {
       setError("Passwords do not match.");
+      toast.error("Passwords do not match.");
       return;
     }
 
     try {
-      const token = await auth.currentUser.getIdToken(); // Dapatkan token dari Firebase
+      const token = await auth.currentUser.getIdToken();
 
-      const response = await fetch("http://localhost:5000/api/user/change-password", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user/change-password`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // Kirim token untuk autentikasi
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           currentPassword,
@@ -50,18 +53,20 @@ export default function ChangePasswordPage() {
         }),
       });
 
-      const data = await response.json();
+      const data = await res.json();
 
-      if (!response.ok) throw new Error(data.error);
+      if (!res.ok || data.success === false) {
+        throw new Error(data.message || "Failed to change password.");
+      }
 
+      toast.success("Password updated successfully! Please sign in again.");
       await auth.signOut();
-
-      // ✅ Tampilkan alert & arahkan ke login
-      alert("Password updated successfully! Please sign in again.");
       router.push("/auth/signin");
 
     } catch (err) {
-      setError(err.message);
+      console.error("Change password error:", err);
+      setError(err.message || "An unexpected error occurred. Please try again.");
+      toast.error(err.message || "An unexpected error occurred.");
     }
   };
 

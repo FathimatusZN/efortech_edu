@@ -4,7 +4,7 @@ export type CourseValidationData = {
   registrationDate: string;
   courseName: string;
   session: string;
-  validation?: "accepted" | "rejected";
+  validation?: "accepted" | "rejected" | "pending" | "waiting for payment" | "validated";
   notes?: string;
 };
 
@@ -15,7 +15,7 @@ export const dummyCourseData: CourseValidationData[] = [
     registrationDate: "12 Feb 2025",
     courseName: "PMP Certificate Advanced Training",
     session: "08.00-12.00",
-    validation: "accepted",
+    validation: "pending",
     notes: "Well prepared and submitted early.",
   },
   {
@@ -24,7 +24,7 @@ export const dummyCourseData: CourseValidationData[] = [
     registrationDate: "10 Feb 2025",
     courseName: "Agile Scrum Professional Development",
     session: "13.00-17.00",
-    validation: "rejected",
+    validation: "pending",
     notes: "Missing required documents.",
   },
   {
@@ -33,6 +33,7 @@ export const dummyCourseData: CourseValidationData[] = [
     registrationDate: "15 Feb 2025",
     courseName: "UI/UX Design Bootcamp for Beginners",
     session: "09.00-11.00",
+    validation: "pending",
     notes: "Pending review.",
   },
   {
@@ -41,6 +42,7 @@ export const dummyCourseData: CourseValidationData[] = [
     registrationDate: "11 Feb 2025",
     courseName: "Introduction to Data Science with Python",
     session: "14.00-16.00",
+    validation: "pending",
   },
   {
     id: "ID0000005",
@@ -48,7 +50,7 @@ export const dummyCourseData: CourseValidationData[] = [
     registrationDate: "08 Feb 2025",
     courseName: "Hands-on Machine Learning Course",
     session: "10.00-12.00",
-    validation: "accepted",
+    validation: "pending",
   },
   {
     id: "ID0000006",
@@ -56,6 +58,7 @@ export const dummyCourseData: CourseValidationData[] = [
     registrationDate: "09 Feb 2025",
     courseName: "Certified Scrum Master Training",
     session: "15.00-17.00",
+    validation: "pending",
     notes: "Need to confirm payment.",
   },
   {
@@ -64,7 +67,7 @@ export const dummyCourseData: CourseValidationData[] = [
     registrationDate: "13 Feb 2025",
     courseName: "ReactJS Fundamentals and Best Practices",
     session: "13.00-15.00",
-    validation: "rejected",
+    validation: "pending",
     notes: "Duplicate registration.",
   },
   {
@@ -73,6 +76,7 @@ export const dummyCourseData: CourseValidationData[] = [
     registrationDate: "12 Feb 2025",
     courseName: "Cloud Computing Basics with AWS",
     session: "11.00-13.00",
+    validation: "pending",
   },
   {
     id: "ID0000009",
@@ -80,6 +84,7 @@ export const dummyCourseData: CourseValidationData[] = [
     registrationDate: "14 Feb 2025",
     courseName: "DevOps Tools and Automation Pipelines",
     session: "08.00-10.00",
+    validation: "pending",
     notes: "Follow up needed.",
   },
   {
@@ -88,7 +93,7 @@ export const dummyCourseData: CourseValidationData[] = [
     registrationDate: "16 Feb 2025",
     courseName: "Cybersecurity for Business Professionals",
     session: "14.00-16.00",
-    validation: "accepted",
+    validation: "pending",
   },
   {
     id: "ID0000011",
@@ -96,7 +101,7 @@ export const dummyCourseData: CourseValidationData[] = [
     registrationDate: "13 Feb 2025",
     courseName: "Advanced Product Management Workshop",
     session: "10.00-12.00",
-    validation: "accepted",
+    validation: "pending",
     notes: "Validated by team.",
   },
   {
@@ -105,6 +110,7 @@ export const dummyCourseData: CourseValidationData[] = [
     registrationDate: "09 Feb 2025",
     courseName: "Artificial Intelligence for Beginners",
     session: "08.00-10.00",
+    validation: "pending",
   },
   {
     id: "ID0000013",
@@ -112,6 +118,7 @@ export const dummyCourseData: CourseValidationData[] = [
     registrationDate: "11 Feb 2025",
     courseName: "SQL & Database Optimization Techniques",
     session: "13.00-15.00",
+    validation: "pending",
   },
   {
     id: "ID0000014",
@@ -119,6 +126,7 @@ export const dummyCourseData: CourseValidationData[] = [
     registrationDate: "10 Feb 2025",
     courseName: "Mobile App Development with Flutter",
     session: "10.00-12.00",
+    validation: "pending",
     notes: "Late submission.",
   },
   {
@@ -127,7 +135,7 @@ export const dummyCourseData: CourseValidationData[] = [
     registrationDate: "08 Feb 2025",
     courseName: "Introduction to Cloud DevOps",
     session: "08.00-10.00",
-    validation: "accepted",
+    validation: "pending",
   },
   {
     id: "ID0000016",
@@ -135,7 +143,7 @@ export const dummyCourseData: CourseValidationData[] = [
     registrationDate: "14 Feb 2025",
     courseName: "Data Engineering Foundations",
     session: "14.00-16.00",
-    validation: "rejected",
+    validation: "pending",
     notes: "Inconsistent information provided.",
   },
   {
@@ -144,6 +152,7 @@ export const dummyCourseData: CourseValidationData[] = [
     registrationDate: "13 Feb 2025",
     courseName: "Blockchain Essentials & Applications",
     session: "09.00-11.00",
+    validation: "pending",
   },
   {
     id: "ID0000018",
@@ -151,6 +160,7 @@ export const dummyCourseData: CourseValidationData[] = [
     registrationDate: "12 Feb 2025",
     courseName: "Data Visualization with Power BI",
     session: "11.00-13.00",
+    validation: "pending",
   },
   {
     id: "ID0000019",
@@ -158,6 +168,7 @@ export const dummyCourseData: CourseValidationData[] = [
     registrationDate: "15 Feb 2025",
     courseName: "Agile for Software Development Teams",
     session: "13.00-15.00",
+    validation: "pending",
     notes: "Need to upload ID.",
   },
   {
@@ -166,7 +177,7 @@ export const dummyCourseData: CourseValidationData[] = [
     registrationDate: "16 Feb 2025",
     courseName: "Project Management in Tech Industries",
     session: "10.00-12.00",
-    validation: "accepted",
+    validation: "pending",
   },
 ];
 

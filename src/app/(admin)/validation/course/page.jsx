@@ -20,8 +20,12 @@ const ValidationCoursePage = () => {
   const router = useRouter();
   const [courseData, setCourseData] = useState(dummyCourseData);
 
-  const needToBeProcessed = courseData.filter(item => !item.validation);
-  const processedData = courseData.filter(item => item.validation);
+  const needToBeProcessed = courseData.filter(
+    (item) => item.validation === "pending" || item.validation === "waiting for payment"
+  );  
+  const processedData = courseData.filter(
+    (item) => item.validation === "validated"
+  );
 
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isFilterOpenProcessed, setIsFilterOpenProcessed] = useState(false);
@@ -51,11 +55,12 @@ const ValidationCoursePage = () => {
     };
   }, []);
 
-  const handleValidation = (type, id, action) => {
-    const updatedCourseData = courseData.map((item) =>
-      item.id === id ? { ...item, validation: action } : item
+  const handleStatusChange = (id, status) => {
+    setCourseData((prev) =>
+      prev.map((item) =>
+        item.id === id ? { ...item, validation: status } : item
+      )
     );
-    setCourseData(updatedCourseData);
   };
 
   const filteredAndSearchedData = processedData
@@ -116,11 +121,10 @@ const ValidationCoursePage = () => {
           </div>
         </div>
           <ValidationTable
-            data={needToBeProcessed}
             dataType="course"
             statusType="needToProcess"
-            onAccept={(id) => handleValidation("accept", id, "accepted")}
-            onReject={(id) => handleValidation("reject", id, "rejected")}
+            data={needToBeProcessed}
+            onStatusChange={handleStatusChange} // Panggil handleValidation untuk status menjadi 'validated'
           />
       </div>
 
@@ -186,7 +190,12 @@ const ValidationCoursePage = () => {
           </div>
         </div>
 
-        <ValidationTable data={paginatedData} dataType="course" statusType="processed" />
+        <ValidationTable
+          dataType="course"
+          statusType="processed"
+          data={processedData.slice(0, 5)}
+          onStatusChange={handleStatusChange} // Handle status untuk course lainnya
+        />
 
         <Pagination className="flex mt-3 justify-end">
           <PaginationContent>
