@@ -35,6 +35,13 @@ body {
   margin-block: 5px; /* Jarak scrollbar atas & bawah */
 }
 
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
 
 
 @layer base {
