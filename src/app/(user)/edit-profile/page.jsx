@@ -128,34 +128,34 @@ export default function EditProfile() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto p-8">
-      <h1 className="text-2xl font-bold mb-6">User Profile</h1>
-
+    <div className="max-w-7xl mx-auto px-4 py-8">
+      <h1 className="text-2xl font-bold mb-6 text-center md:text-left">User Profile</h1>
+  
       <div className="outline outline-3 outline-mainBlue p-6 rounded-lg">
-        <div className="flex gap-6 items-center relative">
+        <div className="flex flex-col lg:flex-row gap-6 items-center relative">
           {/* Profile Image Section */}
           <div
-            className="relative w-60 h-60"
+            className="relative aspect-square w-40 h-40 sm:w-48 sm:h-48 lg:w-60 lg:h-60"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
           >
             <img
               src={profile.profileImage}
               alt="Profile"
-              className="w-60 h-60 rounded-full object-cover border"
+              className="w-full h-full rounded-full object-cover border"
             />
             {isHovered && (
               <div
                 className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full cursor-pointer"
                 onClick={toggleMenu}
               >
-                <FaEdit className="text-white text-4xl" />
+                <FaEdit className="text-white text-3xl sm:text-4xl" />
               </div>
             )}
             {isMenuOpen && (
               <div
                 ref={menuRef}
-                className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 bg-white shadow-lg rounded-lg w-40"
+                className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 bg-white shadow-lg rounded-lg w-40 z-50"
               >
                 <button
                   onClick={() => fileInputRef.current?.click()}
@@ -172,7 +172,10 @@ export default function EditProfile() {
                     const file = e.target.files[0];
                     if (file) {
                       setNewImageFile(file);
-                      setProfile((prev) => ({ ...prev, profileImage: URL.createObjectURL(file) }));
+                      setProfile((prev) => ({
+                        ...prev,
+                        profileImage: URL.createObjectURL(file),
+                      }));
                     }
                   }}
                 />
@@ -194,12 +197,16 @@ export default function EditProfile() {
               </div>
             )}
           </div>
-
+  
           {/* Full Size Modal Image */}
           {showImageModal && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70">
               <div className="bg-white p-4 rounded-lg shadow-lg max-w-sm w-full aspect-square flex flex-col items-center">
-                <img src={profile.profileImage} alt="Full" className="w-full h-full object-cover rounded-lg" />
+                <img
+                  src={profile.profileImage}
+                  alt="Full"
+                  className="w-full h-full object-cover rounded-lg"
+                />
                 <button
                   onClick={() => setShowImageModal(false)}
                   className="mt-4 px-4 py-2 bg-red-500 text-white rounded"
@@ -209,19 +216,32 @@ export default function EditProfile() {
               </div>
             </div>
           )}
-
+  
           {/* User Info Inputs */}
-          <div className="grid grid-cols-2 gap-4 flex-1">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
             {[
               { label: "Full Name", name: "fullName", type: "text" },
               { label: "Institution", name: "institution", type: "text" },
-              { label: "Email", name: "email", type: "email", readOnly: true, className: "bg-gray-100 cursor-not-allowed" },
-              { label: "Gender", name: "gender", type: "select", options: ["Default", "Male", "Female"] },
+              {
+                label: "Email",
+                name: "email",
+                type: "email",
+                readOnly: true,
+                className: "bg-gray-100 cursor-not-allowed",
+              },
+              {
+                label: "Gender",
+                name: "gender",
+                type: "select",
+                options: ["Default", "Male", "Female"],
+              },
               { label: "Phone Number", name: "phone", type: "text" },
               { label: "Birthdate", name: "birthDate", type: "date" },
             ].map((input, idx) => (
               <div key={idx} className={input.className || ""}>
-                <label className="block text-sm font-medium text-gray-700">{input.label}</label>
+                <label className="block text-sm font-medium text-gray-700">
+                  {input.label}
+                </label>
                 {input.type === "select" ? (
                   <select
                     name={input.name}
@@ -247,16 +267,18 @@ export default function EditProfile() {
             ))}
           </div>
         </div>
-
-        <div className="flex justify-end mt-4">
+  
+        <div className="flex justify-end mt-6">
           <Button variant="orange" onClick={handleSave}>
-            <FaSave /> Save Changes
+            <FaSave className="mr-2" /> Save Changes
           </Button>
         </div>
       </div>
-
+  
       {/* History Course Section */}
-      <HistoryCourse />
+      <div className="mt-8">
+        <HistoryCourse />
+      </div>
     </div>
-  );
+  );  
 }
