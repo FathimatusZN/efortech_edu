@@ -1,10 +1,17 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Plus, Search } from "lucide-react";
+import { ArrowRight, Plus} from "lucide-react";
 import { useState } from "react";
 import { FaSearch } from "react-icons/fa";
 import { Button } from "@/components/ui/button";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function TrainingPage() {
   const router = useRouter();
@@ -119,52 +126,56 @@ export default function TrainingPage() {
   
 
   return (
-    <div className="flex flex-col justify-center w-full max-w-screen mx-auto min-h-screen px-6 pb-12">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-6 mb-6 gap-4">
+    <div className="flex flex-col justify-center w-full max-w-screen mx-auto min-h-screen px-8 pb-12">
+     <div className="w-full flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 py-8 px-4">
         <h2 className="text-2xl font-bold">Training & Courses</h2>
 
-        <div className="flex flex-wrap gap-3 sm:ml-auto items-center">
-        <div className="relative">
-          <input
-            type="text"
-            placeholder="Search..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="text-sm pl-6 pr-10 py-2 rounded-xl border-2 border-mainOrange focus:ring-0 focus:outline-none"
-          />
-          <FaSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
-        </div>
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto items-stretch sm:items-center">
+          <div className="relative w-full sm:w-auto">
+            <input
+              type="text"
+              placeholder="Search..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="text-sm w-full pl-6 pr-10 py-2 rounded-xl border-2 border-mainOrange focus:ring-0 focus:outline-none"
+            />
+            <FaSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
+          </div>
 
-          <select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            className="text-sm px-3 py-2 rounded-xl border-2 border-mainOrange focus:ring-0 focus:outline-none"
-          >
-            <option value="All">All Statuses</option>
-            <option value="Active">Active</option>
-            <option value="Archived">Archived</option>
-          </select>
+          <div className="flex gap-2 flex-wrap items-center">
+            <Select value={filterStatus} onValueChange={setFilterStatus}>
+                <SelectTrigger className="w-[150px] border-2 border-mainOrange rounded-xl">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="All">All Statuses</SelectItem>
+                  <SelectItem value="Active">Active</SelectItem>
+                  <SelectItem value="Archived">Archived</SelectItem>
+                </SelectContent>
+              </Select>
 
-          <select
-            value={sortOrder}
-            onChange={(e) => setSortOrder(e.target.value)}
-            className="text-sm px-3 py-2 rounded-xl border-2 border-mainOrange focus:ring-0 focus:outline-none"
-          >
-            <option value="Latest">Latest</option>
-            <option value="Oldest">Oldest</option>
-          </select>
+              <Select value={sortOrder} onValueChange={setSortOrder}>
+                <SelectTrigger className="w-[130px] border-2 border-mainOrange rounded-xl">
+                  <SelectValue placeholder="Sort" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Latest">Latest</SelectItem>
+                  <SelectItem value="Oldest">Oldest</SelectItem>
+                </SelectContent>
+              </Select>
 
-          <Button
-            variant="mainBlue"
-            size="sm"
-            onClick={() => router.push("/training-admin/add")}
-          >
-            <Plus size={16} /> Add New
-          </Button>
+                <Button
+                  variant="mainBlue"
+                  size="sm"
+                  onClick={() => router.push("/training-admin/add")}
+                >
+                  <Plus size={16} /> Add New
+                </Button> 
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 justify-center">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 justify-center px-4 gap-24 mx-auto">
         {paginatedData.map((training) => {
           const isArchived = training.status !== "Active";
           const badgeClass = isArchived
@@ -204,40 +215,38 @@ export default function TrainingPage() {
                   </p>
                 </div>
                 <div className="flex items-center justify-between border-t pt-3 relative">
-  <div className="flex gap-2 items-center">
-    <span
-      className={`px-3 py-1 rounded-lg font-semibold text-sm border ${badgeClass}`}
-    >
-      {training.status}
-    </span>
+                  <div className="flex gap-2 items-center">
+                    <span
+                      className={`px-3 py-1 rounded-lg font-semibold text-sm border ${badgeClass}`}
+                    >
+                      {training.status}
+                    </span>
 
-    {training.discount ? (
-      <div className="flex items-center gap-2">
-        <span className="text-sm font-semibold text-gray-500 line-through border px-3 py-1 rounded-lg">
-          {formatRupiah(training.price)}
-        </span>
-        <span className="text-sm font-bold text-mainOrange px-3 py-1 border border-mainOrange rounded-lg ml-2">
-          {formatRupiah(training.discount)}
-        </span>
-      </div>
-    ) : (
-      <span
-        className={`px-3 py-1 rounded-lg font-semibold text-sm border ${badgeClass}`}
-      >
-        {typeof training.price === "string"
-          ? training.price
-          : formatRupiah(training.price)}
-      </span>
-    )}
-  </div>
+                    {training.discount ? (
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-semibold text-gray-500 line-through border px-3 py-1 rounded-lg">
+                          {formatRupiah(training.price)}
+                        </span>
+                        <span className="text-sm font-bold text-mainOrange px-3 py-1 border border-mainOrange rounded-lg ml-2">
+                          {formatRupiah(training.discount)}
+                        </span>
+                      </div>
+                    ) : (
+                      <span
+                        className={`px-3 py-1 rounded-lg font-semibold text-sm border ${badgeClass}`}
+                      >
+                        {typeof training.price === "string"
+                          ? training.price
+                          : formatRupiah(training.price)}
+                      </span>
+                    )}
+                  </div>
 
-  <ArrowRight
-    className="text-gray-600"
-    onClick={() => router.push(`/training-admin/${training.id}`)}
-  />
-</div>
-
-
+                  <ArrowRight
+                    className="text-gray-600 hover:text-mainOrange transition-all"
+                    onClick={() => router.push(`/training-admin/${training.id}`)}
+                  />
+                </div>
               </div>
             </div>
           );
