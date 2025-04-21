@@ -1,11 +1,16 @@
 import { FaEdit, FaTrash, FaChevronDown, FaCloudUploadAlt, FaPlus, FaTimes, FaLink } from "react-icons/fa";
 import { useState, useRef, useEffect } from "react";
+import { cn } from "@/lib/utils";
 
 // Reusable Title Component
-const PageTitle = ({ title }) => {
-    return <h1 className="text-2xl sm:text-3xl font-bold">{title}</h1>;
-};
-
+const PageTitle = ({ title, className }) => {
+    return (
+      <h1 className={cn("text-2xl sm:text-3xl font-bold", className)}>
+        {title}
+      </h1>
+    );
+  };
+  
 // Save Button Component
 export const SaveButton = ({ onClick, disabled = false }) => {
     return (
