@@ -52,7 +52,7 @@ export const reviews = [
   { id: 3, courseId: 1, user: "Eka", rating: 5, comment: "Sangat membantu untuk persiapan sertifikasi." },
   { id: 4, courseId: 2, user: "Citra", rating: 4, comment: "Penjelasannya rinci dan aplikatif." },
   { id: 5, courseId: 3, user: "Dina", rating: 5, comment: "Materi mudah dipahami." },
-  { id: 6, courseId: 3, user: "Fahri", rating: 4, comment: "Recommended buat pemula." },
+  { id: 6, courseId: 3, user: "Fahri", rating: 4, comment: "Recommended buat pemula. Sangat membantu untuk persiapan sertifikasi. Sangat membantu untuk persiapan sertifikasi." },
   { id: 7, courseId: 5, user: "Gilang", rating: 5, comment: "Keren banget!" },
   { id: 8, courseId: 5, user: "Hani", rating: 4, comment: "Cocok untuk pemula." },
   { id: 9, courseId: 6, user: "Indra", rating: 5, comment: "Top-notch content." },
