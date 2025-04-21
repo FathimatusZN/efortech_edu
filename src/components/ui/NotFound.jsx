@@ -1,9 +1,9 @@
 import Image from "next/image";
 
-const NotFound = ({ message = "No data found.", image = "/assets/not-found.png" }) => {
+const NotFound = ({ message = "No data found.", image = "/assets/not-found.png", className = "" }) => {
     return (
-        <div className="flex flex-col items-center justify-center text-center py-10 px-4">
-            <div className="relative w-48 h-48 mb-6">
+        <div className={`flex flex-col items-center justify-center text-center py-10 px-4 ${className}`}>
+            <div className="relative w-72 h-72 mb-6">
                 <Image
                     src={image}
                     alt="Not Found"
