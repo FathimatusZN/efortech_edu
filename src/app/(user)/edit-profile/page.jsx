@@ -51,7 +51,7 @@ export default function EditProfile() {
           institution: u.institution || "",
           gender: u.gender === 1 ? "Male" : u.gender === 2 ? "Female" : "Default",
           birthDate: u.birthdate ? u.birthdate.split("T")[0] : "",
-          profileImage: u.user_photo || "/default-profile.png",
+          profileImage: u.user_photo || "/assets/user1.png",
         });
 
         didFetch = true;
