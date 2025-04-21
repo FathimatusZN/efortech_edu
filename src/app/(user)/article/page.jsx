@@ -1,4 +1,5 @@
 "use client";
+
 import { useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Pagination, Autoplay } from "swiper/modules";
@@ -7,6 +8,15 @@ import "swiper/css/pagination";
 
 import { articles } from "./data";
 import ArticleCard from "@/components/layout/ArticleCard";
+
+// ✨ Tambahkan import Select dari shadcn
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const categories = ["All", "Event", "Success Story", "Education", "Blog"];
 
@@ -55,18 +65,25 @@ export default function ArticlePage() {
       <div className="custom-pagination flex justify-center mt-4"></div>
 
       {/* FILTER DROPDOWN */}
-      <div className="mt-6 flex justify-center">
-        <select
-          className="w-full md:w-1/3 py-2 px-4 border border-orange-500 focus:border-orange-600 rounded-full shadow-lg"
-          value={selectedCategory}
-          onChange={(e) => setSelectedCategory(e.target.value)}
-        >
-          {categories.map((category) => (
-            <option key={category} value={category}>
-              {category}
-            </option>
-          ))}
-        </select>
+      <div className="mt-6 mx-auto px-4 flex flex-col md:flex-row md:items-center md:justify-center gap-4">
+
+        <div className="w-full md:w-1/3">
+          <Select
+            value={selectedCategory}
+            onValueChange={(value) => setSelectedCategory(value)}
+          >
+            <SelectTrigger className="w-full rounded-full shadow-lg border-orange-500 focus:ring-orange-600">
+              <SelectValue placeholder="Select Category" />
+            </SelectTrigger>
+            <SelectContent>
+              {categories.map((category) => (
+                <SelectItem key={category} value={category}>
+                  {category}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {/* GRID ARTIKEL */}
