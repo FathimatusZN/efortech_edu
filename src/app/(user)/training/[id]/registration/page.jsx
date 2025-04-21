@@ -2,12 +2,16 @@
 
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
-import { useParams } from "next/navigation";
-import { trainingList } from "../../Data";
+import { useParams, useRouter } from "next/navigation";
+import { auth } from "@/app/firebase/config";
+import { getIdToken } from "firebase/auth";
+import { useAuth } from "@/app/context/AuthContext";
 
 const RegistrationPage = () => {
   const { id } = useParams();
-  const training = trainingList.find((training) => training.id === id);
+  const router = useRouter();
+
+  const [training, setTraining] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [formData, setFormData] = useState({
     fullName: "",
@@ -19,17 +23,77 @@ const RegistrationPage = () => {
   const [additionalEmails, setAdditionalEmails] = useState([]);
   const [errors, setErrors] = useState({});
   const [isSubmitted, setIsSubmitted] = useState(false);
-  
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
+  // Fetch training data
   useEffect(() => {
-    if (!training || !training.images) return;
-  
+    const fetchTraining = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/training/id/${id}`);
+        const data = await res.json();
+        if (res.ok && data.data) {
+          setTraining(data.data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch training:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTraining();
+  }, [id]);
+
+  // Fetch user data
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const currentUser = auth.currentUser;
+        if (!currentUser) return setShowLoginModal(true);
+
+        const token = await getIdToken(currentUser);
+
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user/me`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const data = await res.json();
+        if (res.ok && data) {
+          setUser(data.data);
+          setFormData((prev) => ({
+            ...prev,
+            fullName: data.data.fullname || "",
+            email: data.data.email || "",
+            institution: data.data.institution || "",
+          }));
+        } else {
+          setShowLoginModal(true);
+        }
+
+      } catch (err) {
+        console.error("Failed to fetch user:", err);
+        setShowLoginModal(true);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
+  // Image slider
+  useEffect(() => {
+    if (!training?.images) return;
+
     const interval = setInterval(() => {
-      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % training.images.length);
+      setCurrentImageIndex((prev) => (prev + 1) % training.images.length);
     }, 3000);
     return () => clearInterval(interval);
-  }, [training]);  
+  }, [training]);
 
-  // Update jumlah kolom email peserta lain
+  // Dynamic participant email inputs
   useEffect(() => {
     const count = Math.max(0, participantCount - 1);
     setAdditionalEmails(Array(count).fill(""));
@@ -51,19 +115,11 @@ const RegistrationPage = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // validasi form di sini...
+    if (!validateForm()) return;
+
+    // TODO: Submit form to backend
     setIsSubmitted(true);
   };
-
-  const handleAdditionalEmailChange = (index, value) => {
-    const updatedEmails = [...formData.additionalEmails];
-    updatedEmails[index] = value;
-    setFormData({ ...formData, additionalEmails: updatedEmails });
-  };
-
-  if (!training) {
-    return <div className="text-center mt-10 text-red-600">Training not found.</div>;
-  }
 
   const FormGroup = ({
     label,
@@ -73,7 +129,7 @@ const RegistrationPage = () => {
     onChange,
     error,
     placeholder,
-    min
+    min,
   }) => (
     <div className="mt-6 flex items-start">
       <label className="w-1/4 text-black font-semibold pt-2">
@@ -84,7 +140,7 @@ const RegistrationPage = () => {
           type={type}
           min={min}
           className="p-2 pl-4 border rounded-lg border-mainOrange placeholder:text-sm 
-            focus:border-orange-500 focus:ring-orange-500 focus:outline-none focus:ring-1"
+          focus:border-orange-500 focus:ring-orange-500 focus:outline-none focus:ring-1"
           placeholder={placeholder}
           value={value}
           onChange={onChange}
@@ -94,8 +150,30 @@ const RegistrationPage = () => {
     </div>
   );
 
+  if (loading) return <div className="text-center mt-10 text-blue-600">Loading...</div>;
+
+  if (!training) return <div className="text-center mt-10 text-red-600">Training not found.</div>;
+
+  if (showLoginModal) {
+    return (
+      <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+        <div className="bg-white p-6 rounded-lg shadow-xl w-[90%] max-w-sm text-center">
+          <h2 className="text-xl font-bold mb-2 text-red-600">You need to sign in</h2>
+          <p className="text-sm text-gray-600 mb-4">Please sign in to continue registration.</p>
+          <button
+            onClick={() => router.push("/auth/signin")}
+            className="bg-mainOrange text-white font-semibold px-6 py-2 rounded-lg hover:bg-orange-600 transition"
+          >
+            Go to Sign In
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
+      {/* Header image & title */}
       <div className="relative w-full h-64 overflow-hidden">
         <Image
           src={training.images[currentImageIndex]}
@@ -104,7 +182,7 @@ const RegistrationPage = () => {
           objectFit="cover"
         />
         <h1 className="absolute inset-0 flex items-center justify-center text-3xl font-extrabold text-white drop-shadow-2xl bg-black/30 p-2 shadow-blue-900 shadow-xl">
-          {training.title}
+          {training.training_name}
         </h1>
       </div>
 
@@ -112,18 +190,15 @@ const RegistrationPage = () => {
 
       <div className="max-w-3xl mb-20 mx-auto p-6 border-4 border-mainBlue rounded-lg bg-white shadow-2xl">
         <form onSubmit={handleSubmit}>
-
-        {/* Full Name */}
-        <FormGroup
+          <FormGroup
             label="Full Name"
             required
             value={formData.fullName}
-            onChange={(val) => setFormData({ ...formData, fullName: val })}
+            onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
             error={errors.fullName}
             placeholder="Type your name here"
           />
 
-          {/* Email */}
           <FormGroup
             label="Email"
             required
@@ -134,7 +209,6 @@ const RegistrationPage = () => {
             placeholder="Type your email here"
           />
 
-          {/* Institution */}
           <FormGroup
             label="Institution"
             required
@@ -144,7 +218,6 @@ const RegistrationPage = () => {
             placeholder="Type your institution here"
           />
 
-          {/* Date */}
           <FormGroup
             label="Date"
             required
@@ -154,7 +227,6 @@ const RegistrationPage = () => {
             error={errors.date}
           />
 
-          {/* Participant Count */}
           <FormGroup
             label="Jumlah Peserta"
             required
@@ -164,7 +236,7 @@ const RegistrationPage = () => {
             onChange={(e) => setParticipantCount(parseInt(e.target.value) || 1)}
           />
 
-          {/* Additional Emails */}
+          {/* Additional participant emails (unchanged) */}
           {participantCount > 1 && (
             <div className="mt-6">
               <label className="block text-black font-semibold mb-2">
@@ -206,7 +278,6 @@ const RegistrationPage = () => {
             </label>
           </div>
 
-          {/* Submit */}
           <div className="flex justify-center mt-12">
             <button
               type="submit"
@@ -217,24 +288,24 @@ const RegistrationPage = () => {
           </div>
         </form>
 
-        {/* Modal */}
-      {isSubmitted && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-xl w-[90%] max-w-sm text-center">
-            <div className="mt-2 text-green-500 text-6xl mb-4">✔</div>
-            <h2 className="text-xl font-bold mb-2">Registration Success!</h2>
-            <p className="text-sm text-gray-600 mb-4">
-              We’ll email the details to you soon. <br /> Have a great day!
-            </p>
-            <button
-              onClick={() => setIsSubmitted(false)}
-              className="bg-orange-500 text-white font-semibold px-8 py-2 rounded-lg hover:bg-orange-600 transition"
-            >
-              Okay
-            </button>
+        {/* Success modal */}
+        {isSubmitted && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg shadow-xl w-[90%] max-w-sm text-center">
+              <div className="mt-2 text-green-500 text-6xl mb-4">✔</div>
+              <h2 className="text-xl font-bold mb-2">Registration Success!</h2>
+              <p className="text-sm text-gray-600 mb-4">
+                We’ll email the details to you soon. <br /> Have a great day!
+              </p>
+              <button
+                onClick={() => setIsSubmitted(false)}
+                className="bg-orange-500 text-white font-semibold px-8 py-2 rounded-lg hover:bg-orange-600 transition"
+              >
+                Okay
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
       </div>
     </div>
   );
