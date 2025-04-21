@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ["source.unsplash.com"], // Tambahkan domain gambar eksternal
+    domains: ["source.unsplash.com", "storage.googleapis.com"], 
   },
 };
 
