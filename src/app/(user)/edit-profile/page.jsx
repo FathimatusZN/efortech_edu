@@ -8,6 +8,7 @@ import { auth } from "@/app/firebase/config";
 import { getIdToken } from "firebase/auth";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { toast } from "react-hot-toast";
+import { useAuth } from "@/app/context/AuthContext";
 
 export default function EditProfile() {
   const [user, loading] = useAuthState(auth);
@@ -18,6 +19,7 @@ export default function EditProfile() {
   const fileInputRef = useRef(null);
   const [newImageFile, setNewImageFile] = useState(null);
   const [showImageModal, setShowImageModal] = useState(false);
+  const { updateUser } = useAuth();
 
   // Update profile input field
   const handleChange = (e) => {
@@ -121,6 +123,11 @@ export default function EditProfile() {
       if (!editRes.ok) throw new Error(editData.message || "Failed to update profile");
 
       toast.success("Profile updated successfully!");
+
+      updateUser({
+        fullname: profile.fullName,
+        user_photo: uploadedImageUrl,
+      });
     } catch (err) {
       console.error("Error updating profile:", err);
       toast.error(err.message || "Something went wrong");
@@ -130,7 +137,7 @@ export default function EditProfile() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6 text-center md:text-left">User Profile</h1>
-  
+
       <div className="outline outline-3 outline-mainBlue p-6 rounded-lg">
         <div className="flex flex-col lg:flex-row gap-6 items-center relative">
           {/* Profile Image Section */}
@@ -197,7 +204,7 @@ export default function EditProfile() {
               </div>
             )}
           </div>
-  
+
           {/* Full Size Modal Image */}
           {showImageModal && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70">
@@ -216,7 +223,7 @@ export default function EditProfile() {
               </div>
             </div>
           )}
-  
+
           {/* User Info Inputs */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
             {[
@@ -267,18 +274,18 @@ export default function EditProfile() {
             ))}
           </div>
         </div>
-  
+
         <div className="flex justify-end mt-6">
           <Button variant="orange" onClick={handleSave}>
             <FaSave className="mr-2" /> Save Changes
           </Button>
         </div>
       </div>
-  
+
       {/* History Course Section */}
       <div className="mt-8">
         <HistoryCourse />
       </div>
     </div>
-  );  
+  );
 }
