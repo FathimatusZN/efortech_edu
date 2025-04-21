@@ -1,6 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { useRef, useState, useEffect } from "react";
+import { FaSearch } from "react-icons/fa";
 import { PageTitle } from "../../../components/layout/InputField";
 import {
   Pagination,
@@ -11,6 +12,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import TrainingCard from "../../../components/layout/TrainingCard";
+import NotFound from "../../../components/ui/NotFound";
 
 export default function TrainingPage() {
   const router = useRouter();
@@ -19,30 +21,26 @@ export default function TrainingPage() {
   const [page, setPage] = useState(1);
   const itemsPerPage = 9;
 
-  useEffect(() => {
-    const fetchTrainings = async () => {
-      try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/training`);
-        const data = await res.json();
-        if (res.ok) {
-          setTrainingList(data.data || []);
-        } else {
-          console.error("Gagal ambil data training:", data.message);
-        }
-      } catch (err) {
-        console.error("Error fetch training:", err);
+  const fetchTrainings = async () => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/training`);
+      const data = await res.json();
+      if (res.ok) {
+        setTrainingList(data.data || []);
+      } else {
+        console.error("Failed to fetch trainings:", data.message);
       }
-    };
+    } catch (err) {
+      console.error("Error:", err);
+    }
+  };
 
+  useEffect(() => {
     fetchTrainings();
   }, []);
 
-  const filteredTrainingList = trainingList.filter((training) =>
-    training.training_name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const totalPages = Math.ceil(filteredTrainingList.length / itemsPerPage);
-  const paginatedTraining = filteredTrainingList.slice(
+  const totalPages = Math.ceil(trainingList.length / itemsPerPage);
+  const paginatedTraining = trainingList.slice(
     (page - 1) * itemsPerPage,
     page * itemsPerPage
   );
@@ -53,9 +51,33 @@ export default function TrainingPage() {
 
   useEffect(() => {
     if (hovered && descriptionRef.current) {
-      setDescHeight(descriptionRef.current.offsetHeight + 16); // tambahkan sedikit padding
+      setDescHeight(descriptionRef.current.offsetHeight + 16);
     }
   }, [hovered]);
+
+  const fetchSearchResults = async () => {
+    if (!searchQuery.trim()) {
+      fetchTrainings();
+      return;
+    }
+
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/training/search?query=${encodeURIComponent(searchQuery)}`
+      );
+      const data = await res.json();
+
+      if (res.ok) {
+        setTrainingList(data.data || []);
+      } else {
+        console.error("Search failed:", data.message);
+        setTrainingList([]); // Clear list if error
+      }
+    } catch (err) {
+      console.error("API error:", err);
+      setTrainingList([]);
+    }
+  };
 
   return (
     <div className="flex flex-col w-full max-w-screen mx-auto min-h-screen px-6 py-12">
@@ -63,16 +85,31 @@ export default function TrainingPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 px-8">
         <PageTitle title="Training Program" />
-        <input
-          type="text"
-          placeholder="Search training..."
-          className="w-full sm:w-64 px-4 py-2 border-2 border-secondOrange rounded-lg focus:outline-none focus:ring-2 focus:ring-mainOrange"
-          value={searchQuery}
-          onChange={(e) => {
-            setSearchQuery(e.target.value);
-            setPage(1); // reset ke page 1 saat search
-          }}
-        />
+        <div className="relative flex w-full sm:w-[330px]">
+          <input
+            type="text"
+            placeholder="Search training..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                setPage(1);
+                fetchSearchResults();
+              }
+            }}
+            className="w-full h-[36px] pl-5 pr-10 border-2 border-mainOrange rounded-md"
+          />
+          <button
+            onClick={() => {
+              setPage(1);
+              fetchSearchResults();
+            }}
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-black hover:text-mainOrange"
+          >
+            <FaSearch className="mr-2" />
+          </button>
+        </div>
       </div>
 
       {/* Cards */}
@@ -82,9 +119,7 @@ export default function TrainingPage() {
             <TrainingCard key={training.training_id} training={training} />
           ))
         ) : (
-          <p className="text-center text-gray-500 col-span-full">
-            No training found.
-          </p>
+          <NotFound message="No training found." className="flex justify-center items-center col-span-full" />
         )}
       </div>
 
