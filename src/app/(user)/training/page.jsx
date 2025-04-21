@@ -1,7 +1,6 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { trainingList } from "./Data";
+import { useRef, useState, useEffect } from "react";
 import { PageTitle } from "../../../components/layout/InputField";
 import {
   Pagination,
@@ -10,28 +9,57 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "@/components/ui/pagination"; // pastikan path-nya sesuai
+} from "@/components/ui/pagination";
+import TrainingCard from "../../../components/layout/TrainingCard";
 
 export default function TrainingPage() {
   const router = useRouter();
+  const [trainingList, setTrainingList] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(1);
+  const itemsPerPage = 9;
+
+  useEffect(() => {
+    const fetchTrainings = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/training`);
+        const data = await res.json();
+        if (res.ok) {
+          setTrainingList(data.data || []);
+        } else {
+          console.error("Gagal ambil data training:", data.message);
+        }
+      } catch (err) {
+        console.error("Error fetch training:", err);
+      }
+    };
+
+    fetchTrainings();
+  }, []);
 
   const filteredTrainingList = trainingList.filter((training) =>
-    training.title.toLowerCase().includes(searchQuery.toLowerCase())
+    training.training_name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const itemsPerPage = 9;
   const totalPages = Math.ceil(filteredTrainingList.length / itemsPerPage);
-
   const paginatedTraining = filteredTrainingList.slice(
     (page - 1) * itemsPerPage,
     page * itemsPerPage
   );
 
+  const descriptionRef = useRef(null);
+  const [descHeight, setDescHeight] = useState(0);
+  const [hovered, setHovered] = useState(false);
+
+  useEffect(() => {
+    if (hovered && descriptionRef.current) {
+      setDescHeight(descriptionRef.current.offsetHeight + 16); // tambahkan sedikit padding
+    }
+  }, [hovered]);
+
   return (
     <div className="flex flex-col w-full max-w-screen mx-auto min-h-screen px-6 py-12">
-      
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 px-8">
         <PageTitle title="Training Program" />
@@ -51,28 +79,7 @@ export default function TrainingPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-8 pt-8 justify-center">
         {paginatedTraining.length > 0 ? (
           paginatedTraining.map((training) => (
-            <div
-              key={training.id}
-              className="relative group overflow-hidden rounded-lg shadow-lg w-full max-w-[400px] h-[277px] mx-auto transition-all duration-500 ease-in-out"
-              onClick={() => router.push(`/training/${training.id}`)}
-            >
-              <img
-                src={
-                  training.images?.[0] ||
-                  "https://img.freepik.com/free-vector/no-data-concept-illustration_114360-536.jpg?t=st=1745203424~exp=1745207024~hmac=87ca4b0bf418de92dc6555ab5000a009470c89519a827b8be8db1fbc7158e032&w=826"
-                }
-                alt={training.title}
-                className="w-full h-full object-cover transition-all duration-500 ease-in-out group-hover:blur-sm"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-transparent p-4 flex flex-col justify-end">
-                <h3 className="text-white font-semibold text-lg">
-                  {training.title}
-                </h3>
-                <p className="text-white text-sm mt-2 opacity-0 transition-opacity duration-500 group-hover:opacity-100">
-                  {training.description}
-                </p>
-              </div>
-            </div>
+            <TrainingCard key={training.training_id} training={training} />
           ))
         ) : (
           <p className="text-center text-gray-500 col-span-full">
