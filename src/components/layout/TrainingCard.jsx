@@ -28,6 +28,14 @@ export default function TrainingCard({ training }) {
             onMouseEnter={() => setHovered(true)}
             onMouseLeave={() => setHovered(false)}
         >
+            {/* 🔥 Diskon */}
+            {training.discount > 0 && (
+                <div className="absolute top-2 right-2 bg-red-500 text-white text-[11px] font-semibold px-2 py-[2px] rounded-full shadow-md animate-bounce z-20">
+                    🔥 {Math.floor(training.discount)}% OFF
+                </div>
+            )}
+
+            {/* Gambar */}
             <img
                 src={
                     training.images?.[0] ||
