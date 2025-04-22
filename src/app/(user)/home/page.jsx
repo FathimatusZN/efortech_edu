@@ -518,10 +518,10 @@ const Home = () => {
         </Swiper>
       </div>
       <div className="w-full md:w-[50%] text-center md:text-left">
-        <h2 className="text-xl md:text-3xl md:text-4xl font-bold text-black">
+        <h2 className="text-xl md:text-3xl font-bold text-black">
           What They Say?
         </h2>
-        <p className="text-mainOrange text-sm md:text-lg md:text-xl font-semibold md:pl-8 mt-2">
+        <p className="text-mainOrange text-sm md:text-lg font-semibold md:pl-8 mt-2">
           About this program
         </p>
       </div>

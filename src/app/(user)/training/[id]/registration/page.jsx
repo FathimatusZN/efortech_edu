@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { auth } from "@/app/firebase/config";
 import { getIdToken } from "firebase/auth";
+import { Check, Trash2, Loader2 } from "lucide-react";
 
 const RegistrationPage = () => {
   const { id } = useParams();
@@ -24,6 +25,11 @@ const RegistrationPage = () => {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [emailValidation, setEmailValidation] = useState({});
+  const debounceTimers = useRef({});
+  const [emailSuggestions, setEmailSuggestions] = useState({});
+  const [activeInputIndex, setActiveInputIndex] = useState(null);
+
 
   // Fetch training data
   useEffect(() => {
@@ -119,21 +125,62 @@ const RegistrationPage = () => {
   const handleParticipantCountChange = (e) => {
     const count = Math.max(1, parseInt(e.target.value) || 1);
     setParticipantCount(count);
-
-    const needed = count - 1;
+  
+    // Tentukan jumlah email yang perlu ditambah atau dihapus
     const newEmails = [...additionalEmails];
-
-    if (needed > newEmails.length) {
-      while (newEmails.length < needed) {
-        newEmails.push("");
+  
+    // Menambah email baru jika jumlah peserta lebih banyak
+    if (count > newEmails.length) {
+      while (newEmails.length < count - 1) {
+        newEmails.push(""); // Menambah email kosong untuk peserta baru
       }
-    } else if (needed < newEmails.length) {
-      newEmails.splice(needed);
     }
-
+  
+    // Menghapus email jika jumlah peserta berkurang
+    if (count < newEmails.length) {
+      newEmails.splice(count - 1); // Menghapus email yang berlebih
+    }
+  
     setAdditionalEmails(newEmails);
-  };
+  };  
 
+  const validateEmailExists = async (email, idx) => {
+    if (!email) return;
+  
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user/search?email=${email}`);
+      const data = await res.json();
+  
+      const userExists = res.ok && data.status === "success" && data.data;
+  
+      setEmailValidation((prev) => ({
+        ...prev,
+        [idx]: userExists, // Set true jika user ada
+      }));
+  
+      // Set error jika email belum terdaftar
+      if (!userExists) {
+        setErrors((prev) => ({
+          ...prev,
+          [`email${idx}`]: `Email peserta ke-${idx + 2} belum terdaftar`,
+        }));
+      } else {
+        // Hapus error jika email valid
+        setErrors((prev) => {
+          const newErrors = { ...prev };
+          delete newErrors[`email${idx}`];
+          return newErrors;
+        });
+      }
+    } catch (err) {
+      console.error("Email check failed:", err);
+      setErrors((prev) => ({
+        ...prev,
+        [`email${idx}`]: `Gagal memeriksa email peserta ke-${idx + 2}`,
+      }));
+    }
+  };
+  
   const FormGroup = ({
     label,
     required = false,
@@ -249,44 +296,64 @@ const RegistrationPage = () => {
             onChange={handleParticipantCountChange}
           />
 
-          {/* Additional participant emails (unchanged) */}
+          {/* Additional participant emails*/}
           {participantCount > 1 && (
             <div className="mt-6">
               <label className="block text-black font-semibold mb-2">
                 Email Peserta Lain <span className="text-red-500">*</span>
               </label>
               {additionalEmails.map((email, idx) => (
-                <div key={idx} className="mb-2 flex gap-2 items-start">
-                  <input
-                    type="email"
-                    required
-                    className="w-full p-2 pl-4 border rounded-lg border-mainOrange placeholder:text-sm 
-                      focus:border-orange-500 focus:ring-orange-500 focus:outline-none focus:ring-1"
-                    placeholder={`Email peserta ke-${idx + 2}`}
-                    value={additionalEmails[idx]}
-                    onChange={(e) => {
-                      const newEmails = [...additionalEmails];
-                      newEmails[idx] = e.target.value;
-                      setAdditionalEmails(newEmails);
-                    }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const newEmails = [...additionalEmails];
-                      newEmails.splice(idx, 1);
-                      setAdditionalEmails(newEmails);
-                      setParticipantCount((prev) => Math.max(1, prev - 1));
-                    }}
-                    className="text-red-600 font-bold px-2 py-1 hover:underline"
-                  >
-                    Hapus
-                  </button>
-                  {errors[`email${idx}`] && (
-                    <p className="text-red-500 text-sm mt-1">{errors[`email${idx}`]}</p>
-                  )}
-                </div>
-              ))}
+  <div key={idx} className="mb-2 relative">
+    <input
+      type="email"
+      required
+      className="w-full p-2 pl-4 pr-10 border rounded-lg border-mainOrange placeholder:text-sm 
+        focus:border-orange-500 focus:ring-orange-500 focus:outline-none focus:ring-1"
+      placeholder={`Email peserta ke-${idx + 2}`}
+      value={email}
+      onChange={(e) => {
+        const value = e.target.value;
+        const newEmails = [...additionalEmails];
+        newEmails[idx] = e.target.value;
+        setAdditionalEmails(newEmails);
+
+        // Cek apakah email valid atau tidak
+        validateEmailExists(value, idx);
+
+        // Clear error ketika sedang mengetik
+        setErrors((prev) => {
+          const { [`email${idx}`]: _, ...rest } = prev;
+          return rest;
+        });
+      }}
+    />
+
+    {/* Icon hapus */}
+    <button
+      type="button"
+      onClick={() => {
+        const newEmails = [...additionalEmails];
+        newEmails.splice(idx, 1);
+        setAdditionalEmails(newEmails);
+        setParticipantCount((prev) => Math.max(1, prev - 1));
+      }}
+      className="absolute top-1/2 right-3 transform -translate-y-1/2 text-red-500 hover:text-red-700"
+    >
+      <Trash2 size={18} />
+    </button>
+
+    {/* Icon check jika email valid */}
+    {emailValidation[idx] && (
+      <Check className="absolute top-1/2 right-10 transform -translate-y-1/2 text-green-500" size={18} />
+    )}
+
+    {/* Error */}
+    {errors[`email${idx}`] && (
+      <p className="text-red-500 text-sm mt-1">{errors[`email${idx}`]}</p>
+    )}
+  </div>
+))}
+
             </div>
           )}
 
