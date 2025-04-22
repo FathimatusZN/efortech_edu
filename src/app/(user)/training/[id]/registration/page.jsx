@@ -5,7 +5,6 @@ import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { auth } from "@/app/firebase/config";
 import { getIdToken } from "firebase/auth";
-import { useAuth } from "@/app/context/AuthContext";
 
 const RegistrationPage = () => {
   const { id } = useParams();
@@ -121,6 +120,24 @@ const RegistrationPage = () => {
     setIsSubmitted(true);
   };
 
+  const handleParticipantCountChange = (e) => {
+    const count = Math.max(1, parseInt(e.target.value) || 1);
+    setParticipantCount(count);
+
+    const needed = count - 1;
+    const newEmails = [...additionalEmails];
+
+    if (needed > newEmails.length) {
+      while (newEmails.length < needed) {
+        newEmails.push("");
+      }
+    } else if (needed < newEmails.length) {
+      newEmails.splice(needed);
+    }
+
+    setAdditionalEmails(newEmails);
+  };
+
   const FormGroup = ({
     label,
     required = false,
@@ -233,7 +250,7 @@ const RegistrationPage = () => {
             type="number"
             min={1}
             value={participantCount}
-            onChange={(e) => setParticipantCount(parseInt(e.target.value) || 1)}
+            onChange={handleParticipantCountChange}
           />
 
           {/* Additional participant emails (unchanged) */}
@@ -243,7 +260,7 @@ const RegistrationPage = () => {
                 Email Peserta Lain <span className="text-red-500">*</span>
               </label>
               {additionalEmails.map((email, idx) => (
-                <div key={idx} className="mb-2">
+                <div key={idx} className="mb-2 flex gap-2 items-start">
                   <input
                     type="email"
                     required
@@ -257,6 +274,18 @@ const RegistrationPage = () => {
                       setAdditionalEmails(newEmails);
                     }}
                   />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const newEmails = [...additionalEmails];
+                      newEmails.splice(idx, 1);
+                      setAdditionalEmails(newEmails);
+                      setParticipantCount((prev) => Math.max(1, prev - 1));
+                    }}
+                    className="text-red-600 font-bold px-2 py-1 hover:underline"
+                  >
+                    Hapus
+                  </button>
                   {errors[`email${idx}`] && (
                     <p className="text-red-500 text-sm mt-1">{errors[`email${idx}`]}</p>
                   )}
