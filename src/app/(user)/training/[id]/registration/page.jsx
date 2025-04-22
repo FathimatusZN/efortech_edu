@@ -5,12 +5,10 @@ import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { auth } from "@/app/firebase/config";
 import { getIdToken } from "firebase/auth";
-import { useAuth } from "@/app/context/AuthContext";
 
 const RegistrationPage = () => {
   const { id } = useParams();
   const router = useRouter();
-
   const [training, setTraining] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [formData, setFormData] = useState({
@@ -43,45 +41,42 @@ const RegistrationPage = () => {
       }
     };
 
-    fetchTraining();
-  }, [id]);
-
-  // Fetch user data
-  useEffect(() => {
     const fetchUser = async () => {
+      const currentUser = auth.currentUser;
+      if (!currentUser) {
+        setShowLoginModal(true);
+        return;
+      }
+
+      const token = await getIdToken(currentUser);
+      setUser(currentUser);
+
       try {
-        const currentUser = auth.currentUser;
-        if (!currentUser) return setShowLoginModal(true);
-
-        const token = await getIdToken(currentUser);
-
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user/me`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
 
         const data = await res.json();
-        if (res.ok && data) {
-          setUser(data.data);
-          setFormData((prev) => ({
+
+        if (res.ok && data.data) {
+          const userData = data.data;
+          setFormData(prev => ({
             ...prev,
-            fullName: data.data.fullname || "",
-            email: data.data.email || "",
-            institution: data.data.institution || "",
+            fullName: userData.fullname || "",
+            email: userData.email || currentUser.email || "",
+            institution: userData.institution || "",
           }));
         } else {
-          setShowLoginModal(true);
+          console.error("User data not found in backend");
         }
-
       } catch (err) {
-        console.error("Failed to fetch user:", err);
-        setShowLoginModal(true);
+        console.error("Failed to fetch user data:", err);
       }
     };
 
+    fetchTraining();
     fetchUser();
-  }, []);
+  }, [id]);
 
   // Image slider
   useEffect(() => {
@@ -152,8 +147,6 @@ const RegistrationPage = () => {
 
   if (loading) return <div className="text-center mt-10 text-blue-600">Loading...</div>;
 
-  if (!training) return <div className="text-center mt-10 text-red-600">Training not found.</div>;
-
   if (showLoginModal) {
     return (
       <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
@@ -161,7 +154,7 @@ const RegistrationPage = () => {
           <h2 className="text-xl font-bold mb-2 text-red-600">You need to sign in</h2>
           <p className="text-sm text-gray-600 mb-4">Please sign in to continue registration.</p>
           <button
-            onClick={() => router.push("/auth/signin")}
+            onClick={() => router.push(`/auth/signin?redirect=/training/${id}/registration`)}
             className="bg-mainOrange text-white font-semibold px-6 py-2 rounded-lg hover:bg-orange-600 transition"
           >
             Go to Sign In
@@ -170,6 +163,8 @@ const RegistrationPage = () => {
       </div>
     );
   }
+
+  if (!training) return <div className="text-center mt-10 text-red-600">Training not found.</div>;
 
   return (
     <div>
