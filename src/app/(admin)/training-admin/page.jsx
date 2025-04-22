@@ -1,10 +1,17 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Plus} from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { ArrowRight, Plus } from "lucide-react";
 import { FaSearch } from "react-icons/fa";
 import { Button } from "@/components/ui/button";
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import {
   Select,
   SelectContent,
@@ -15,93 +22,40 @@ import {
 
 export default function TrainingPage() {
   const router = useRouter();
+  const [trainingData, setTrainingData] = useState([]);
   const [filterStatus, setFilterStatus] = useState("All");
-  const [sortOrder, setSortOrder] = useState("Terbaru");
+  const [sortOrder, setSortOrder] = useState("Latest");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
 
-  const trainingData = [
-    {
-      id: 1,
-      title: "WISE-4000 LAN Wireless / IO Module Series",
-      image: "assets/gambar1.jpg",
-      description: "Explore the latest wireless IO module series for industrial automation.",
-      price: "Gratis",
-      status: "Active",
-    },
-    {
-      id: 2,
-      title: "Mastering EdgeLink: IoT Gateway for Seamless OT-IT Integration",
-      image: "assets/Gambar2.jpg",
-      description: "Learn how to integrate IoT gateways with seamless OT-IT connectivity.",
-      price: "300.000",
-      discount: "200.000", // ← ini harga setelah diskon
-      status: "Active",
-    },    
-    {
-      id: 3,
-      title: "Accelerating Digital O&M using DeviceOn/BI and Patrol Inspection",
-      image: "https://source.unsplash.com/400x300/?circuit",
-      description: "Enhance your operations with AI-powered digital maintenance.",
-      price: "Rp250.000",
-      status: "Active",
-    },
-    {
-      id: 4,
-      title: "Familiarize yourself with all functions in Advantech IoT Academy",
-      image: "https://source.unsplash.com/400x300/?engineering",
-      description: "A complete training program to understand IoT functions. A complete training program to understand IoT functions. A complete training program to understand IoT functions.",
-      price: "Rp450.000",
-      status: "Archived", 
-    },
-    {
-      id: 5,
-      title: "Industrial IoT Training and International Advantech",
-      image: "https://source.unsplash.com/400x300/?industry",
-      description: "Join our industrial IoT training for a better understanding of automation.",
-      price: "Rp500.000",
-      status: "Active",
-    },
-    {
-      id: 6,
-      title: "Scaling Digitalization with Edge-as-a-Service",
-      image: "https://source.unsplash.com/400x300/?digital",
-      description: "Discover how edge computing can optimize digital transformation.",
-      price: "Rp350.000",
-      status: "Archived", 
-    },
-    {
-      id: 7,
-      title: "Industrial IoT Training and International Advantech",
-      image: "https://source.unsplash.com/400x300/?industry",
-      description: "Join our industrial IoT training for a better understanding of automation.",
-      price: "Rp500.000",
-      status: "Active",
-    },
-    {
-      id: 8,
-      title: "Scaling Digitalization with Edge-as-a-Service",
-      image: "https://source.unsplash.com/400x300/?digital",
-      description: "Discover how edge computing can optimize digital transformation.",
-      price: "Rp350.000",
-      status: "Archived", 
-    },
-  ];
+  useEffect(() => {
+    const fetchTrainings = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/training");
+        const data = await res.json();
+        if (res.ok) {
+          setTrainingData(data.data); // Pastikan ini sesuai struktur backend
+        }
+      } catch (err) {
+        console.error("Failed to fetch training data:", err);
+      }
+    };
+
+    fetchTrainings();
+  }, []);
 
   const filteredData = trainingData
     .filter((item) =>
       (filterStatus === "All" || item.status === filterStatus) &&
-      (item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (item.training_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.description.toLowerCase().includes(searchQuery.toLowerCase()))
     )
     .sort((a, b) =>
-      sortOrder === "Latest"
-        ? b.id - a.id
-        : a.id - b.id
+      sortOrder === "Latest" ? b.id - a.id : a.id - b.id
     );
 
-    const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
   const paginatedData = filteredData.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
@@ -113,20 +67,15 @@ export default function TrainingPage() {
 
   const formatRupiah = (value) => {
     if (!value) return "Rp 0";
-  
-    // Format angka dengan pemisah ribuan titik dan koma sebagai desimal
-    const formatted = new Intl.NumberFormat('id-ID', {
-      style: 'decimal',
-      minimumFractionDigits: 3,
-      maximumFractionDigits: 3,
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      minimumFractionDigits: 0,
     }).format(value);
-  
-    return `Rp ${formatted.replace(',', '.')}`;  // Ganti koma dengan titik untuk desimal
   };
-  
 
   return (
-    <div className="flex flex-col justify-center w-full max-w-screen mx-auto min-h-screen px-8 pb-12">
+    <div className="flex flex-col justify-start w-full max-w-screen mx-auto min-h-screen px-8 pb-12">
      <div className="w-full flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 py-8 px-4">
         <h2 className="text-2xl font-bold">Training & Courses</h2>
 
@@ -175,7 +124,7 @@ export default function TrainingPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 justify-center px-4 gap-24 mx-auto">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 px-4">
         {paginatedData.map((training) => {
           const isArchived = training.status !== "Active";
           const badgeClass = isArchived
@@ -192,29 +141,29 @@ export default function TrainingPage() {
             >
               <div className="h-[200px] w-full relative">
               {training.discount && (
-                <div className="absolute top-2 left-[-8px] bg-red-500 text-white text-xs font-bold px-10 py-1 shadow-lg z-10 rotate-[-15deg] rounded-tr-lg rounded-br-lg before:content-[''] before:absolute before:top-full before:left-0 before:w-0 before:h-0 before:border-l-[10px] before:border-l-red-700 before:border-t-[10px] before:border-t-transparent">
-                  {`Discount ${Math.round(
-                    ((training.price - training.discount) / training.price) * 100
-                  )}%`}
+                <div className="absolute top-2 right-2 bg-red-500 text-white text-[11px] font-semibold px-2 py-[2px] rounded-full shadow-md animate-bounce">
+                  🔥 {Math.round(
+                    ((training.training_fees - training.discount) / training.training_fees) * 100
+                  )}% OFF
                 </div>
               )}
-              <img
-                src={training.image}
-                alt={training.title}
-                className="w-full h-full object-cover"
-              />
-            </div>
+                <img
+                  src={training.images?.[0] || "/fallback.jpg"}
+                  alt={training.training_name}
+                  className="w-full h-full object-cover"
+                />
+              </div>
 
               <div className="flex flex-col justify-between flex-grow p-4">
                 <div>
                   <h2 className="text-lg font-semibold mb-1 line-clamp-2">
-                    {training.title}
+                    {training.training_name}
                   </h2>
                   <p className="text-sm text-gray-600 mb-3 line-clamp-4">
                     {training.description}
                   </p>
                 </div>
-                <div className="flex items-center justify-between border-t pt-3 relative">
+                <div className="flex items-center justify-between border-t pt-3">
                   <div className="flex gap-2 items-center">
                     <span
                       className={`px-3 py-1 rounded-lg font-semibold text-sm border ${badgeClass}`}
@@ -225,7 +174,7 @@ export default function TrainingPage() {
                     {training.discount ? (
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-semibold text-gray-500 line-through border px-3 py-1 rounded-lg">
-                          {formatRupiah(training.price)}
+                          {formatRupiah(training.training_fees)}
                         </span>
                         <span className="text-sm font-bold text-mainOrange px-3 py-1 border border-mainOrange rounded-lg ml-2">
                           {formatRupiah(training.discount)}
@@ -235,16 +184,16 @@ export default function TrainingPage() {
                       <span
                         className={`px-3 py-1 rounded-lg font-semibold text-sm border ${badgeClass}`}
                       >
-                        {typeof training.price === "string"
-                          ? training.price
-                          : formatRupiah(training.price)}
+                        {formatRupiah(training.training_fees)}
                       </span>
                     )}
                   </div>
 
                   <ArrowRight
                     className="text-gray-600 hover:text-mainOrange transition-all"
-                    onClick={() => router.push(`/training-admin/${training.id}`)}
+                    onClick={() =>
+                      router.push(`/training-admin/${training.id}`)
+                    }
                   />
                 </div>
               </div>
