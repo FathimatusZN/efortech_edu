@@ -5,6 +5,7 @@ import { useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useAuth } from "@/app/context/AuthContext";
 import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
 const SigninPage = () => {
     const { login } = useAuth();
@@ -16,6 +17,9 @@ const SigninPage = () => {
     const [emailError, setEmailError] = useState("");
     const [passwordError, setPasswordError] = useState("");
     const [loading, setLoading] = useState(false);
+
+    const searchParams = useSearchParams();
+    const redirect = searchParams.get("redirect") || null;
 
     const togglePasswordVisibility = () => {
         setShowPassword((prev) => !prev);
@@ -41,10 +45,15 @@ const SigninPage = () => {
             await login(email, password); // Login AuthContext
             console.log("✅ Login success!");
 
-            // Ambil user dari sessionStorage
-            const role = localStorage.getItem("role");
+            if (redirect) {
+                router.push(redirect);
+                console.log("Redirect path:", redirect);
+            } else {
+                // Ambil user dari sessionStorage
+                const role = localStorage.getItem("role");
 
-            router.push(role === "admin" || role === "superadmin" ? "/dashboard" : "/home");
+                router.push(role === "admin" || role === "superadmin" ? "/dashboard" : "/home");
+            }
         } catch (err) {
 
             // Tangani error Firebase
