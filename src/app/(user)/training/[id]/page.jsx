@@ -4,17 +4,30 @@ import { useParams } from "next/navigation";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { auth } from "@/app/firebase/config";
+import { getIdToken } from "firebase/auth";
 
 const TrainingDetail = () => {
   const { id } = useParams();
   const router = useRouter();
-
   const [trainingData, setTrainingData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [sortOrder, setSortOrder] = useState("newest");
   const [filterRating, setFilterRating] = useState(null);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const currentUser = auth.currentUser;
+      if (currentUser) {
+        const token = await getIdToken(currentUser);
+        setUser(currentUser);
+      }
+    };
+    fetchUser();
+  }, []);
 
   useEffect(() => {
     const fetchTrainingDetail = async () => {
@@ -46,6 +59,16 @@ const TrainingDetail = () => {
       return () => clearInterval(interval);
     }
   }, [trainingData?.images?.length]);
+
+  const handleEnrollClick = () => {
+    if (!user) {
+      // Redirect to login page if not logged in
+      router.push(`/auth/signin?redirect=/training/${id}/registration`);
+    } else {
+      // If logged in, proceed to registration page
+      router.push(`/training/${id}/registration`);
+    }
+  };
 
   if (loading) {
     return <div className="p-10 text-center text-blue-600 font-bold text-xl">Loading...</div>;
@@ -203,7 +226,7 @@ const TrainingDetail = () => {
             </div>
           </div>
 
-          <div onClick={() => router.push(`/training/${id}/registration`)} className="mt-4 flex gap-4 w-full">
+          <div onClick={handleEnrollClick} className="mt-4 flex gap-4 w-full">
             <button className="px-6 py-1 border-2 border-mainOrange text-mainOrange font-semibold rounded-lg w-full md:w-[310px] transition duration-300 ease-in-out hover:bg-mainOrange hover:text-white active:scale-95">
               Enroll Now
             </button>
