@@ -205,11 +205,11 @@ export default function EditArticle() {
 
                             {/* Image Upload Section */}
                             <ImageUploader
-                                className="mt-2"
                                 maxImages={3}
                                 images={images}
                                 setImages={setImages}
                                 onImageUpload={handleImageUpload}
+                                uploadEndpoint={`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/articles/upload-image`}
                             />
                         </div>
 
