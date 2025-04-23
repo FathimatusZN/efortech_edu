@@ -17,7 +17,7 @@ export default function TrainingDetailPage() {
   useEffect(() => {
     const fetchTraining = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/training/id/${id}`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/training/id/${id}`);
         const data = await res.json();
 
         if (res.ok) {
@@ -49,7 +49,7 @@ export default function TrainingDetailPage() {
           variant="mainBlue"
           size="sm"
           className="px-6 py-1"
-          onClick={() => router.push(`/training-admin/edit/${training.id}`)}
+          onClick={() => router.push(`/training-admin/${training.training_id}/edit`)}
         >
           <FaEdit className="text-sm mr-2" />
           Edit
