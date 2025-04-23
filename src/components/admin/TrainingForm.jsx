@@ -204,12 +204,17 @@ export default function TrainingForm({
       </div>
 
       {/* Skills & Images */}
-      <div className="flex flex-wrap md:flex-nowrap gap-8 justify-between mt-4">
-        <div className="w-full md:w-[40%] flex flex-col space-y-4">
-          <label className="font-semibold block">Skills</label>
+      <div className="flex flex-wrap md:flex-nowrap gap-8 mt-4">
+        {/* Skills */}
+        <div className="w-full md:w-[40%] flex flex-col">
+          <label className="font-semibold block mb-1">
+            Skills <span className="text-red-500">*</span>
+          </label>
           <SkillsInput skills={skills} setSkills={setSkills} />
         </div>
-        <div>
+
+        {/* Images */}
+        <div className="w-full md:w-[60%]">
           <ImageUploader
             maxImages={3}
             images={images}
