@@ -30,33 +30,61 @@ export default function TrainingPage() {
   const itemsPerPage = 6;
 
   useEffect(() => {
-    const fetchTrainings = async () => {
-      try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/training`);
-        const data = await res.json();
-        if (res.ok) {
-          setTrainingData(data.data); // Pastikan ini sesuai struktur backend
+    // Setup a delay to debounce the search query input
+    const delayDebounce = setTimeout(() => {
+      const fetchTrainings = async () => {
+        try {
+          // Build query params based on current filter/sort/search state
+          const params = new URLSearchParams();
+
+          // Filter by status (convert to backend expected value)
+          if (filterStatus !== "All") {
+            params.append("status", filterStatus === "Active" ? "1" : "2");
+          } else {
+            params.append("status", "all");
+          }
+
+          // Add search query if it's not empty
+          if (searchQuery) {
+            params.append("search", searchQuery);
+          }
+
+          // Add sort params
+          if (sortOrder === "Latest") {
+            params.append("sort_by", "created_date");
+            params.append("sort_order", "desc");
+          } else {
+            params.append("sort_by", "created_date");
+            params.append("sort_order", "asc");
+          }
+
+          // Make API call with constructed query params
+          const res = await fetch(
+            `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/training?${params.toString()}`
+          );
+
+          const data = await res.json();
+
+          // Update state with fetched data
+          if (res.ok) {
+            setTrainingData(data.data);
+          }
+        } catch (err) {
+          console.error("Failed to fetch training data:", err);
         }
-      } catch (err) {
-        console.error("Failed to fetch training data:", err);
-      }
-    };
+      };
 
-    fetchTrainings();
-  }, []);
+      // Call the fetch function after debounce delay
+      fetchTrainings();
+    }, 500); // Wait for 500ms before calling API (debounce)
 
-  const filteredData = trainingData
-    .filter((item) =>
-      (filterStatus === "All" || item.status === filterStatus) &&
-      (item.training_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.description.toLowerCase().includes(searchQuery.toLowerCase()))
-    )
-    .sort((a, b) =>
-      sortOrder === "Latest" ? b.id - a.id : a.id - b.id
-    );
+    // Clear timeout if any of the dependencies change before the delay completes
+    return () => clearTimeout(delayDebounce);
+  }, [filterStatus, sortOrder, searchQuery]); // Rerun effect when filters or search change
 
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-  const paginatedData = filteredData.slice(
+
+  const totalPages = Math.ceil(trainingData.length / itemsPerPage);
+  const paginatedData = trainingData.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
@@ -233,12 +261,11 @@ export default function TrainingPage() {
         </Pagination>
       )}
       <p className="text-sm text-muted-foreground mt-2 flex justify-center items-center">
-        Showing {filteredData.length > 0
-          ? `${(currentPage - 1) * itemsPerPage + 1} - ${Math.min(currentPage * itemsPerPage, filteredData.length)}`
+        Showing {trainingData.length > 0
+          ? `${(currentPage - 1) * itemsPerPage + 1} - ${Math.min(currentPage * itemsPerPage, trainingData.length)}`
           : 0
-        } of {filteredData.length} training data
+        } of {trainingData.length} training data
       </p>
-
     </div>
   );
 }
