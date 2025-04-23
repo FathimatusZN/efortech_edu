@@ -5,12 +5,12 @@ import { cn } from "@/lib/utils";
 // Reusable Title Component
 const PageTitle = ({ title, className }) => {
     return (
-      <h1 className={cn("text-2xl sm:text-3xl font-bold", className)}>
-        {title}
-      </h1>
+        <h1 className={cn("text-2xl sm:text-3xl font-bold", className)}>
+            {title}
+        </h1>
     );
-  };
-  
+};
+
 // Save Button Component
 export const SaveButton = ({ onClick, disabled = false }) => {
     return (
@@ -98,7 +98,7 @@ const SelectDropdown = ({ label, required, children, className, value, onChange 
 };
 
 // Image Uploader Component
-const ImageUploader = ({ maxImages = 3, images, setImages, onImageUpload }) => {
+const ImageUploader = ({ maxImages = 3, images, setImages, onImageUpload, uploadEndpoint }) => {
     const [previewImage, setPreviewImage] = useState(null);
     const [currentUploadIndex, setCurrentUploadIndex] = useState(null);
 
@@ -115,7 +115,7 @@ const ImageUploader = ({ maxImages = 3, images, setImages, onImageUpload }) => {
         formData.append('images', file);
 
         try {
-            const res = await fetch('http://localhost:5000/api/articles/upload-image', {
+            const res = await fetch(uploadEndpoint, {
                 method: 'POST',
                 body: formData,
             });
@@ -152,7 +152,9 @@ const ImageUploader = ({ maxImages = 3, images, setImages, onImageUpload }) => {
 
     return (
         <div className="w-full">
-            <label className="font-semibold">Image *</label>
+            <label className="font-semibold">
+                Image <span className="text-red-500">*</span>
+            </label>
             <div className="flex gap-4 flex-wrap mt-1.5">
                 {images.map((image, index) => (
                     <div key={index} className="relative w-[30%]">
@@ -385,4 +387,57 @@ const SourcesInput = ({ sources, setSources }) => {
     );
 }
 
-export { PageTitle, SaveButton, DiscardButton, AddPageHeader, InputField, SelectDropdown, ImageUploader, AddLabel, SourcesInput };
+const SkillsInput = ({ skills, setSkills }) => {
+    // Menambahkan skill baru
+    const addSkill = () => {
+        setSkills([...skills, ""]); // Tambahkan skill baru berupa string kosong
+    };
+
+    // Menghapus skill berdasarkan index
+    const removeSkill = (index) => {
+        setSkills(skills.filter((_, i) => i !== index));
+    };
+
+    // Mengupdate nilai skill
+    const updateSkill = (index, value) => {
+        const newSkills = skills.map((skill, i) => (i === index ? value : skill));
+        setSkills(newSkills);
+    };
+
+    return (
+        <div>
+            {skills.map((skill, index) => (
+                <div key={index} className="flex items-center text-sm gap-2 mt-2">
+                    {/* Input untuk Skill */}
+                    <input
+                        type="text"
+                        placeholder="Enter skill"
+                        value={skill}
+                        onChange={(e) => updateSkill(index, e.target.value)}
+                        className="w-full p-2 text-[14px] rounded-md shadow-[0px_4px_4px_rgba(21,122,178,0.25)]"
+                    />
+
+                    {/* Tombol Hapus */}
+                    <button
+                        className="bg-error1 text-white p-1 rounded-full hover:bg-mainOrange transition"
+                        onClick={() => removeSkill(index)}
+                    >
+                        <FaTimes size={14} />
+                    </button>
+                </div>
+            ))}
+
+            {/* Tombol Tambah Skill */}
+            <div className="flex justify-end mt-4">
+                <button
+                    onClick={addSkill}
+                    className="bg-lightBlue text-white flex items-center gap-2 text-xs px-3 py-2 rounded-md hover:bg-mainBlue transition"
+                >
+                    <FaPlus size={16} /> Add More Skills
+                </button>
+            </div>
+        </div>
+    );
+}
+
+export { PageTitle, SaveButton, DiscardButton, AddPageHeader, InputField, SelectDropdown, ImageUploader, AddLabel, SourcesInput, SkillsInput };
