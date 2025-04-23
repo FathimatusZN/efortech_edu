@@ -220,7 +220,7 @@ export default function TrainingForm({
             images={images}
             setImages={setImages}
             onImageUpload={onImageUpload}
-            uploadEndpoint={`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/training/upload-training/image`}
+            uploadEndpoint={`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/training/upload-training-image`}
           />
         </div>
       </div>
