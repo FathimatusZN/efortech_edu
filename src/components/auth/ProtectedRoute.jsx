@@ -1,21 +1,17 @@
 "use client";
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/context/AuthContext";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import ErrorPage from "@/components/ui/ErrorPage";
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
     const { user, loading } = useAuth();
-    const router = useRouter();
 
-    useEffect(() => {
-        if (!loading && (!user || !allowedRoles.includes(user.role))) {
-            router.replace("/auth/signin");
-        }
-    }, [user, loading, router, allowedRoles]);
+    if (loading) return <LoadingSpinner text="Loading..." />;
 
-    if (loading) return <p>Loading...</p>;
+    if (!user) return <ErrorPage.Unauthorized />;
+    if (!allowedRoles.includes(user.role)) return <ErrorPage.Forbidden />;
 
-    return user && allowedRoles.includes(user.role) ? children : null;
+    return children;
 };
 
 export default ProtectedRoute;
