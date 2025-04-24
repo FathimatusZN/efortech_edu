@@ -1,4 +1,5 @@
 "use client";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ArrowRight, Plus } from "lucide-react";
@@ -103,169 +104,172 @@ export default function TrainingPage() {
   };
 
   return (
-    <div className="flex flex-col justify-start w-full max-w-screen mx-auto min-h-screen px-8 pb-12">
-      <div className="w-full flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 py-8 px-4">
-        <h2 className="text-2xl font-bold">Training & Courses</h2>
+    <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
 
-        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto items-stretch sm:items-center">
-          <div className="relative w-full sm:w-auto">
-            <input
-              type="text"
-              placeholder="Search..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="text-sm w-full pl-6 pr-10 py-2 rounded-xl border-2 border-mainOrange focus:ring-0 focus:outline-none"
-            />
-            <FaSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
-          </div>
+      <div className="flex flex-col justify-start w-full max-w-screen mx-auto min-h-screen px-8 pb-12">
+        <div className="w-full flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 py-8 px-4">
+          <h2 className="text-2xl font-bold">Training & Courses</h2>
 
-          <div className="flex gap-2 flex-wrap items-center">
-            <Select value={filterStatus} onValueChange={setFilterStatus}>
-              <SelectTrigger className="w-[150px] border-2 border-mainOrange rounded-xl">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="All">All Statuses</SelectItem>
-                <SelectItem value="Active">Active</SelectItem>
-                <SelectItem value="Archived">Archived</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto items-stretch sm:items-center">
+            <div className="relative w-full sm:w-auto">
+              <input
+                type="text"
+                placeholder="Search..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="text-sm w-full pl-6 pr-10 py-2 rounded-xl border-2 border-mainOrange focus:ring-0 focus:outline-none"
+              />
+              <FaSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
+            </div>
 
-            <Select value={sortOrder} onValueChange={setSortOrder}>
-              <SelectTrigger className="w-[130px] border-2 border-mainOrange rounded-xl">
-                <SelectValue placeholder="Sort" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Latest">Latest</SelectItem>
-                <SelectItem value="Oldest">Oldest</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="flex gap-2 flex-wrap items-center">
+              <Select value={filterStatus} onValueChange={setFilterStatus}>
+                <SelectTrigger className="w-[150px] border-2 border-mainOrange rounded-xl">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="All">All Statuses</SelectItem>
+                  <SelectItem value="Active">Active</SelectItem>
+                  <SelectItem value="Archived">Archived</SelectItem>
+                </SelectContent>
+              </Select>
 
-            <Button
-              variant="mainBlue"
-              size="sm"
-              onClick={() => router.push("/training-admin/add")}
-            >
-              <Plus size={16} /> Add New
-            </Button>
+              <Select value={sortOrder} onValueChange={setSortOrder}>
+                <SelectTrigger className="w-[130px] border-2 border-mainOrange rounded-xl">
+                  <SelectValue placeholder="Sort" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Latest">Latest</SelectItem>
+                  <SelectItem value="Oldest">Oldest</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Button
+                variant="mainBlue"
+                size="sm"
+                onClick={() => router.push("/training-admin/add")}
+              >
+                <Plus size={16} /> Add New
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 px-4">
-        {paginatedData.map((item) => {
-          const isArchived = item.status !== 1; // 1 = Active, sesuai backend
-          const badgeClass = isArchived
-            ? "text-gray-500 border-gray-400"
-            : "text-mainOrange border-mainOrange";
-          const cardClass = isArchived
-            ? "bg-gray-50 border-gray-300"
-            : "border-gray-200";
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 px-4">
+          {paginatedData.map((item) => {
+            const isArchived = item.status !== 1; // 1 = Active, sesuai backend
+            const badgeClass = isArchived
+              ? "text-gray-500 border-gray-400"
+              : "text-mainOrange border-mainOrange";
+            const cardClass = isArchived
+              ? "bg-gray-50 border-gray-300"
+              : "border-gray-200";
 
-          const fee = parseFloat(item.training_fees);
-          const discount = parseFloat(item.discount);
-          const finalPrice = item.final_price || (fee - (discount / 100) * fee);
+            const fee = parseFloat(item.training_fees);
+            const discount = parseFloat(item.discount);
+            const finalPrice = item.final_price || (fee - (discount / 100) * fee);
 
-          return (
-            <div
-              key={item.training_id}
-              className={`border shadow-lg rounded-2xl overflow-hidden flex flex-col cursor-pointer w-full h-[430px] max-w-sm ${cardClass}`}
-            >
-              <div className="h-[200px] w-full relative">
-                {discount > 0 && (
-                  <div className="absolute top-2 right-2 bg-red-500 text-white text-[11px] font-semibold px-2 py-[2px] rounded-full shadow-md animate-bounce">
-                    🔥 {discount}% OFF
-                  </div>
-                )}
-                <img
-                  src={item.images?.[0] || "/fallback.jpg"}
-                  alt={item.training_name}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-
-              <div className="flex flex-col justify-between flex-grow p-4">
-                <div>
-                  <h2 className="text-lg font-semibold mb-1 line-clamp-2">
-                    {item.training_name}
-                  </h2>
-                  <p className="text-sm text-gray-600 mb-3 line-clamp-4">
-                    {item.description}
-                  </p>
+            return (
+              <div
+                key={item.training_id}
+                className={`border shadow-lg rounded-2xl overflow-hidden flex flex-col cursor-pointer w-full h-[430px] max-w-sm ${cardClass}`}
+              >
+                <div className="h-[200px] w-full relative">
+                  {discount > 0 && (
+                    <div className="absolute top-2 right-2 bg-red-500 text-white text-[11px] font-semibold px-2 py-[2px] rounded-full shadow-md animate-bounce">
+                      🔥 {discount}% OFF
+                    </div>
+                  )}
+                  <img
+                    src={item.images?.[0] || "/fallback.jpg"}
+                    alt={item.training_name}
+                    className="w-full h-full object-cover"
+                  />
                 </div>
-                <div className="flex items-center justify-between border-t pt-3">
-                  <div className="flex gap-2 items-center">
-                    <span
-                      className={`px-3 py-1 rounded-lg font-semibold text-sm border ${badgeClass}`}
-                    >
-                      {item.status === 1 ? "Active" : "Archived"}
-                    </span>
 
-                    {discount > 0 ? (
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-semibold text-gray-500 line-through border px-3 py-1 rounded-lg">
-                          {formatRupiah(fee)}
-                        </span>
-                        <span className="text-sm font-bold text-mainOrange px-3 py-1 border border-mainOrange rounded-lg ml-2">
-                          {formatRupiah(finalPrice)}
-                        </span>
-                      </div>
-                    ) : (
+                <div className="flex flex-col justify-between flex-grow p-4">
+                  <div>
+                    <h2 className="text-lg font-semibold mb-1 line-clamp-2">
+                      {item.training_name}
+                    </h2>
+                    <p className="text-sm text-gray-600 mb-3 line-clamp-4">
+                      {item.description}
+                    </p>
+                  </div>
+                  <div className="flex items-center justify-between border-t pt-3">
+                    <div className="flex gap-2 items-center">
                       <span
                         className={`px-3 py-1 rounded-lg font-semibold text-sm border ${badgeClass}`}
                       >
-                        {formatRupiah(fee)}
+                        {item.status === 1 ? "Active" : "Archived"}
                       </span>
-                    )}
-                  </div>
 
-                  <ArrowRight
-                    className="text-gray-600 hover:text-mainOrange transition-all"
-                    onClick={() => router.push(`/training-admin/${item.training_id}`)}
-                  />
+                      {discount > 0 ? (
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-semibold text-gray-500 line-through border px-3 py-1 rounded-lg">
+                            {formatRupiah(fee)}
+                          </span>
+                          <span className="text-sm font-bold text-mainOrange px-3 py-1 border border-mainOrange rounded-lg ml-2">
+                            {formatRupiah(finalPrice)}
+                          </span>
+                        </div>
+                      ) : (
+                        <span
+                          className={`px-3 py-1 rounded-lg font-semibold text-sm border ${badgeClass}`}
+                        >
+                          {formatRupiah(fee)}
+                        </span>
+                      )}
+                    </div>
+
+                    <ArrowRight
+                      className="text-gray-600 hover:text-mainOrange transition-all"
+                      onClick={() => router.push(`/training-admin/${item.training_id}`)}
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
 
-      </div>
+        </div>
 
-      {/* === PAGINATION === */}
-      {totalPages > 1 && (
-        <Pagination className="mt-12">
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious
-                onClick={() => handlePageChange(currentPage - 1)}
-              />
-            </PaginationItem>
-
-            {Array.from({ length: totalPages }).map((_, index) => (
-              <PaginationItem key={index}>
-                <PaginationLink
-                  isActive={currentPage === index + 1}
-                  onClick={() => handlePageChange(index + 1)}
-                >
-                  {index + 1}
-                </PaginationLink>
+        {/* === PAGINATION === */}
+        {totalPages > 1 && (
+          <Pagination className="mt-12">
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  onClick={() => handlePageChange(currentPage - 1)}
+                />
               </PaginationItem>
-            ))}
 
-            <PaginationItem>
-              <PaginationNext
-                onClick={() => handlePageChange(currentPage + 1)}
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
-      )}
-      <p className="text-sm text-muted-foreground mt-2 flex justify-center items-center">
-        Showing {trainingData.length > 0
-          ? `${(currentPage - 1) * itemsPerPage + 1} - ${Math.min(currentPage * itemsPerPage, trainingData.length)}`
-          : 0
-        } of {trainingData.length} training data
-      </p>
-    </div>
+              {Array.from({ length: totalPages }).map((_, index) => (
+                <PaginationItem key={index}>
+                  <PaginationLink
+                    isActive={currentPage === index + 1}
+                    onClick={() => handlePageChange(index + 1)}
+                  >
+                    {index + 1}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
+
+              <PaginationItem>
+                <PaginationNext
+                  onClick={() => handlePageChange(currentPage + 1)}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        )}
+        <p className="text-sm text-muted-foreground mt-2 flex justify-center items-center">
+          Showing {trainingData.length > 0
+            ? `${(currentPage - 1) * itemsPerPage + 1} - ${Math.min(currentPage * itemsPerPage, trainingData.length)}`
+            : 0
+          } of {trainingData.length} training data
+        </p>
+      </div>
+    </ProtectedRoute>
   );
 }
