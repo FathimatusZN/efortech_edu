@@ -140,7 +140,7 @@ export default function TrainingDetailPage() {
           <h2 className="text-xl sm:text-2xl text-mainOrange font-bold mb-1">Certificate Validity</h2>
           <p className="text-black text-sm whitespace-pre-line mb-10">
             {training.validity_period
-              ? `${training.validity_period} ${training.validity_period > 1 ? "Years" : "Year"}`
+              ? `${training.validity_period} ${training.validity_period > 1 ? "Months" : "Month"}`
               : "No certificate validity information."}
           </p>
         </div>

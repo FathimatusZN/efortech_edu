@@ -164,7 +164,7 @@ const TrainingDetail = () => {
               <p className="text-lg text-mainOrange font-bold whitespace-nowrap">Certificate Validity</p>
               <p className="text-sm text-black font-semibold whitespace-nowrap">
                 {trainingData.validity_period
-                  ? `${trainingData.validity_period} ${trainingData.validity_period > 1 ? "Years" : "Year"}`
+                  ? `${trainingData.validity_period} ${trainingData.validity_period > 1 ? "Months" : "Month"}`
                   : "N/A"}
               </p>
             </div>
