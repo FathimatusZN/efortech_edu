@@ -4,7 +4,7 @@ import { useParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { FaEdit } from "react-icons/fa";
+import { FaEdit, FaTrash } from "react-icons/fa";
 
 export default function TrainingDetailPage() {
   const router = useRouter();
@@ -40,20 +40,54 @@ export default function TrainingDetailPage() {
   if (error) return <div className="p-6 md:p-8 text-red-500">{error}</div>;
   if (!training) return <div className="p-6 md:p-8">Training not found</div>;
 
+  const handleDelete = async () => {
+    const confirm = window.confirm("Are you sure you want to archive this training?");
+    if (!confirm) return;
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/training/archive/${training.training_id}`, {
+        method: "PUT",
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        alert("Training has been archived successfully.");
+        router.push("/training-admin");
+      } else {
+        alert(data.message || "Failed to archive training.");
+      }
+    } catch (error) {
+      alert("Error occurred while archiving training.");
+      console.error(error);
+    }
+  };
+
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:justify-between items-start sm:items-center mt-6 mb-6 gap-4">
         <h1 className="text-xl sm:text-2xl font-bold">Training Detail</h1>
-        <Button
-          variant="mainBlue"
-          size="sm"
-          className="px-6 py-1"
-          onClick={() => router.push(`/training-admin/${training.training_id}/edit`)}
-        >
-          <FaEdit className="text-sm mr-2" />
-          Edit
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="mainBlue"
+            size="sm"
+            className="px-4 py-1"
+            onClick={() => router.push(`/training-admin/${training.training_id}/edit`)}
+          >
+            <FaEdit className="text-sm mr-2" />
+            Edit
+          </Button>
+          <Button
+            variant="destructive"
+            size="sm"
+            className="px-4 py-1 bg-red-600 hover:bg-red-700"
+            onClick={handleDelete}
+          >
+            <FaTrash className="text-sm mr-2" />
+            Delete
+          </Button>
+        </div>
       </div>
 
       {/* Hero Image + Info */}
