@@ -5,7 +5,8 @@ import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { auth } from "@/app/firebase/config";
 import { getIdToken } from "firebase/auth";
-import { Check, Trash2, Loader2 } from "lucide-react";
+import { Check, Trash2 } from "lucide-react";
+import { SuccessDialog } from "@/components/ui/SuccessDialog";
 
 const RegistrationPage = () => {
   const { id } = useParams();
@@ -29,6 +30,8 @@ const RegistrationPage = () => {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [emailValidation, setEmailValidation] = useState({});
   const debounceTimers = useRef({});
+
+  const [showDialog, setShowDialog] = useState(false);
 
   // Fetch training data
   useEffect(() => {
@@ -107,26 +110,42 @@ const RegistrationPage = () => {
 
   const validateForm = () => {
     const newErrors = {};
-    if (!formData.fullName) newErrors.fullName = "Full Name is required";
-    if (!formData.email) newErrors.email = "Email is required";
-    if (!formData.institution)
-      newErrors.institution = "Institution is required";
-    if (!formData.date) newErrors.date = "Date is required";
-    additionalEmails.forEach((email, idx) => {
-      if (!email)
-        newErrors[`email${idx}`] = `Email peserta ke-${idx + 2} harus diisi`;
-    });
-
+  
+    const requiredFields = {
+      fullName: "Full Name is required",
+      email: "Email is required",
+      institution: "Institution is required",
+      date: "Date is required",
+    };
+  
+    for (const key in requiredFields) {
+      if (!formData[key]) {
+        newErrors[key] = requiredFields[key];
+      }
+    }
+  
+    if (participantCount > 1) {
+      additionalEmails.forEach(({ email }, idx) => {
+        if (!email)
+          newErrors[`email${idx}`] = `Email peserta ke-${idx + 2} harus diisi`;
+      });
+    }    
+  
+    // Manual check untuk checkbox terms
+    const termsAccepted = document.getElementById("terms").checked;
+    if (!termsAccepted) {
+      // Kita gak pakai errors.terms, tapi tetap return false
+      return false;
+    }
+  
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  };
+  };      
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!validateForm()) return;
-
-    // TODO: Submit form to backend
-    setIsSubmitted(true);
+    setShowDialog(true);
   };
 
   const handleParticipantCountChange = (e) => {
@@ -457,24 +476,13 @@ const RegistrationPage = () => {
           </div>
         </form>
 
-        {/* Success modal */}
-        {isSubmitted && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-lg shadow-xl w-[90%] max-w-sm text-center">
-              <div className="mt-2 text-green-500 text-6xl mb-4">✔</div>
-              <h2 className="text-xl font-bold mb-2">Registration Success!</h2>
-              <p className="text-sm text-gray-600 mb-4">
-                We’ll email the details to you soon. <br /> Have a great day!
-              </p>
-              <button
-                onClick={() => setIsSubmitted(false)}
-                className="bg-orange-500 text-white font-semibold px-8 py-2 rounded-lg hover:bg-orange-600 transition"
-              >
-                Okay
-              </button>
-            </div>
-          </div>
-        )}
+        <SuccessDialog
+          open={showDialog}
+          onOpenChange={setShowDialog}
+          title="Registration Success!"
+          messages={["We’ll email the details to you soon.", "Have a great day!"]}
+          buttonText="Okay"
+        />
       </div>
     </div>
   );
