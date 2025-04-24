@@ -71,7 +71,7 @@ export default function CertificateValidation() {
       </div>
 
       {searchTerm === "" ? (
-        <div className="text-center mt-20 min-h-screen">
+        <div className="text-center mt-10 min-h-screen">
           <img src="/assets/no-data.png" alt="No Data" className="mx-auto w-64" />
           <p className="text-gray-600 mt-4">
             Please enter your name or ID to search for certificates.
@@ -99,9 +99,8 @@ export default function CertificateValidation() {
                   <TableCell>{item.course}</TableCell>
                   <TableCell>{item.expired}</TableCell>
                   <TableCell
-                    className={`font-semibold ${
-                      item.status === "Valid" ? "text-green-600" : "text-red-600"
-                    }`}
+                    className={`font-semibold ${item.status === "Valid" ? "text-green-600" : "text-red-600"
+                      }`}
                   >
                     {item.status}
                   </TableCell>
@@ -111,8 +110,8 @@ export default function CertificateValidation() {
           </Table>
         </div>
       ) : (
-        <div className="text-center mt-20 min-h-screen">
-          <img src="/assets/no-match.png" alt="No Match" className="mx-auto w-80" />
+        <div className="text-center mt-2 min-h-screen">
+          <img src="/assets/not-found.png" alt="No Match" className="mx-auto w-80" />
           <p className="text-gray-600 mt-4">
             Nothing matches the name or ID entered.
           </p>
