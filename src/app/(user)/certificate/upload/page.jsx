@@ -4,13 +4,14 @@ import { useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { FaUpload, FaFilePdf, FaCheckCircle, FaAsterisk } from "react-icons/fa";
 import { Button } from "@/components/ui/button";
+import { SuccessDialog } from "@/components/ui/SuccessDialog";
 
 export default function UploadCertificate() {
   const [file, setFile] = useState(null);
   const [fullName, setFullName] = useState("");
   const [institution, setInstitution] = useState("");
   const [date, setDate] = useState("");
-  const [showPopup, setShowPopup] = useState(false);
+  const [showDialog, setShowDialog] = useState(false);
 
   const { getRootProps, getInputProps } = useDropzone({
     accept: "application/pdf,image/*",
@@ -22,7 +23,7 @@ export default function UploadCertificate() {
       alert("Please fill in all fields and upload a file.");
       return;
     }
-    setShowPopup(true);
+    setShowDialog(true);
     setFullName("");
     setInstitution("");
     setDate("");
@@ -111,22 +112,10 @@ export default function UploadCertificate() {
         Submit
       </Button>
 
-      {showPopup && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 px-4">
-          <div className="bg-white border-4 border-mainBlue p-6 rounded-lg shadow-lg text-center w-full max-w-sm">
-            <FaCheckCircle className="text-green-500 text-8xl mt-8 mx-auto mb-4" />
-            <p className="text-lg font-bold text-black mb-2">Submission Success!</p>
-            <p className="text-sm font-normal text-mainGrey">We'll email the result to you soon.</p>
-            <p className="text-sm font-normal text-mainGrey mb-4">Have a great day!</p>
-            <button
-              onClick={() => setShowPopup(false)}
-              className="px-4 py-2 mb-8 bg-mainOrange text-white rounded-md hover:bg-secondOrange"
-            >
-              Okay
-            </button>
-          </div>
-        </div>
-      )}
+      <SuccessDialog
+        open={showDialog}
+        onOpenChange={setShowDialog}
+      />
     </div>
   );
 }

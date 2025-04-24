@@ -3,25 +3,24 @@
 import React, { useState } from 'react';
 import { Star } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { BsCheckCircleFill } from 'react-icons/bs';
+import { SuccessDialog } from "@/components/ui/SuccessDialog";
 
 const StarRating = ({ rating, onRate }) => (
   <div className="flex items-center justify-center gap-2 mb-6">
     {[1, 2, 3, 4, 5].map((index) => (
-        <button
-            key={index}
-            type="button" // ⬅️ Fix ada di sini!
-            onClick={() => onRate(index)}
-            className="focus:outline-none"
-        >
-            <Star
-            size={36}
-            fill={index <= rating ? '#FBBF24' : 'none'}
-            stroke="#FBBF24"
-            />
-        </button>
-        ))}
+      <button
+        key={index}
+        type="button"
+        onClick={() => onRate(index)}
+        className="focus:outline-none"
+      >
+        <Star
+          size={36}
+          fill={index <= rating ? '#FBBF24' : 'none'}
+          stroke="#FBBF24"
+        />
+      </button>
+    ))}
   </div>
 );
 
@@ -67,23 +66,17 @@ export default function FeedbackForm() {
         </div>
       </form>
 
-      {isDialogOpen && (
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="max-w-md rounded-2xl border-4 border-mainBlue text-center p-10">
-            <DialogHeader>
-              <DialogTitle className="text-2xl font-bold text-black mb-2">
-                Thank You
-              </DialogTitle>
-              <DialogDescription className="text-gray-600">
-                Your review has been submitted
-              </DialogDescription>
-            </DialogHeader>
-            <div className="flex justify-center mt-6">
-              <BsCheckCircleFill size={80} fill="#6DB73C" />
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
+      {/* 🔥 Dialog yang udah bener */}
+      <SuccessDialog
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        title="Thank You!"
+        messages={[
+          "Your review has been submitted.",
+          "Have a great day!"
+        ]}
+        buttonText="Okay"
+      />
     </div>
   );
 }
