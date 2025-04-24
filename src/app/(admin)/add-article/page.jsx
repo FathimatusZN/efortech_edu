@@ -38,7 +38,7 @@ export default function AddArticle() {
                 category,
                 content_body: content,
                 admin_id: user?.user_id,
-                author: author || user?.full_name || user?.email,
+                author: author || user?.fullname || user?.email,
                 tags: tags.filter(tag => tag.trim() !== ""),
                 sources: sources.filter(src => src.preview_text && src.source_link),
                 images: cleanImages,

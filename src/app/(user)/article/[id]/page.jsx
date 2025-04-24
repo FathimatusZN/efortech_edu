@@ -10,6 +10,10 @@ export default function ArticleDetail({ params }) {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
+  const truncateText = (text, maxLength) => {
+    return text.length > maxLength ? text.slice(0, maxLength) + '...' : text;
+  };  
+
   useEffect(() => {
     const fetchArticle = async () => {
       try {
@@ -83,10 +87,13 @@ export default function ArticleDetail({ params }) {
             {article.sources.map((source, index) => (
               <span
                 key={index}
-                className="bg-mainBlue text-white text-sm px-3 py-1 rounded-full"
+                className={`text-sm font-semibold px-4 py-1 rounded-full ${index % 2 === 0
+                  ? "bg-mainBlue text-white"
+                  : "bg-mainOrange text-white"
+                  }`}
               >
-                <a href={source.source_link} target="_blank" rel="noopener noreferrer">
-                  {source.preview_text}
+                <a href={source.source_link} target="_blank" rel="noopener noreferrer" className="underline">
+                  {truncateText(source.preview_text, 50)}
                 </a>
               </span>
             ))}
