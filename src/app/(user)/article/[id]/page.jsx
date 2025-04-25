@@ -2,6 +2,7 @@
 import { use, useEffect, useState } from "react";
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
+import { NotFound } from "../../../../components/ui/ErrorPage";
 
 export default function ArticleDetail({ params }) {
   const { id } = use(params);
@@ -12,7 +13,7 @@ export default function ArticleDetail({ params }) {
 
   const truncateText = (text, maxLength) => {
     return text.length > maxLength ? text.slice(0, maxLength) + '...' : text;
-  };  
+  };
 
   useEffect(() => {
     const fetchArticle = async () => {
@@ -36,7 +37,7 @@ export default function ArticleDetail({ params }) {
   }, [id]);
 
   if (loading) return <p className="text-center mt-10">Loading...</p>;
-  if (notFound || !article) return <h1 className="text-center mt-10">Artikel tidak ditemukan</h1>;
+  if (notFound || !article) return <NotFound message={"Article Not Found"} buttons={[{ text: "Back to Articles Page", href: "/article" }]} />;
 
   return (
     <div className="max-w-screen w-full relative">
