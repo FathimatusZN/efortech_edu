@@ -5,30 +5,19 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Pagination, Autoplay } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/pagination";
-
+import { NotFound } from "../../../components/ui/ErrorPage";
 import ArticleCard from "@/components/layout/ArticleCard";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { FaSearch } from "react-icons/fa";
+import { useRouter } from "next/navigation";
 
-const categories = ["All", "Event", "Success Story", "Education", "Blog"];
-const categoryMap = {
-  1: "Education",
-  2: "Event",
-  3: "Success Story",
-  4: "Blog"
-};
-
-const reverseCategoryMap = {
-  "Education": 1,
-  "Event": 2,
-  "Success Story": 3,
-  "Blog": 4,
-};
+const categoryOptions = [
+  { id: 0, label: "All" },
+  { id: 1, label: "Education" },
+  { id: 2, label: "Event" },
+  { id: 3, label: "Success Story" },
+  { id: 4, label: "Blog" },
+];
 
 const carouselImages = [
   { id: 1, src: "/assets/dashboard-bg.png", title: "6 Cara Digital Twin Mengubah Industri Manufaktur" },
@@ -37,31 +26,48 @@ const carouselImages = [
 ];
 
 export default function ArticlePage() {
+  const router = useRouter();
   const [articles, setArticles] = useState([]);
+  const [mostViewedArticles, setMostViewedArticles] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
-    const fetchArticles = async () => {
-      try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/articles`);
-        if (!response.ok) throw new Error("Failed to fetch articles");
-
-        const data = await response.json();
-        setArticles(data.data); // asumsikan data.data berisi array artikel
-      } catch (error) {
-        console.error("Error fetching articles:", error);
-      }
-    };
-
     fetchArticles();
   }, []);
 
-  const filteredArticles =
-    selectedCategory === "All"
-      ? articles
-      : articles.filter(
-        (article) => article.category === reverseCategoryMap[selectedCategory]
-      );
+  const fetchArticles = async () => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/articles`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+
+      setArticles(data.data);
+      const sorted = [...data.data].sort((a, b) => b.views - a.views);
+      setMostViewedArticles(sorted.slice(0, 3));
+    } catch (error) {
+      console.error("Error fetching articles:", error);
+    }
+  };
+
+  const fetchSearchResults = async () => {
+    if (!searchQuery.trim()) return fetchArticles();
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/articles/search?query=${encodeURIComponent(searchQuery)}`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+      setArticles(data.data);
+    } catch (err) {
+      console.error("Search error:", err);
+      setArticles([]);
+    }
+  };
+
+  const filteredArticles = articles?.filter(article => {
+    const selectedCatObj = categoryOptions.find(cat => cat.label === selectedCategory);
+    return selectedCategory === "All" || article.category === selectedCatObj?.id;
+  }) || [];
 
   const stripHtml = (html) => {
     if (!html) return "";
@@ -74,44 +80,67 @@ export default function ArticlePage() {
       {/* Carousel */}
       <Swiper
         modules={[Pagination, Autoplay]}
-        pagination={{
-          el: ".custom-pagination",
-          clickable: true,
-        }}
+        pagination={{ el: ".custom-pagination", clickable: true }}
         autoplay={{ delay: 5000 }}
-        loop={true}
+        loop
         className="w-full h-[50vh] md:h-[40vh] lg:h-[35vh] overflow-hidden shadow-lg"
       >
-        {carouselImages.map((slide) => (
-          <SwiperSlide key={slide.id} className="relative">
+        {mostViewedArticles.map((article) => (
+          <SwiperSlide
+            key={article.article_id}
+            className="relative cursor-pointer"
+            onClick={() => router.push(`/article/${article.article_id}`)}
+          >
             <img
-              src={slide.src}
-              alt={slide.title}
+              src={article.images?.[0] || "/assets/Gambar2.jpg"}
+              alt={article.title}
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-black/50 flex items-end text-white text-center p-6">
-              <h1 className="text-lg md:text-xl lg:text-2xl font-bold">{slide.title}</h1>
+              <h1 className="text-lg md:text-xl lg:text-2xl font-bold">
+                {article.title}
+              </h1>
             </div>
           </SwiperSlide>
         ))}
       </Swiper>
-
       <div className="custom-pagination flex justify-center mt-4"></div>
 
-      {/* Filter */}
+      {/* Search + Filter */}
       <div className="mt-6 mx-auto px-4 flex flex-col md:flex-row md:items-center md:justify-center gap-4">
-        <div className="w-full md:w-1/3">
+        {/* Search Field */}
+        <div className="relative w-full md:w-1/3">
+          <input
+            type="text"
+            placeholder="Search article..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") fetchSearchResults();
+            }}
+            className="w-full h-[38px] px-4 pr-10 border-2 border-mainOrange rounded-md"
+          />
+          <button
+            onClick={fetchSearchResults}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-black hover:text-mainOrange"
+          >
+            <FaSearch />
+          </button>
+        </div>
+
+        {/* Category Filter */}
+        <div className="w-full md:w-1/6">
           <Select
             value={selectedCategory}
             onValueChange={(value) => setSelectedCategory(value)}
           >
-            <SelectTrigger className="w-full rounded-full shadow-lg border-orange-500 focus:ring-orange-600">
+            <SelectTrigger className="w-full h-[38px] rounded-md shadow-lg border-orange-500 focus:ring-orange-600">
               <SelectValue placeholder="Select Category" />
             </SelectTrigger>
             <SelectContent>
-              {categories.map((category) => (
-                <SelectItem key={category} value={category}>
-                  {category}
+              {categoryOptions.map((cat) => (
+                <SelectItem key={cat.id} value={cat.label}>
+                  {cat.label}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -120,21 +149,33 @@ export default function ArticlePage() {
       </div>
 
       {/* Article Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 p-10 mx-auto max-w-max">
-        {filteredArticles.map((article) => (
-          <ArticleCard
-            key={article.article_id}
-            id={article.article_id}
-            category={categoryMap[article.category]}
-            title={article.title}
-            description={stripHtml(article.content_body)}
-            image={
-              article.images && article.images.length > 0
-                ? article.images[0]
-                : "/assets/Gambar2.jpg"
+      <div className="p-10 mx-auto max-w-7xl w-full">
+        {filteredArticles.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+            {filteredArticles.map((article) => {
+              const categoryObj = categoryOptions.find((cat) => cat.id === article.category);
+              return (
+                <ArticleCard
+                  key={article.article_id}
+                  id={article.article_id}
+                  category={categoryObj?.label || "Unknown"}
+                  title={article.title}
+                  description={stripHtml(article.content_body)}
+                  image={article.images?.[0] || "/assets/Gambar2.jpg"}
+                />
+              );
+            })}
+          </div>
+        ) : (
+          <NotFound
+            message={
+              searchQuery
+                ? "We couldn’t find any article matching your search. Try different keywords."
+                : "No articles found in this category."
             }
+            buttons={[]}
           />
-        ))}
+        )}
       </div>
     </div>
   );
