@@ -63,7 +63,7 @@ export default function TrainingPage() {
 
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/training/search?query=${encodeURIComponent(searchQuery)}`
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/training?search=${encodeURIComponent(searchQuery)}`
       );
       const data = await res.json();
 
