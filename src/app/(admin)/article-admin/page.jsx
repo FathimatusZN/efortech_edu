@@ -47,21 +47,24 @@ const ArticlePage = () => {
 
         try {
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/articles/search?query=${encodeURIComponent(searchQuery)}`);
-            if (!response.ok) {
-                const errorData = await response.json();
-                console.warn("Search error:", errorData.message);
+            const data = await response.json();
+
+            if (!response.ok || !Array.isArray(data.data)) {
+                console.warn("Search error or invalid data:", data.message || "Invalid response");
                 setArticles([]);
                 setDisplayedArticles([]);
                 setLoadedCount(0);
                 return;
             }
 
-            const data = await response.json();
             setArticles(data.data);
             setDisplayedArticles(data.data.slice(0, PAGE_SIZE));
             setLoadedCount(PAGE_SIZE);
         } catch (error) {
             console.error("Error searching articles:", error);
+            setArticles([]);
+            setDisplayedArticles([]);
+            setLoadedCount(0);
         }
     };
 
@@ -139,7 +142,7 @@ const ArticlePage = () => {
                     ))}
                 </div>
 
-                {displayedArticles.length === 0 && (
+                {Array.isArray(displayedArticles) && displayedArticles.length === 0 && (
                     <NotFound message="We couldn’t find any articles matching your search. Try different keywords." buttons={[]} />
                 )}
 
