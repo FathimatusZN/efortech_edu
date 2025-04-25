@@ -48,16 +48,20 @@ const ErrorTemplate = ({ code, message, image, buttons }) => {
 };
 
 // Factory-style exports
-const ErrorPage = {
-    BadRequest: () => (
+
+export const BadRequest = () => {
+    return (
         <ErrorTemplate
             code="400 Bad Request"
             message="Your request could not be understood by the server due to malformed syntax."
             image="/assets/bad-request.png"
             buttons={[{ text: "Back to Home", href: "/home" }]}
         />
-    ),
-    Unauthorized: () => (
+    );
+};
+
+export const Unauthorized = () => {
+    return (
         <ErrorTemplate
             code="401 Unauthorized"
             message="You need to sign in to access this page."
@@ -67,63 +71,82 @@ const ErrorPage = {
                 { text: "Go to Sign In", href: "/auth/signin" }
             ]}
         />
-    ),
-    Forbidden: () => (
+    );
+};
+
+export const Forbidden = () => {
+    return (
         <ErrorTemplate
             code="403 Forbidden"
             message="You don’t have permission to access this page. Please sign in with an account that has the appropriate access rights."
             image="/assets/forbidden.png"
             buttons={[{ text: "Back to Home", href: "/home" }]}
         />
-    ),
-    NotFound: () => (
+    );
+}
+
+export const NotFound = () => {
+    return (
         <ErrorTemplate
             code="404 Not Found"
             message="The page you are looking for could not be found."
             image="/assets/not-found.png"
             buttons={[{ text: "Back to Home", href: "/home" }]}
         />
-    ),
-    RequestTimeout: () => (
+    );
+}
+
+export const RequestTimeout = () => {
+    return (
         <ErrorTemplate
             code="408 Request Timeout"
             message="The server timed out waiting for your request. Please try again."
             image="/assets/request-timeout.png"
             buttons={[{ text: "Back to Home", href: "/home" }]}
         />
-    ),
-    InternalServerError: () => (
+    );
+}
+
+export const InternalServerError = () => {
+    return (
         <ErrorTemplate
             code="500 Internal Server Error"
             message="Something went wrong on our side. Please try again later."
             image="/assets/internal-server-error.png"
             buttons={[{ text: "Back to Home", href: "/home" }]}
         />
-    ),
-    BadGateway: () => (
+    );
+}
+
+export const BadGateway = () => {
+    return (
         <ErrorTemplate
             code="502 Bad Gateway"
             message="The server received an invalid response. Please try again shortly."
             image="/assets/bad-gateway.png"
             buttons={[{ text: "Back to Home", href: "/home" }]}
         />
-    ),
-    ServiceUnavailable: () => (
+    );
+}
+
+export const ServiceUnavailable = () => {
+    return (
         <ErrorTemplate
             code="503 Service Unavailable"
             message="The service is temporarily unavailable. Please try again later."
             image="/assets/service-unavailable.png"
             buttons={[{ text: "Back to Home", href: "/home" }]}
         />
-    ),
-    GatewayTimeout: () => (
+    );
+}
+
+export const GatewayTimeout = () => {
+    return (
         <ErrorTemplate
             code="504 Gateway Timeout"
             message="The server did not receive a timely response. Please try again later."
             image="/assets/gateway-timeout.png"
             buttons={[{ text: "Back to Home", href: "/home" }]}
         />
-    ),
-};
-
-export default ErrorPage;
+    );
+}
