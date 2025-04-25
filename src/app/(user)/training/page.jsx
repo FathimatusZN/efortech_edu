@@ -12,7 +12,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import TrainingCard from "../../../components/layout/TrainingCard";
-import NotFound from "../../../components/ui/NotFound";
+import { NotFound } from "../../../components/ui/ErrorPage";
 
 export default function TrainingPage() {
   const router = useRouter();
@@ -113,15 +113,17 @@ export default function TrainingPage() {
       </div>
 
       {/* Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-8 pt-8 justify-center">
-        {paginatedTraining.length > 0 ? (
-          paginatedTraining.map((training) => (
+      {paginatedTraining.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-8 pt-8 justify-center">
+          {paginatedTraining.map((training) => (
             <TrainingCard key={training.training_id} training={training} />
-          ))
-        ) : (
-          <NotFound message="No training found." className="flex justify-center items-center col-span-full" />
-        )}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <div className="pt-8">
+          <NotFound message="We couldn’t find any training matching your search. Try different keywords." buttons={[]} />
+        </div>
+      )}
 
       {/* Pagination */}
       {totalPages > 1 && (
