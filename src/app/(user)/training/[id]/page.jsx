@@ -259,8 +259,8 @@ const TrainingDetail = () => {
             </div>
           </div>
 
-          <div onClick={handleEnrollClick} className="mt-4 flex gap-4 w-full">
-            <button className="px-6 py-1 border-2 border-mainOrange text-mainOrange font-semibold rounded-lg w-full md:w-[310px] transition duration-300 ease-in-out hover:bg-mainOrange hover:text-white active:scale-95">
+          <div className="mt-4 flex gap-4 w-full">
+            <button onClick={handleEnrollClick} className="px-6 py-1 border-2 border-mainOrange text-mainOrange font-semibold rounded-lg w-full md:w-[310px] transition duration-300 ease-in-out hover:bg-mainOrange hover:text-white active:scale-95">
               Enroll Now
             </button>
             <button
