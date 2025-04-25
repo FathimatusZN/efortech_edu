@@ -49,104 +49,77 @@ const ErrorTemplate = ({ code, message, image, buttons }) => {
 
 // Factory-style exports
 
-export const BadRequest = () => {
-    return (
-        <ErrorTemplate
-            code="400 Bad Request"
-            message="Your request could not be understood by the server due to malformed syntax."
-            image="/assets/bad-request.png"
-            buttons={[{ text: "Back to Home", href: "/home" }]}
-        />
-    );
-};
+export const BadRequest = ({
+    message = "Your request could not be understood by the server due to malformed syntax.",
+    image = "/assets/bad-request.png",
+    buttons = [{ text: "Back to Home", href: "/home" }],
+}) => (
+    <ErrorTemplate code="400 Bad Request" message={message} image={image} buttons={buttons} />
+);
 
-export const Unauthorized = () => {
-    return (
-        <ErrorTemplate
-            code="401 Unauthorized"
-            message="You need to sign in to access this page."
-            image="/assets/unauthorized.png"
-            buttons={[
-                { text: "Back to Home", href: "/home" },
-                { text: "Go to Sign In", href: "/auth/signin" }
-            ]}
-        />
-    );
-};
+export const Unauthorized = ({
+    message = "You need to sign in to access this page.",
+    image = "/assets/unauthorized.png",
+    buttons = [
+        { text: "Back to Home", href: "/home" },
+        { text: "Go to Sign In", href: "/auth/signin" },
+    ],
+}) => (
+    <ErrorTemplate code="401 Unauthorized" message={message} image={image} buttons={buttons} />
+);
 
-export const Forbidden = () => {
-    return (
-        <ErrorTemplate
-            code="403 Forbidden"
-            message="You don’t have permission to access this page. Please sign in with an account that has the appropriate access rights."
-            image="/assets/forbidden.png"
-            buttons={[{ text: "Back to Home", href: "/home" }]}
-        />
-    );
-}
+export const Forbidden = ({
+    message = "You don’t have permission to access this page. Please sign in with an account that has the appropriate access rights.",
+    image = "/assets/forbidden.png",
+    buttons = [{ text: "Back to Home", href: "/home" }],
+}) => (
+    <ErrorTemplate code="403 Forbidden" message={message} image={image} buttons={buttons} />
+);
 
-export const NotFound = () => {
-    return (
-        <ErrorTemplate
-            code="404 Not Found"
-            message="The page you are looking for could not be found."
-            image="/assets/not-found.png"
-            buttons={[{ text: "Back to Home", href: "/home" }]}
-        />
-    );
-}
+export const NotFound = ({
+    message = "The page you are looking for could not be found.",
+    image = "/assets/not-found.png",
+    buttons = [{ text: "Back to Home", href: "/home" }],
+}) => (
+    <ErrorTemplate code="404 Not Found" message={message} image={image} buttons={buttons} />
+);
 
-export const RequestTimeout = () => {
-    return (
-        <ErrorTemplate
-            code="408 Request Timeout"
-            message="The server timed out waiting for your request. Please try again."
-            image="/assets/request-timeout.png"
-            buttons={[{ text: "Back to Home", href: "/home" }]}
-        />
-    );
-}
+export const RequestTimeout = ({
+    message = "The server timed out waiting for your request. Please try again.",
+    image = "/assets/request-timeout.png",
+    buttons = [{ text: "Back to Home", href: "/home" }],
+}) => (
+    <ErrorTemplate code="408 Request Timeout" message={message} image={image} buttons={buttons} />
+);
 
-export const InternalServerError = () => {
-    return (
-        <ErrorTemplate
-            code="500 Internal Server Error"
-            message="Something went wrong on our side. Please try again later."
-            image="/assets/internal-server-error.png"
-            buttons={[{ text: "Back to Home", href: "/home" }]}
-        />
-    );
-}
+export const InternalServerError = ({
+    message = "Something went wrong on our side. Please try again later.",
+    image = "/assets/internal-server-error.png",
+    buttons = [{ text: "Back to Home", href: "/home" }],
+}) => (
+    <ErrorTemplate code="500 Internal Server Error" message={message} image={image} buttons={buttons} />
+);
 
-export const BadGateway = () => {
-    return (
-        <ErrorTemplate
-            code="502 Bad Gateway"
-            message="The server received an invalid response. Please try again shortly."
-            image="/assets/bad-gateway.png"
-            buttons={[{ text: "Back to Home", href: "/home" }]}
-        />
-    );
-}
+export const BadGateway = ({
+    message = "The server received an invalid response. Please try again shortly.",
+    image = "/assets/bad-gateway.png",
+    buttons = [{ text: "Back to Home", href: "/home" }],
+}) => (
+    <ErrorTemplate code="502 Bad Gateway" message={message} image={image} buttons={buttons} />
+);
 
-export const ServiceUnavailable = () => {
-    return (
-        <ErrorTemplate
-            code="503 Service Unavailable"
-            message="The service is temporarily unavailable. Please try again later."
-            image="/assets/service-unavailable.png"
-            buttons={[{ text: "Back to Home", href: "/home" }]}
-        />
-    );
-}
+export const ServiceUnavailable = ({
+    message = "The service is temporarily unavailable. Please try again later.",
+    image = "/assets/service-unavailable.png",
+    buttons = [{ text: "Back to Home", href: "/home" }],
+}) => (
+    <ErrorTemplate code="503 Service Unavailable" message={message} image={image} buttons={buttons} />
+);
 
-export const GatewayTimeout = () => {
-    return (
-        <ErrorTemplate
-            code="504 Gateway Timeout"
-            message="The server did not receive a timely response. Please try again later."
-            image="/assets/gateway-timeout.png"
-            buttons={[{ text: "Back to Home", href: "/home" }]}
-        />
-    );
-}
+export const GatewayTimeout = ({
+    message = "The server did not receive a timely response. Please try again later.",
+    image = "/assets/gateway-timeout.png",
+    buttons = [{ text: "Back to Home", href: "/home" }],
+}) => (
+    <ErrorTemplate code="504 Gateway Timeout" message={message} image={image} buttons={buttons} />
+);

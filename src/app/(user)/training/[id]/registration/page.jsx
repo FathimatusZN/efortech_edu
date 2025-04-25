@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { auth } from "@/app/firebase/config";
@@ -8,11 +8,38 @@ import { getIdToken } from "firebase/auth";
 import { Check, Trash2 } from "lucide-react";
 import { SuccessDialog } from "@/components/ui/SuccessDialog";
 
+const TrainingHeader = React.memo(({ training }) => {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  useEffect(() => {
+    if (!training?.images) return;
+
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prev) => (prev + 1) % training.images.length);
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [training]);
+
+  return (
+    <div className="relative w-full h-64 overflow-hidden">
+      <Image
+        src={training.images[currentImageIndex]}
+        alt="Training Header"
+        layout="fill"
+        objectFit="cover"
+      />
+      <h1 className="absolute inset-0 flex items-center justify-center text-3xl font-extrabold text-white drop-shadow-2xl bg-black/30 p-2 shadow-blue-900 shadow-xl">
+        {training.training_name}
+      </h1>
+    </div>
+  );
+});
+
 const RegistrationPage = () => {
   const { id } = useParams();
   const router = useRouter();
   const [training, setTraining] = useState(null);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -91,16 +118,6 @@ const RegistrationPage = () => {
     fetchUser();
   }, [id]);
 
-  // Image slider
-  useEffect(() => {
-    if (!training?.images) return;
-
-    const interval = setInterval(() => {
-      setCurrentImageIndex((prev) => (prev + 1) % training.images.length);
-    }, 3000);
-    return () => clearInterval(interval);
-  }, [training]);
-
   useEffect(() => {
     return () => {
       // Clear all timers when component unmounts
@@ -110,37 +127,33 @@ const RegistrationPage = () => {
 
   const validateForm = () => {
     const newErrors = {};
-  
+
     const requiredFields = {
-      fullName: "Full Name is required",
-      email: "Email is required",
-      institution: "Institution is required",
       date: "Date is required",
     };
-  
+
     for (const key in requiredFields) {
       if (!formData[key]) {
         newErrors[key] = requiredFields[key];
       }
     }
-  
+
     if (participantCount > 1) {
       additionalEmails.forEach(({ email }, idx) => {
         if (!email)
           newErrors[`email${idx}`] = `Email peserta ke-${idx + 2} harus diisi`;
       });
-    }    
-  
+    }
+
     // Manual check untuk checkbox terms
     const termsAccepted = document.getElementById("terms").checked;
     if (!termsAccepted) {
-      // Kita gak pakai errors.terms, tapi tetap return false
       return false;
     }
-  
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  };      
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -148,7 +161,7 @@ const RegistrationPage = () => {
     setShowDialog(true);
   };
 
-  const handleParticipantCountChange = (e) => {
+  const handleParticipantCountChange = useCallback((e) => {
     const count = Math.max(1, parseInt(e.target.value) || 1);
     setParticipantCount(count);
 
@@ -192,7 +205,7 @@ const RegistrationPage = () => {
       });
       return newErrors;
     });
-  };
+  }, []);
 
   const validateEmailExists = async (email, id, idx) => {
     try {
@@ -229,33 +242,45 @@ const RegistrationPage = () => {
     }
   };
 
-  const FormGroup = ({
-    label,
-    required = false,
-    type = "text",
-    value,
-    onChange,
-    error,
-    placeholder,
-    min,
-  }) => (
-    <div className="mt-6 flex items-start">
-      <label className="w-1/4 text-black font-semibold pt-2">
-        {label} {required && <span className="text-red-500">*</span>}
-      </label>
-      <div className="w-3/4 flex flex-col">
-        <input
-          type={type}
-          min={min}
-          className="p-2 pl-4 border rounded-lg border-mainOrange placeholder:text-sm 
-          focus:border-orange-500 focus:ring-orange-500 focus:outline-none focus:ring-1"
-          placeholder={placeholder}
-          value={value}
-          onChange={onChange}
-        />
-        {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+  const FormGroup = React.memo(
+    ({
+      label,
+      required = false,
+      type = "text",
+      value,
+      onChange,
+      error,
+      placeholder,
+      min,
+      readOnly = false,
+    }) => (
+      <div className="mt-6 flex items-start">
+        <label className="w-1/4 text-black font-semibold pt-2">
+          {label} {required && <span className="text-red-500">*</span>}
+        </label>
+        <div className="w-3/4 flex flex-col">
+          {readOnly ? (
+            <div
+              className="p-2 pl-4 bg-gray-100 rounded-lg text-sm text-gray-700 min-h-[40px] flex items-center cursor-not-allowed hover:bg-gray-200 transition"
+              title="This field can only be edited in your profile"
+            >
+              {value || "-"}
+            </div>
+          ) : (
+            <input
+              type={type}
+              min={min}
+              className="p-2 pl-4 border rounded-lg border-mainOrange placeholder:text-sm 
+                focus:border-orange-500 focus:ring-orange-500 focus:outline-none focus:ring-1"
+              placeholder={placeholder}
+              value={value}
+              onChange={onChange}
+            />
+          )}
+          {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+        </div>
       </div>
-    </div>
+    )
   );
 
   if (loading)
@@ -291,17 +316,8 @@ const RegistrationPage = () => {
 
   return (
     <div>
-      {/* Header image & title */}
-      <div className="relative w-full h-64 overflow-hidden">
-        <Image
-          src={training.images[currentImageIndex]}
-          alt="Training Header"
-          layout="fill"
-          objectFit="cover"
-        />
-        <h1 className="absolute inset-0 flex items-center justify-center text-3xl font-extrabold text-white drop-shadow-2xl bg-black/30 p-2 shadow-blue-900 shadow-xl">
-          {training.training_name}
-        </h1>
+      <div>
+        <TrainingHeader training={training} />
       </div>
 
       <h2 className="text-2xl text-center text-black font-extrabold p-6">
@@ -310,38 +326,12 @@ const RegistrationPage = () => {
 
       <div className="max-w-3xl mb-20 mx-auto p-6 border-4 border-mainBlue rounded-lg bg-white shadow-2xl">
         <form onSubmit={handleSubmit}>
-          <FormGroup
-            label="Full Name"
-            required
-            value={formData.fullName}
-            onChange={(e) =>
-              setFormData({ ...formData, fullName: e.target.value })
-            }
-            error={errors.fullName}
-            placeholder="Type your name here"
-          />
-
-          <FormGroup
-            label="Email"
-            required
-            type="email"
-            value={formData.email}
-            onChange={(e) =>
-              setFormData({ ...formData, email: e.target.value })
-            }
-            error={errors.email}
-            placeholder="Type your email here"
-          />
-
+          <FormGroup label="Full Name" value={formData.fullName} readOnly />
+          <FormGroup label="Email" value={formData.email} readOnly />
           <FormGroup
             label="Institution"
-            required
             value={formData.institution}
-            onChange={(e) =>
-              setFormData({ ...formData, institution: e.target.value })
-            }
-            error={errors.institution}
-            placeholder="Type your institution here"
+            readOnly
           />
 
           <FormGroup
@@ -349,7 +339,9 @@ const RegistrationPage = () => {
             required
             type="date"
             value={formData.date}
-            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, date: e.target.value }))
+            }
             error={errors.date}
           />
 
@@ -480,7 +472,10 @@ const RegistrationPage = () => {
           open={showDialog}
           onOpenChange={setShowDialog}
           title="Registration Success!"
-          messages={["We’ll email the details to you soon.", "Have a great day!"]}
+          messages={[
+            "We’ll email the details to you soon.",
+            "Have a great day!",
+          ]}
           buttonText="Okay"
         />
       </div>
