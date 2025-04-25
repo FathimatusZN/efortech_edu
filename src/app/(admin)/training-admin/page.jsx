@@ -69,9 +69,11 @@ export default function TrainingPage() {
           // Update state with fetched data
           if (res.ok) {
             setTrainingData(data.data);
+            setCurrentPage(1); 
           }
+          console.log("Data Training:", data.data);
         } catch (err) {
-          console.error("Failed to fetch training data:", err);
+          console.error("Gagal mengambil data training:", err);
         }
       };
 
@@ -124,7 +126,7 @@ export default function TrainingPage() {
 
             <div className="flex gap-2 flex-wrap items-center">
               <Select value={filterStatus} onValueChange={setFilterStatus}>
-                <SelectTrigger className="w-[150px] border-2 border-mainOrange rounded-xl">
+                <SelectTrigger className="w-[150px] border-2 border-mainOrange focus:ring-0 focus:outline-none rounded-xl">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -135,7 +137,7 @@ export default function TrainingPage() {
               </Select>
 
               <Select value={sortOrder} onValueChange={setSortOrder}>
-                <SelectTrigger className="w-[130px] border-2 border-mainOrange rounded-xl">
+                <SelectTrigger className="w-[130px] border-2 border-mainOrange focus:ring-0 focus:outline-none rounded-xl">
                   <SelectValue placeholder="Sort" />
                 </SelectTrigger>
                 <SelectContent>
@@ -197,31 +199,27 @@ export default function TrainingPage() {
                     </p>
                   </div>
                   <div className="flex items-center justify-between border-t pt-3">
-                    <div className="flex gap-2 items-center">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span
-                        className={`px-3 py-1 rounded-lg font-semibold text-sm border ${badgeClass}`}
+                        className={`px-3 py-1 rounded-md font-semibold text-sm border ${badgeClass}`}
                       >
                         {item.status === 1 ? "Active" : "Archived"}
                       </span>
-
                       {discount > 0 ? (
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-semibold text-gray-500 line-through border px-3 py-1 rounded-lg">
+                        <div className="flex items-center gap-1 border border-mainOrange px-3 py-[4px] rounded-md">
+                          <span className="text-xs text-gray-400 line-through">
                             {formatRupiah(fee)}
                           </span>
-                          <span className="text-sm font-bold text-mainOrange px-3 py-1 border border-mainOrange rounded-lg ml-2">
+                          <span className="text-sm font-semibold text-mainOrange">
                             {formatRupiah(finalPrice)}
                           </span>
                         </div>
                       ) : (
-                        <span
-                          className={`px-3 py-1 rounded-lg font-semibold text-sm border ${badgeClass}`}
-                        >
+                        <span className="px-3 py-1 rounded-md font-semibold text-sm border border-mainOrange text-mainOrange">
                           {formatRupiah(fee)}
                         </span>
                       )}
                     </div>
-
                     <ArrowRight
                       className="text-gray-600 hover:text-mainOrange transition-all"
                       onClick={() => router.push(`/training-admin/${item.training_id}`)}
@@ -234,7 +232,7 @@ export default function TrainingPage() {
 
         </div>
 
-        {/* === PAGINATION === */}
+
         {totalPages > 1 && (
           <Pagination className="mt-12">
             <PaginationContent>

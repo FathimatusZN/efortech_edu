@@ -129,7 +129,7 @@ export default function TrainingDetailPage() {
                       <span className="line-through text-gray-500 text-xs sm:text-sm">
                         Rp {parseInt(training.training_fees).toLocaleString("id-ID")}
                       </span>
-                      <span className="text-mainOrange font-bold text-sm sm:text-base">
+                      <span className="text-black font-bold text-sm sm:text-base">
                         Rp {parseInt(training.final_price).toLocaleString("id-ID")}
                       </span>
                     </div>
