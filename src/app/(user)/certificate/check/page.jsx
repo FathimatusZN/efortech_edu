@@ -9,7 +9,8 @@ import {
   TableRow,
   TableHead,
   TableCell,
-} from "@/components/ui/table"; // sesuaikan path kalau beda
+} from "@/components/ui/table";
+import { NotFound } from "../../../../components/ui/ErrorPage";
 
 const dummyData = [
   {
@@ -110,11 +111,8 @@ export default function CertificateValidation() {
           </Table>
         </div>
       ) : (
-        <div className="text-center mt-2 min-h-screen">
-          <img src="/assets/not-found.png" alt="No Match" className="mx-auto w-80" />
-          <p className="text-gray-600 mt-4">
-            Nothing matches the name or ID entered.
-          </p>
+        <div className="text-center">
+          <NotFound message="We couldn’t find any data matching your search. Try different keywords." buttons={[]} />
         </div>
       )}
     </div>
