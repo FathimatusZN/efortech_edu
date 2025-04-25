@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { NotFound } from "@/components/ui/ErrorPage";
 
 export default function TrainingPage() {
   const router = useRouter();
@@ -156,81 +157,94 @@ export default function TrainingPage() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 px-4">
-          {paginatedData.map((item) => {
-            const isArchived = item.status !== 1; // 1 = Active, sesuai backend
-            const badgeClass = isArchived
-              ? "text-gray-500 border-gray-400"
-              : "text-mainOrange border-mainOrange";
-            const cardClass = isArchived
-              ? "bg-gray-50 border-gray-300"
-              : "border-gray-200";
+          {paginatedData.length > 0 ? (
+            paginatedData.map((item) => {
+              const isArchived = item.status !== 1; // 1 = Active, sesuai backend
+              const badgeClass = isArchived
+                ? "text-gray-500 border-gray-400"
+                : "text-mainOrange border-mainOrange";
+              const cardClass = isArchived
+                ? "bg-gray-50 border-gray-300"
+                : "border-gray-200";
 
-            const fee = parseFloat(item.training_fees);
-            const discount = parseFloat(item.discount);
-            const finalPrice = item.final_price || (fee - (discount / 100) * fee);
+              const fee = parseFloat(item.training_fees);
+              const discount = parseFloat(item.discount);
+              const finalPrice = item.final_price || (fee - (discount / 100) * fee);
 
-            return (
-              <div
-                key={item.training_id}
-                className={`border shadow-lg rounded-2xl overflow-hidden flex flex-col cursor-pointer w-full h-[430px] max-w-sm ${cardClass}`}
-              >
-                <div className="h-[200px] w-full relative">
-                  {discount > 0 && (
-                    <div className="absolute top-2 right-2 bg-red-500 text-white text-[11px] font-semibold px-2 py-[2px] rounded-full shadow-md animate-bounce">
-                      🔥 {discount}% OFF
-                    </div>
-                  )}
-                  <img
-                    src={item.images?.[0] || "/fallback.jpg"}
-                    alt={item.training_name}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-
-                <div className="flex flex-col justify-between flex-grow p-4">
-                  <div>
-                    <h2 className="text-lg font-semibold mb-1 line-clamp-2">
-                      {item.training_name}
-                    </h2>
-                    <p className="text-sm text-gray-600 mb-3 line-clamp-4">
-                      {item.description}
-                    </p>
+              return (
+                <div
+                  key={item.training_id}
+                  className={`border shadow-lg rounded-2xl overflow-hidden flex flex-col cursor-pointer w-full h-[430px] max-w-sm ${cardClass}`}
+                >
+                  <div className="h-[200px] w-full relative">
+                    {discount > 0 && (
+                      <div className="absolute top-2 right-2 bg-red-500 text-white text-[11px] font-semibold px-2 py-[2px] rounded-full shadow-md animate-bounce">
+                        🔥 {discount}% OFF
+                      </div>
+                    )}
+                    <img
+                      src={item.images?.[0] || "/fallback.jpg"}
+                      alt={item.training_name}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
-                  <div className="flex items-center justify-between border-t pt-3">
-                    <div className="flex gap-2 items-center">
-                      <span
-                        className={`px-3 py-1 rounded-lg font-semibold text-sm border ${badgeClass}`}
-                      >
-                        {item.status === 1 ? "Active" : "Archived"}
-                      </span>
 
-                      {discount > 0 ? (
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-semibold text-gray-500 line-through border px-3 py-1 rounded-lg">
-                            {formatRupiah(fee)}
-                          </span>
-                          <span className="text-sm font-bold text-mainOrange px-3 py-1 border border-mainOrange rounded-lg ml-2">
-                            {formatRupiah(finalPrice)}
-                          </span>
-                        </div>
-                      ) : (
+                  <div className="flex flex-col justify-between flex-grow p-4">
+                    <div>
+                      <h2 className="text-lg font-semibold mb-1 line-clamp-2">
+                        {item.training_name}
+                      </h2>
+                      <p className="text-sm text-gray-600 mb-3 line-clamp-4">
+                        {item.description}
+                      </p>
+                    </div>
+                    <div className="flex items-center justify-between border-t pt-3">
+                      <div className="flex gap-2 items-center">
                         <span
                           className={`px-3 py-1 rounded-lg font-semibold text-sm border ${badgeClass}`}
                         >
-                          {formatRupiah(fee)}
+                          {item.status === 1 ? "Active" : "Archived"}
                         </span>
-                      )}
-                    </div>
 
-                    <ArrowRight
-                      className="text-gray-600 hover:text-mainOrange transition-all"
-                      onClick={() => router.push(`/training-admin/${item.training_id}`)}
-                    />
+                        {discount > 0 ? (
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-semibold text-gray-500 line-through border px-3 py-1 rounded-lg">
+                              {formatRupiah(fee)}
+                            </span>
+                            <span className="text-sm font-bold text-mainOrange px-3 py-1 border border-mainOrange rounded-lg ml-2">
+                              {formatRupiah(finalPrice)}
+                            </span>
+                          </div>
+                        ) : (
+                          <span
+                            className={`px-3 py-1 rounded-lg font-semibold text-sm border ${badgeClass}`}
+                          >
+                            {formatRupiah(fee)}
+                          </span>
+                        )}
+                      </div>
+
+                      <ArrowRight
+                        className="text-gray-600 hover:text-mainOrange transition-all"
+                        onClick={() => router.push(`/training-admin/${item.training_id}`)}
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })
+          ) : (
+            <div className="col-span-full">
+              <NotFound
+                message={
+                  searchQuery
+                    ? "No training found for your search. Try different keywords."
+                    : "No training data found for this filter."
+                }
+                buttons={[]}
+              />
+            </div>
+          )}
 
         </div>
 
