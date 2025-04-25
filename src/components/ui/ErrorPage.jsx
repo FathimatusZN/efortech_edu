@@ -48,82 +48,78 @@ const ErrorTemplate = ({ code, message, image, buttons }) => {
 };
 
 // Factory-style exports
-const ErrorPage = {
-    BadRequest: () => (
-        <ErrorTemplate
-            code="400 Bad Request"
-            message="Your request could not be understood by the server due to malformed syntax."
-            image="/assets/bad-request.png"
-            buttons={[{ text: "Back to Home", href: "/home" }]}
-        />
-    ),
-    Unauthorized: () => (
-        <ErrorTemplate
-            code="401 Unauthorized"
-            message="You need to sign in to access this page."
-            image="/assets/unauthorized.png"
-            buttons={[
-                { text: "Back to Home", href: "/home" },
-                { text: "Go to Sign In", href: "/auth/signin" }
-            ]}
-        />
-    ),
-    Forbidden: () => (
-        <ErrorTemplate
-            code="403 Forbidden"
-            message="You don’t have permission to access this page. Please sign in with an account that has the appropriate access rights."
-            image="/assets/forbidden.png"
-            buttons={[{ text: "Back to Home", href: "/home" }]}
-        />
-    ),
-    NotFound: () => (
-        <ErrorTemplate
-            code="404 Not Found"
-            message="The page you are looking for could not be found."
-            image="/assets/not-found.png"
-            buttons={[{ text: "Back to Home", href: "/home" }]}
-        />
-    ),
-    RequestTimeout: () => (
-        <ErrorTemplate
-            code="408 Request Timeout"
-            message="The server timed out waiting for your request. Please try again."
-            image="/assets/request-timeout.png"
-            buttons={[{ text: "Back to Home", href: "/home" }]}
-        />
-    ),
-    InternalServerError: () => (
-        <ErrorTemplate
-            code="500 Internal Server Error"
-            message="Something went wrong on our side. Please try again later."
-            image="/assets/internal-server-error.png"
-            buttons={[{ text: "Back to Home", href: "/home" }]}
-        />
-    ),
-    BadGateway: () => (
-        <ErrorTemplate
-            code="502 Bad Gateway"
-            message="The server received an invalid response. Please try again shortly."
-            image="/assets/bad-gateway.png"
-            buttons={[{ text: "Back to Home", href: "/home" }]}
-        />
-    ),
-    ServiceUnavailable: () => (
-        <ErrorTemplate
-            code="503 Service Unavailable"
-            message="The service is temporarily unavailable. Please try again later."
-            image="/assets/service-unavailable.png"
-            buttons={[{ text: "Back to Home", href: "/home" }]}
-        />
-    ),
-    GatewayTimeout: () => (
-        <ErrorTemplate
-            code="504 Gateway Timeout"
-            message="The server did not receive a timely response. Please try again later."
-            image="/assets/gateway-timeout.png"
-            buttons={[{ text: "Back to Home", href: "/home" }]}
-        />
-    ),
-};
 
-export default ErrorPage;
+export const BadRequest = ({
+    message = "Your request could not be understood by the server due to malformed syntax.",
+    image = "/assets/bad-request.png",
+    buttons = [{ text: "Back to Home", href: "/home" }],
+}) => (
+    <ErrorTemplate code="400 Bad Request" message={message} image={image} buttons={buttons} />
+);
+
+export const Unauthorized = ({
+    message = "You need to sign in to access this page.",
+    image = "/assets/unauthorized.png",
+    buttons = [
+        { text: "Back to Home", href: "/home" },
+        { text: "Go to Sign In", href: "/auth/signin" },
+    ],
+}) => (
+    <ErrorTemplate code="401 Unauthorized" message={message} image={image} buttons={buttons} />
+);
+
+export const Forbidden = ({
+    message = "You don’t have permission to access this page. Please sign in with an account that has the appropriate access rights.",
+    image = "/assets/forbidden.png",
+    buttons = [{ text: "Back to Home", href: "/home" }],
+}) => (
+    <ErrorTemplate code="403 Forbidden" message={message} image={image} buttons={buttons} />
+);
+
+export const NotFound = ({
+    message = "The page you are looking for could not be found.",
+    image = "/assets/not-found.png",
+    buttons = [{ text: "Back to Home", href: "/home" }],
+}) => (
+    <ErrorTemplate code="404 Not Found" message={message} image={image} buttons={buttons} />
+);
+
+export const RequestTimeout = ({
+    message = "The server timed out waiting for your request. Please try again.",
+    image = "/assets/request-timeout.png",
+    buttons = [{ text: "Back to Home", href: "/home" }],
+}) => (
+    <ErrorTemplate code="408 Request Timeout" message={message} image={image} buttons={buttons} />
+);
+
+export const InternalServerError = ({
+    message = "Something went wrong on our side. Please try again later.",
+    image = "/assets/internal-server-error.png",
+    buttons = [{ text: "Back to Home", href: "/home" }],
+}) => (
+    <ErrorTemplate code="500 Internal Server Error" message={message} image={image} buttons={buttons} />
+);
+
+export const BadGateway = ({
+    message = "The server received an invalid response. Please try again shortly.",
+    image = "/assets/bad-gateway.png",
+    buttons = [{ text: "Back to Home", href: "/home" }],
+}) => (
+    <ErrorTemplate code="502 Bad Gateway" message={message} image={image} buttons={buttons} />
+);
+
+export const ServiceUnavailable = ({
+    message = "The service is temporarily unavailable. Please try again later.",
+    image = "/assets/service-unavailable.png",
+    buttons = [{ text: "Back to Home", href: "/home" }],
+}) => (
+    <ErrorTemplate code="503 Service Unavailable" message={message} image={image} buttons={buttons} />
+);
+
+export const GatewayTimeout = ({
+    message = "The server did not receive a timely response. Please try again later.",
+    image = "/assets/gateway-timeout.png",
+    buttons = [{ text: "Back to Home", href: "/home" }],
+}) => (
+    <ErrorTemplate code="504 Gateway Timeout" message={message} image={image} buttons={buttons} />
+);

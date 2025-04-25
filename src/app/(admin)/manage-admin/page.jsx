@@ -232,7 +232,7 @@ export default function ManageAdmin() {
     };
 
     return (
-        <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
+        <ProtectedRoute allowedRoles={["superadmin"]}>
             <div className="relative pt-4 px-4 sm:px-6 lg:px-8 max-w-[1440px] mx-auto min-h-screen">
                 <div className="flex flex-wrap justify-between items-center mt-6 mb-4 gap-4">
                     <PageTitle title="Manage Admin" />

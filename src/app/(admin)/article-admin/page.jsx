@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import ArticleCardAdmin from "@/components/admin/ArticleCardAdmin";
-import NotFound from "@/components/ui/NotFound";
+import { NotFound } from "@/components/ui/ErrorPage";
 import { FaSearch, FaPlus } from "react-icons/fa";
 
 const PAGE_SIZE = 6;
@@ -140,7 +140,7 @@ const ArticlePage = () => {
                 </div>
 
                 {displayedArticles.length === 0 && (
-                    <NotFound message="No articles found." image="/assets/not-found.png" />
+                    <NotFound message="We couldn’t find any articles matching your search. Try different keywords." buttons={[]} />
                 )}
 
                 {/* Load More Button */}
