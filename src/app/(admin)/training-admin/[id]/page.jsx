@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FaEdit, FaTrash } from "react-icons/fa";
+import { NotFound } from "../../../../components/ui/ErrorPage";
 
 export default function TrainingDetailPage() {
   const router = useRouter();
@@ -25,7 +26,9 @@ export default function TrainingDetailPage() {
           console.log("Fetched training:", data.data);
           setTraining(data.data);
         } else {
-          setError("Training not found");
+          return <NotFound
+            message={"No training found."} buttons={[]}
+          />
         }
       } catch (err) {
         setError("Failed to fetch training data");
@@ -39,7 +42,7 @@ export default function TrainingDetailPage() {
 
   if (loading) return <div className="p-6 md:p-8">Loading...</div>;
   if (error) return <div className="p-6 md:p-8 text-red-500">{error}</div>;
-  if (!training) return <div className="p-6 md:p-8">Training not found</div>;
+  if (!training) return <NotFound message={"We couldn't find the training you're looking for."} buttons={[{ text: "Back to Training Page", href: "/training-admin" }]} />;
 
   const handleDelete = async () => {
     const confirm = window.confirm("Are you sure you want to archive this training?");
