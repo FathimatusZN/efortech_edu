@@ -1,7 +1,9 @@
 "use client";
 import { use, useEffect, useState } from "react";
 import { Swiper, SwiperSlide } from 'swiper/react';
+import { Pagination, Autoplay } from 'swiper/modules';
 import 'swiper/css';
+import 'swiper/css/pagination';
 import { NotFound } from "../../../../components/ui/ErrorPage";
 
 export default function ArticleDetail({ params }) {
@@ -41,23 +43,33 @@ export default function ArticleDetail({ params }) {
 
   return (
     <div className="max-w-screen w-full relative">
-      {/* Gambar */}
-      <div className="relative">
-        <Swiper spaceBetween={10} slidesPerView={1} loop={true}>
-          {article.images.map((img, index) => (
-            <SwiperSlide key={index}>
-              <div className="relative">
-                <img
-                  src={img}
-                  alt={`Image ${index}`}
-                  className="w-full h-[534px] object-cover"
-                />
-                <div className="absolute bottom-[-10px] left-1/2 transform -translate-x-1/2 w-[100%] h-5 bg-mainBlue blur-xl opacity-100"></div>
-              </div>
-            </SwiperSlide>
-          ))}
-        </Swiper>
-      </div>
+      {/* Gambar Slider */}
+      {article.images?.length > 0 && (
+        <div className="relative">
+          <Swiper
+            modules={[Pagination, Autoplay]}
+            spaceBetween={10}
+            slidesPerView={1}
+            pagination={{ clickable: true }}
+            autoplay={{ delay: 5000 }}
+            loop={true}
+            className="w-full h-[534px]"
+          >
+            {article.images.map((img, index) => (
+              <SwiperSlide key={index}>
+                <div className="relative w-full h-full">
+                  <img
+                    src={img}
+                    alt={`Image ${index}`}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute bottom-[-10px] left-1/2 transform -translate-x-1/2 w-[100%] h-5 bg-mainBlue blur-xl opacity-100"></div>
+                </div>
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        </div>
+      )}
 
       {/* Judul */}
       <h1 className="text-3xl font-bold mt-6 text-center py-4 px-4 text-secondBlue">
