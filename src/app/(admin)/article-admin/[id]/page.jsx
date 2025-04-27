@@ -3,18 +3,27 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/app/context/AuthContext";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import TextEditor from "@/components/admin/TextEditor";
-import { PageTitle, SaveButton, DiscardButton, InputField, SelectDropdown, ImageUploader, AddLabel, SourcesInput } from "@/components/layout/InputField";
+import {
+    PageTitle, SaveButton, DiscardButton, InputField, SelectDropdown,
+    ImageUploader, AddLabel, SourcesInput
+} from "@/components/layout/InputField";
 import { useParams, useRouter } from "next/navigation";
 import ConfirmDialog from "@/components/admin/ConfirmDialog";
+
+// Error pages
+import { NotFound, InternalServerError } from "@/components/ui/ErrorPage";
 
 export default function EditArticle() {
     const params = useParams();
     const router = useRouter();
-
     const articleId = params.id;
-    const [isLoading, setIsLoading] = useState(true);
 
-    // State for managing sources list
+    const { user } = useAuth();
+
+    // States to manage form fields and UI flow
+    const [isLoading, setIsLoading] = useState(true);
+    const [hasError, setHasError] = useState(null); // 'notfound' | 'server' | null
+
     const [sources, setSources] = useState([{ preview_text: "", source_link: "" }]);
     const [title, setTitle] = useState("");
     const [category, setCategory] = useState(0);
@@ -22,40 +31,54 @@ export default function EditArticle() {
     const [content, setContent] = useState("");
     const [images, setImages] = useState([]);
     const [author, setAuthor] = useState("");
-
     const [openDialog, setOpenDialog] = useState(false);
 
+    // Check if form is ready to submit
     const isFormValid = title.trim() !== "" && content.trim() !== "" && category !== 0;
 
-    const { user } = useAuth();
-
+    // Fetch article details when the page loads
     useEffect(() => {
         const fetchArticle = async () => {
             try {
-                const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/articles/${articleId}`);
-                if (!response.ok) throw new Error("Failed to fetch article data");
-                const data = await response.json();
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/articles/${articleId}`);
+                if (res.status === 404) {
+                    setHasError("notfound");
+                    return;
+                }
+                if (!res.ok) {
+                    setHasError("server");
+                    return;
+                }
 
-                setTitle(data.data.title);
-                setAuthor(data.data.author || user?.fullname || user?.email);
-                setCategory(data.data.category);
-                setContent(data.data.content_body);
-                setTags(data.data.tags || []);
-                setImages(data.data.images || []);
-                setSources(data.data.sources || []);
+                const data = await res.json();
+                const article = data.data;
+
+                if (!article) {
+                    setHasError("notfound");
+                    return;
+                }
+
+                // Populate form fields with article data
+                setTitle(article.title);
+                setAuthor(article.author || user?.fullname || user?.email);
+                setCategory(article.category);
+                setContent(article.content_body);
+                setTags(article.tags || []);
+                setImages(article.images || []);
+                setSources(article.sources || []);
             } catch (err) {
-                console.error("Error fetching article:", err);
+                console.error("❌ Error fetching article:", err);
+                setHasError("server");
             } finally {
                 setIsLoading(false);
             }
         };
 
         if (articleId) fetchArticle();
-    }, [articleId]);
+    }, [articleId, user]);
 
+    // Handle article update (form submission)
     const handleSubmit = async () => {
-        console.log("🧪 Current user object:", user);
-
         try {
             const token = localStorage.getItem("token");
             const cleanImages = images.filter((url) => typeof url === "string" && url.startsWith("http"));
@@ -71,13 +94,6 @@ export default function EditArticle() {
                 images: cleanImages,
             };
 
-            console.log("Payload sent to backend:", payload);
-
-            if (!title || !content || category === 0) {
-                alert("Please fill in the required fields!");
-                return;
-            }
-
             const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/articles/update/${articleId}`, {
                 method: "PUT",
                 headers: {
@@ -89,26 +105,21 @@ export default function EditArticle() {
 
             if (!res.ok) throw new Error("Failed to update article");
 
-            const data = await res.json();
-            alert("✅ Article updated! ID: " + `${articleId}`);
+            alert("✅ Article updated!");
             router.push("/article-admin/");
-            setTitle("");
-            setCategory(0);
-            setTags([]);
-            setContent("");
-            setImages([]);
-            setSources([{ preview_text: "", source_link: "" }]);
-            setAuthor("");
+            resetForm();
         } catch (err) {
             console.error("❌ Update error:", err);
             alert("Failed to update article.");
         }
     };
 
+    // Handle new image upload
     const handleImageUpload = (imageUrl) => {
         setImages((prevImages) => [...prevImages, imageUrl]);
     };
 
+    // Reset the form fields
     const resetForm = () => {
         setTitle("");
         setAuthor("");
@@ -119,114 +130,123 @@ export default function EditArticle() {
         setSources([{ preview_text: "", source_link: "" }]);
     };
 
+    // Discard changes and navigate back
     const handleDiscard = () => {
         resetForm();
         setOpenDialog(false);
         router.push("/article-admin");
     };
 
+    // Render 404 page if article not found
+    if (hasError === "notfound") {
+        return (
+            <NotFound
+                message="The article you're trying to edit doesn't exist or the link may be incorrect."
+                buttons={[{ text: "Back to Article Admin", href: "/article-admin" }]}
+            />
+        );
+    }
+
+    // Render 500 page if server error occurs
+    if (hasError === "server") {
+        return <InternalServerError />;
+    }
+
+    // Show loading indicator while fetching article
+    if (isLoading) {
+        return <div className="text-center mt-10">Loading article data...</div>;
+    }
+
+    // Main UI rendering the article editor form
     return (
         <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
-            {isLoading ? (
-                <div className="text-center mt-10">Loading article data...</div>
-            ) : (
-                <div className="relative pt-4 px-4 sm:px-6 lg:px-8 max-w-[1440px] mx-auto min-h-screen">
-                    <div className="flex flex-wrap justify-between items-center w-full max-w-[1440px] mx-auto mb-2 gap-4">
-                        <div className="flex flex-wrap justify-between items-center w-full max-w-[1440px] mx-auto mt-6 mb-4 gap-4">
-                            {/* Title */}
-                            <PageTitle title="Edit Article" />
-
-                            {/* Save & Discard Button */}
-                            <div className="flex flex-wrap items-center gap-3 sm:gap-4 w-full sm:w-auto">
-                                {/* Save Button */}
-                                <SaveButton onClick={handleSubmit} disabled={!isFormValid} />
-
-                                {/* Discard Button */}
-                                <DiscardButton onClick={() => setOpenDialog(true)} />
-                            </div>
+            <div className="relative pt-4 px-4 sm:px-6 lg:px-8 max-w-[1440px] mx-auto min-h-screen">
+                <div className="flex flex-wrap justify-between items-center w-full max-w-[1440px] mx-auto mb-2 gap-4">
+                    <div className="flex flex-wrap justify-between items-center w-full max-w-[1440px] mx-auto mt-6 mb-4 gap-4">
+                        <PageTitle title="Edit Article" />
+                        <div className="flex flex-wrap items-center gap-3 sm:gap-4 w-full sm:w-auto">
+                            <SaveButton onClick={handleSubmit} disabled={!isFormValid} />
+                            <DiscardButton onClick={() => setOpenDialog(true)} />
                         </div>
                     </div>
+                </div>
 
-                    <ConfirmDialog
-                        open={openDialog}
-                        onCancel={() => setOpenDialog(false)}
-                        onConfirm={handleSubmit}
-                        onDiscard={handleDiscard}
+                {/* Confirm discard changes dialog */}
+                <ConfirmDialog
+                    open={openDialog}
+                    onCancel={() => setOpenDialog(false)}
+                    onConfirm={handleSubmit}
+                    onDiscard={handleDiscard}
+                />
+
+                {/* Article form */}
+                <div className="outline outline-3 outline-mainBlue p-6 bg-white shadow-md rounded-lg border w-full">
+                    <InputField
+                        label="Title"
+                        placeholder="Type title here.."
+                        required
+                        className="mt-2"
+                        value={title}
+                        onChange={(e) => setTitle(e.target.value)}
                     />
 
-                    {/* Main Article Form */}
-                    <div className="outline outline-3 outline-mainBlue p-6 bg-white shadow-md rounded-lg border w-full">
-                        {/* Article Title Input */}
-                        <InputField
-                            label="Title"
-                            placeholder="Type title here.."
-                            required
-                            className="mt-2"
-                            value={title}
-                            onChange={(e) => setTitle(e.target.value)}
-                        />
+                    <div className="flex flex-wrap md:flex-nowrap gap-8 mt-2">
+                        <div className="w-full md:w-[40%] flex flex-col space-y-4">
+                            <InputField
+                                label="Author"
+                                placeholder="Author's name.."
+                                className="mt-4"
+                                value={author}
+                                onChange={(e) => setAuthor(e.target.value)}
+                            />
 
-                        {/* Category and Tags Section */}
-                        <div className="flex flex-wrap md:flex-nowrap gap-8 mt-2">
-                            <div className="w-full md:w-[40%] flex flex-col space-y-4">
+                            <SelectDropdown
+                                label="Category"
+                                required
+                                className="mt-2"
+                                value={category}
+                                onChange={(e) => setCategory(parseInt(e.target.value))}
+                            >
+                                <option value={0}>Choose Category</option>
+                                <option value={1}>Education</option>
+                                <option value={2}>Event</option>
+                                <option value={3}>Success Case</option>
+                            </SelectDropdown>
 
-                                {/* Author Input Section */}
-                                <InputField
-                                    label="Author"
-                                    placeholder="Author's name.."
-                                    className="mt-4"
-                                    value={author}
-                                    onChange={(e) => setAuthor(e.target.value)}
-                                />
-
-                                {/* Category Dropdown */}
-                                <SelectDropdown
-                                    label="Category"
-                                    required
-                                    className="mt-2"
-                                    value={category}
-                                    onChange={(e) => setCategory(parseInt(e.target.value))}
-                                >
-                                    <option value={0}>Choose Category</option>
-                                    <option value={1}>Education</option>
-                                    <option value={2}>Event</option>
-                                    <option value={3}>Success Case</option>
-                                </SelectDropdown>
-
-                                {/* Tags Input Component */}
-                                <AddLabel
-                                    onChange={(value) => setTags(value)}
-                                    value={tags}
-                                    className="mt-2"
-                                    label="Tags"
-                                    placeholder="Tags"
-                                />
-                            </div>
-
-                            {/* Image Upload Section */}
-                            <ImageUploader
-                                maxImages={3}
-                                images={images}
-                                setImages={setImages}
-                                onImageUpload={handleImageUpload}
-                                uploadEndpoint={`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/articles/upload-image`}
+                            <AddLabel
+                                onChange={(value) => setTags(value)}
+                                value={tags}
+                                className="mt-2"
+                                label="Tags"
+                                placeholder="Tags"
                             />
                         </div>
 
-                        {/* Content Editor Section */}
-                        <label className="font-semibold mt-2 block">Content <span className="text-error1">*</span></label>
-                        <TextEditor
-                            onChange={(value) => setContent(value)}
-                            value={content}
-                            className="mt-2 "
+                        {/* Upload and display article images */}
+                        <ImageUploader
+                            maxImages={3}
+                            images={images}
+                            setImages={setImages}
+                            onImageUpload={handleImageUpload}
+                            uploadEndpoint={`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/articles/upload-image`}
                         />
-
-                        {/* Sources Input Section */}
-                        <label className="font-semibold mt-6 block">Sources</label>
-                        <SourcesInput sources={sources} setSources={setSources} />
                     </div>
+
+                    {/* Rich text editor for article content */}
+                    <label className="font-semibold mt-2 block">
+                        Content <span className="text-error1">*</span>
+                    </label>
+                    <TextEditor
+                        onChange={(value) => setContent(value)}
+                        value={content}
+                        className="mt-2"
+                    />
+
+                    {/* Input for article sources */}
+                    <label className="font-semibold mt-6 block">Sources</label>
+                    <SourcesInput sources={sources} setSources={setSources} />
                 </div>
-            )}
+            </div>
         </ProtectedRoute>
     );
 }
