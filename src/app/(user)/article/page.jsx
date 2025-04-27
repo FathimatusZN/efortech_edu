@@ -1,15 +1,29 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Pagination, Autoplay } from "swiper/modules";
+import { Pagination as SwiperPagination, Autoplay } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/pagination";
-import { NotFound } from "../../../components/ui/ErrorPage";
-import ArticleCard from "@/components/layout/ArticleCard";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FaSearch } from "react-icons/fa";
-import { useRouter } from "next/navigation";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import ArticleCard from "@/components/layout/ArticleCard";
+import { NotFound } from "@/components/ui/ErrorPage";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const categoryOptions = [
   { id: 0, label: "All" },
@@ -19,18 +33,14 @@ const categoryOptions = [
   { id: 4, label: "Blog" },
 ];
 
-const carouselImages = [
-  { id: 1, src: "/assets/dashboard-bg.png", title: "6 Cara Digital Twin Mengubah Industri Manufaktur" },
-  { id: 2, src: "/assets/Gambar2.jpg", title: "Transformasi Digital dalam Era Industri 4.0" },
-  { id: 3, src: "/images/slide3.jpg", title: "Bagaimana Digital Twin Meningkatkan Efisiensi?" },
-];
-
 export default function ArticlePage() {
   const router = useRouter();
   const [articles, setArticles] = useState([]);
   const [mostViewedArticles, setMostViewedArticles] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
+  const [page, setPage] = useState(1);
+  const itemsPerPage = 9; // 9 artikel per halaman
 
   useEffect(() => {
     fetchArticles();
@@ -51,23 +61,24 @@ export default function ArticlePage() {
   };
 
   const fetchSearchResults = async () => {
-    if (!searchQuery.trim()) return fetchArticles();
-
+    if (!searchQuery.trim()) {
+      fetchArticles();
+      return;
+    }
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/articles/search?query=${encodeURIComponent(searchQuery)}`);
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/articles/search?query=${encodeURIComponent(searchQuery)}`
+      );
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
+
       setArticles(data.data);
-    } catch (err) {
-      console.error("Search error:", err);
+      setPage(1); // reset ke halaman 1 setelah search
+    } catch (error) {
+      console.error("Search error:", error);
       setArticles([]);
     }
   };
-
-  const filteredArticles = articles?.filter(article => {
-    const selectedCatObj = categoryOptions.find(cat => cat.label === selectedCategory);
-    return selectedCategory === "All" || article.category === selectedCatObj?.id;
-  }) || [];
 
   const stripHtml = (html) => {
     if (!html) return "";
@@ -75,11 +86,23 @@ export default function ArticlePage() {
     return plain.length > 200 ? plain.slice(0, 200) + "..." : plain;
   };
 
+  const selectedCategoryId = categoryOptions.find((cat) => cat.label === selectedCategory)?.id;
+
+  const filteredArticles = articles.filter((article) => {
+    return selectedCategory === "All" || article.category === selectedCategoryId;
+  });
+
+  const totalPages = Math.ceil(filteredArticles.length / itemsPerPage);
+  const paginatedArticles = filteredArticles.slice(
+    (page - 1) * itemsPerPage,
+    page * itemsPerPage
+  );
+
   return (
     <div className="max-w-screen w-full relative mx-auto">
       {/* Carousel */}
       <Swiper
-        modules={[Pagination, Autoplay]}
+        modules={[SwiperPagination, Autoplay]}
         pagination={{ el: ".custom-pagination", clickable: true }}
         autoplay={{ delay: 5000 }}
         loop
@@ -116,7 +139,9 @@ export default function ArticlePage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter") fetchSearchResults();
+              if (e.key === "Enter") {
+                fetchSearchResults();
+              }
             }}
             className="w-full h-[38px] px-4 pr-10 border-2 border-mainOrange rounded-md"
           />
@@ -132,7 +157,10 @@ export default function ArticlePage() {
         <div className="w-full md:w-1/6">
           <Select
             value={selectedCategory}
-            onValueChange={(value) => setSelectedCategory(value)}
+            onValueChange={(value) => {
+              setSelectedCategory(value);
+              setPage(1); // reset ke halaman 1 kalau ganti kategori
+            }}
           >
             <SelectTrigger className="w-full h-[38px] rounded-md shadow-lg border-orange-500 focus:ring-orange-600">
               <SelectValue placeholder="Select Category" />
@@ -150,9 +178,9 @@ export default function ArticlePage() {
 
       {/* Article Cards */}
       <div className="p-10 mx-auto max-w-7xl w-full">
-        {filteredArticles.length > 0 ? (
+        {paginatedArticles.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-            {filteredArticles.map((article) => {
+            {paginatedArticles.map((article) => {
               const categoryObj = categoryOptions.find((cat) => cat.id === article.category);
               return (
                 <ArticleCard
@@ -177,6 +205,57 @@ export default function ArticlePage() {
           />
         )}
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <Pagination className="flex justify-center mt-8">
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (page > 1) setPage(page - 1);
+                }}
+              />
+            </PaginationItem>
+
+            {Array.from({ length: totalPages }, (_, i) => (
+              <PaginationItem key={i}>
+                <PaginationLink
+                  href="#"
+                  isActive={page === i + 1}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setPage(i + 1);
+                  }}
+                >
+                  {i + 1}
+                </PaginationLink>
+              </PaginationItem>
+            ))}
+
+            <PaginationItem>
+              <PaginationNext
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (page < totalPages) setPage(page + 1);
+                }}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      )}
+
+      {/* Showing info */}
+      <p className="text-sm text-muted-foreground mt-2 flex justify-center items-center">
+        Showing {filteredArticles.length > 0
+          ? `${(page - 1) * itemsPerPage + 1} - ${Math.min(page * itemsPerPage, filteredArticles.length)}`
+          : 0
+        } of {filteredArticles.length} article{filteredArticles.length !== 1 && "s"}
+      </p>
+
     </div>
   );
 }
