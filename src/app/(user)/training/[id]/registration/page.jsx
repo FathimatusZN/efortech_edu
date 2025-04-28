@@ -7,7 +7,9 @@ import { auth } from "@/app/firebase/config";
 import { getIdToken } from "firebase/auth";
 import { Check, Trash2 } from "lucide-react";
 import { SuccessDialog } from "@/components/ui/SuccessDialog";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
+// Training Header, display training banner with slideshow effect
 const TrainingHeader = React.memo(({ training }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
@@ -37,8 +39,11 @@ const TrainingHeader = React.memo(({ training }) => {
 });
 
 const RegistrationPage = () => {
+  // Get training ID from URL params
   const { id } = useParams();
   const router = useRouter();
+
+  // States for form and user data
   const [training, setTraining] = useState(null);
   const [formData, setFormData] = useState({
     fullName: "",
@@ -51,13 +56,11 @@ const RegistrationPage = () => {
     { id: crypto.randomUUID(), email: "" },
   ]);
   const [errors, setErrors] = useState({});
-  const [isSubmitted, setIsSubmitted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [emailValidation, setEmailValidation] = useState({});
-  const debounceTimers = useRef({});
-
+  const [redirecting, setRedirecting] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
 
   // Fetch training data
@@ -118,6 +121,10 @@ const RegistrationPage = () => {
     fetchUser();
   }, [id]);
 
+  // Ref for debouncing email validation
+  const debounceTimers = useRef({});
+
+  // Debounce timers for email validation
   useEffect(() => {
     return () => {
       // Clear all timers when component unmounts
@@ -145,7 +152,7 @@ const RegistrationPage = () => {
       });
     }
 
-    // Manual check untuk checkbox terms
+    // Manual check for checkbox terms
     const termsAccepted = document.getElementById("terms").checked;
     if (!termsAccepted) {
       return false;
@@ -155,7 +162,6 @@ const RegistrationPage = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  // Tambahkan di atas sebelum return
   const handleRegistrationSubmit = async () => {
     try {
       setLoading(true);
@@ -222,12 +228,10 @@ const RegistrationPage = () => {
     }
   };
 
-
-  // Update handleSubmit
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
-    await handleRegistrationSubmit(); // call backend submit
+    await handleRegistrationSubmit();
   };
 
   const handleParticipantCountChange = useCallback((e) => {
@@ -352,8 +356,8 @@ const RegistrationPage = () => {
     )
   );
 
-  if (loading)
-    return <div className="text-center mt-10 text-blue-600">Loading...</div>;
+  if (loading || redirecting)
+    return <LoadingSpinner text="Loading..." />;
 
   if (showLoginModal) {
     return (
@@ -542,7 +546,10 @@ const RegistrationPage = () => {
           onOpenChange={(open) => {
             setShowDialog(open);
             if (!open) {
-              router.push("/edit-profile");
+              setRedirecting(true);
+              setTimeout(() => {
+                router.push("/edit-profile");
+              }, 500);
             }
           }}
           title="Registration Success!"
