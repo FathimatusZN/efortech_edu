@@ -155,10 +155,79 @@ const RegistrationPage = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  // Tambahkan di atas sebelum return
+  const handleRegistrationSubmit = async () => {
+    try {
+      setLoading(true);
+
+      const token = await user?.getIdToken?.();
+
+      // Initialize participant array with registrant themselves
+      const participantUserIds = [{ user_id: user.uid }];
+
+      // Only if participantCount > 1, fetch additional participants
+      if (participantCount > 1) {
+        for (const { email } of additionalEmails) {
+          if (!email.trim()) continue; // Skip if email is empty
+
+          const res = await fetch(
+            `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user/search?email=${email}`
+          );
+          const data = await res.json();
+
+          if (res.ok && data.status === "success" && data.data) {
+            participantUserIds.push({ user_id: data.data.user_id });
+          } else {
+            throw new Error(`Participant with email ${email} not found`);
+          }
+        }
+      }
+
+      const payload = {
+        training_id: training.training_id,
+        registrant_id: user.uid,
+        training_date: formData.date,
+        participant_count: participantCount,
+        participants: participantUserIds,
+        final_price: training.final_price || null,
+        training_fees: training.training_fees || null,
+        payment_proof: null,
+      };
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/registration/`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      const result = await response.json();
+
+      if (response.ok) {
+        setShowDialog(true);
+      } else {
+        console.error("Registration failed:", result.message || "Unknown error");
+        alert("Failed to submit registration. Please try again.");
+      }
+    } catch (error) {
+      console.error("Registration submit error:", error.message);
+      alert(error.message || "Registration failed.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+  // Update handleSubmit
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
-    setShowDialog(true);
+    await handleRegistrationSubmit(); // call backend submit
   };
 
   const handleParticipantCountChange = useCallback((e) => {
@@ -470,7 +539,12 @@ const RegistrationPage = () => {
 
         <SuccessDialog
           open={showDialog}
-          onOpenChange={setShowDialog}
+          onOpenChange={(open) => {
+            setShowDialog(open);
+            if (!open) {
+              router.push("/edit-profile");
+            }
+          }}
           title="Registration Success!"
           messages={[
             "We’ll email the details to you soon.",
