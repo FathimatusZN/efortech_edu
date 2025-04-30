@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { BsCheckCircleFill, BsFillXCircleFill } from "react-icons/bs";
 import { TbCloudUpload } from "react-icons/tb";
 
-// Dropdown komponen untuk Status
+// Status labels mapped to numerical status codes
 const STATUS_LABELS = {
   1: "Pending",
   2: "Waiting for Payment",
@@ -19,10 +19,11 @@ const STATUS_LABELS = {
   4: "Completed",
 };
 
+// Dropdown component for selecting status
 const StatusDropdown = ({ value, onChange }) => (
   <select
     value={value}
-    onChange={(e) => onChange(Number(e.target.value))} // ← onChange prop dari parent
+    onChange={(e) => onChange(Number(e.target.value))}
     className="border rounded p-1 text-sm"
   >
     {Object.entries(STATUS_LABELS).map(([key, label]) => (
@@ -33,7 +34,7 @@ const StatusDropdown = ({ value, onChange }) => (
   </select>
 );
 
-export const ValidationCourseTable = ({
+export const ValidationTrainingTable = ({
   data,
   mode,
   onStatusChange,
@@ -41,6 +42,7 @@ export const ValidationCourseTable = ({
 }) => {
   const [attendanceStatus, setAttendanceStatus] = useState({});
 
+  // Update local attendance status for a participant
   const handleAttendanceClick = (id, status) => {
     setAttendanceStatus((prev) => ({
       ...prev,
@@ -48,26 +50,26 @@ export const ValidationCourseTable = ({
     }));
   };
 
-  // Flatten data untuk mode "processed"
+  // Flatten participant data if in "processed" mode
   const processedData =
     mode === "processed"
       ? data.flatMap((registration) =>
-          (registration.participants || []).map((participant) => ({
-            ...registration,
-            ...participant,
-          }))
-        )
+        (registration.participants || []).map((participant) => ({
+          ...registration,
+          ...participant,
+        }))
+      )
       : data;
 
+  // Render column for attendance control or status label
   const renderAttendanceColumn = (item) => {
     const isPresent = attendanceStatus[item.registration_participant_id];
 
     if (isPresent !== undefined) {
       return (
         <span
-          className={`px-3 py-1 rounded-full text-white text-xs font-medium ${
-            isPresent ? "bg-green-600" : "bg-red-600"
-          }`}
+          className={`px-3 py-1 rounded-full text-white text-xs font-medium ${isPresent ? "bg-green-600" : "bg-red-600"
+            }`}
         >
           {isPresent ? "Present" : "Absent"}
         </span>
@@ -100,9 +102,11 @@ export const ValidationCourseTable = ({
     );
   };
 
+  // Render column for certificate upload button or status
   const renderCertificateUploadColumn = (item) => {
     const isPresent =
       attendanceStatus[item.registration_participant_id] === "present";
+
     return item.has_certificate ? (
       <span className="text-green-600">Uploaded</span>
     ) : (
@@ -157,9 +161,11 @@ export const ValidationCourseTable = ({
                 }
               >
                 <TableCell>{item.registration_id}</TableCell>
+
                 {mode === "needToProcess" && (
                   <TableCell>{item.registrant_name}</TableCell>
                 )}
+
                 <TableCell>
                   {new Date(item.registration_date).toLocaleDateString()}
                 </TableCell>
@@ -190,7 +196,9 @@ export const ValidationCourseTable = ({
                   <>
                     <TableCell>{item.participant_name}</TableCell>
                     <TableCell>{renderAttendanceColumn(item)}</TableCell>
-                    <TableCell>{renderCertificateUploadColumn(item)}</TableCell>
+                    <TableCell>
+                      {renderCertificateUploadColumn(item)}
+                    </TableCell>
                   </>
                 )}
               </TableRow>

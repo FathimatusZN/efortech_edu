@@ -4,18 +4,18 @@ import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { BsFillFilterSquareFill } from "react-icons/bs";
-import { ValidationCourseTable } from "@/components/admin/ValidationCourseTable";
+import { ValidationTrainingTable } from "@/components/admin/ValidationTrainingTable";
 import { ValidationCertificateTable } from "@/components/admin/ValidationCertificateTable";
-import { dummyCourseData, dummyCertificateData } from "./Data";
+import { dummyTrainingData, dummyCertificateData } from "./Data";
 
 const ValidationPage = () => {
   const router = useRouter();
-  const [courseData, setCourseData] = useState(dummyCourseData);
+  const [trainingData, setTrainingData] = useState(dummyTrainingData);
   const [certificateData, setCertificateData] = useState(dummyCertificateData);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const filterRef = useRef(null);
 
-  const needToBeProcessedCourse = courseData.filter(
+  const needToBeProcessedTraining = trainingData.filter(
     (item) =>
       item.validation === "pending" || item.validation === "waiting for payment"
   );
@@ -40,15 +40,15 @@ const ValidationPage = () => {
   }, [isFilterOpen]);
 
   const handleValidation = (type, id) => {
-    if (type === "course") {
-      setCourseData((prev) => prev.filter((item) => item.id !== id));
+    if (type === "training") {
+      setTrainingData((prev) => prev.filter((item) => item.id !== id));
     } else {
       setCertificateData((prev) => prev.filter((item) => item.id !== id));
     }
   };
 
   const handleStatusChange = (id, status) => {
-    setCourseData((prev) =>
+    setTrainingData((prev) =>
       prev.map((item) =>
         item.id === id ? { ...item, validation: status } : item
       )
@@ -62,12 +62,12 @@ const ValidationPage = () => {
           Validation
         </h1>
 
-        {/* Course Validation */}
+        {/* Training Validation */}
         <div className="bg-white outline outline-2 md:outline-3 outline-mainBlue rounded-2xl p-4 sm:p-6 mb-6 shadow-[4px_4px_0px_0px_#157ab2] sm:shadow-[8px_8px_0px_0px_#157ab2]">
           <div className="relative">
             <div className="flex flex-wrap items-center justify-between mb-4 w-full">
               <h2 className="text-lg md:text-xl font-semibold">
-                Course Registration Validation
+                Training Registration Validation
               </h2>
               <div className="relative ml-auto mt-2 sm:mt-0" ref={filterRef}>
                 {!isFilterOpen && (
@@ -97,14 +97,14 @@ const ValidationPage = () => {
             </div>
           </div>
 
-          <ValidationCourseTable
-            data={needToBeProcessedCourse.slice(0, 5)}
+          <ValidationTrainingTable
+            data={needToBeProcessedTraining.slice(0, 5)}
             onStatusChange={handleStatusChange}
           />
 
           <div className="flex justify-end mt-4">
             <a
-              href="/validation/course"
+              href="/validation/training"
               className="text-black underline cursor-pointer text-sm sm:text-base"
             >
               See All Validation
