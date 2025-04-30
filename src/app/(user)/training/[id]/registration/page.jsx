@@ -7,7 +7,9 @@ import { auth } from "@/app/firebase/config";
 import { getIdToken } from "firebase/auth";
 import { Check, Trash2 } from "lucide-react";
 import { SuccessDialog } from "@/components/ui/SuccessDialog";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
+// Training Header, display training banner with slideshow effect
 const TrainingHeader = React.memo(({ training }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
@@ -37,8 +39,11 @@ const TrainingHeader = React.memo(({ training }) => {
 });
 
 const RegistrationPage = () => {
+  // Get training ID from URL params
   const { id } = useParams();
   const router = useRouter();
+
+  // States for form and user data
   const [training, setTraining] = useState(null);
   const [formData, setFormData] = useState({
     fullName: "",
@@ -51,13 +56,11 @@ const RegistrationPage = () => {
     { id: crypto.randomUUID(), email: "" },
   ]);
   const [errors, setErrors] = useState({});
-  const [isSubmitted, setIsSubmitted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [emailValidation, setEmailValidation] = useState({});
-  const debounceTimers = useRef({});
-
+  const [redirecting, setRedirecting] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
 
   // Fetch training data
@@ -118,6 +121,10 @@ const RegistrationPage = () => {
     fetchUser();
   }, [id]);
 
+  // Ref for debouncing email validation
+  const debounceTimers = useRef({});
+
+  // Debounce timers for email validation
   useEffect(() => {
     return () => {
       // Clear all timers when component unmounts
@@ -145,7 +152,7 @@ const RegistrationPage = () => {
       });
     }
 
-    // Manual check untuk checkbox terms
+    // Manual check for checkbox terms
     const termsAccepted = document.getElementById("terms").checked;
     if (!termsAccepted) {
       return false;
@@ -155,10 +162,76 @@ const RegistrationPage = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleRegistrationSubmit = async () => {
+    try {
+      setLoading(true);
+
+      const token = await user?.getIdToken?.();
+
+      // Initialize participant array with registrant themselves
+      const participantUserIds = [{ user_id: user.uid }];
+
+      // Only if participantCount > 1, fetch additional participants
+      if (participantCount > 1) {
+        for (const { email } of additionalEmails) {
+          if (!email.trim()) continue; // Skip if email is empty
+
+          const res = await fetch(
+            `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user/search?email=${email}`
+          );
+          const data = await res.json();
+
+          if (res.ok && data.status === "success" && data.data) {
+            participantUserIds.push({ user_id: data.data.user_id });
+          } else {
+            throw new Error(`Participant with email ${email} not found`);
+          }
+        }
+      }
+
+      const payload = {
+        training_id: training.training_id,
+        registrant_id: user.uid,
+        training_date: formData.date,
+        participant_count: participantCount,
+        participants: participantUserIds,
+        final_price: training.final_price || null,
+        training_fees: training.training_fees || null,
+        payment_proof: null,
+      };
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/registration/`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      const result = await response.json();
+
+      if (response.ok) {
+        setShowDialog(true);
+      } else {
+        console.error("Registration failed:", result.message || "Unknown error");
+        alert("Failed to submit registration. Please try again.");
+      }
+    } catch (error) {
+      console.error("Registration submit error:", error.message);
+      alert(error.message || "Registration failed.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
-    setShowDialog(true);
+    await handleRegistrationSubmit();
   };
 
   const handleParticipantCountChange = useCallback((e) => {
@@ -283,8 +356,8 @@ const RegistrationPage = () => {
     )
   );
 
-  if (loading)
-    return <div className="text-center mt-10 text-blue-600">Loading...</div>;
+  if (loading || redirecting)
+    return <LoadingSpinner text="Loading..." />;
 
   if (showLoginModal) {
     return (
@@ -470,7 +543,15 @@ const RegistrationPage = () => {
 
         <SuccessDialog
           open={showDialog}
-          onOpenChange={setShowDialog}
+          onOpenChange={(open) => {
+            setShowDialog(open);
+            if (!open) {
+              setRedirecting(true);
+              setTimeout(() => {
+                router.push("/edit-profile");
+              }, 500);
+            }
+          }}
           title="Registration Success!"
           messages={[
             "We’ll email the details to you soon.",
