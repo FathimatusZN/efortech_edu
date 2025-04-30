@@ -78,22 +78,24 @@ const SigninPage = () => {
     return (
         <>
         {loading ? (
-        <div className="w-full min-h-screen flex flex-col md:flex-row">
+            <div className="w-full min-h-screen flex flex-col md:flex-row">
             <div className="relative w-full md:w-1/2 aspect-[4/1] md:aspect-auto overflow-hidden">
                 <img
-                    src="/assets/Gambar2.jpg"
-                    alt="Signin Image"
-                    className="w-full h-full object-cover object-top"
+                src="/assets/Gambar2.jpg"
+                alt="Signin Image"
+                className="w-full h-full object-cover object-top"
                 />
             </div>
             <div className="w-full md:w-1/2 flex items-center justify-center md:px-8 py-10 md:py-14 xl:py-20">
-                <div className="w-full max-w-[90%] sm:max-w-[400px] md:max-w-[550px] lg:max-w-[650px] xl:max-w-[750px] mx-auto text-center space-y-6">
+                <div className="w-full max-w-[90%] sm:max-w-[400px] md:max-w-[550px] lg:max-w-[650px] xl:max-w-[750px] mx-auto text-center">
+                <div className="flex flex-col items-center space-y-3">
                     <LoadingSpinner text="Signing you in..." />
-                    <div className="mt-6 px-6 py-4 bg-white shadow-lg rounded-lg border-l-4 border-mainOrange max-w-md mx-auto animate-fade-in">
-                        <p className="text-sm md:text-base font-medium text-gray-700 italic">
-                            💡 Fun Fact: <span className="text-black">{randomFunfact}</span>
-                        </p>
+                    <div className="bg-blue-50 rounded-xl px-4 py-3 shadow-md w-full max-w-[350px] sm:max-w-xl mx-auto">
+                    <p className="text-xs sm:text-sm text-black italic text-center">
+                        💡 Did you know? {randomFunfact}
+                    </p>
                     </div>
+                </div>
                 </div>
             </div>
         </div>
