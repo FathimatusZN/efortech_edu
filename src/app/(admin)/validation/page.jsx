@@ -4,7 +4,7 @@ import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { BsFillFilterSquareFill } from "react-icons/bs";
-import { ValidationCourseTable } from "@/components/admin/ValidationCourseTable";
+import { ValidationTrainingTable } from "@/components/admin/ValidationTrainingTable";
 import { ValidationCertificateTable } from "@/components/admin/ValidationCertificateTable";
 import { dummyCourseData, dummyCertificateData } from "./Data";
 
@@ -97,7 +97,7 @@ const ValidationPage = () => {
             </div>
           </div>
 
-          <ValidationCourseTable
+          <ValidationTrainingTable
             data={needToBeProcessedCourse.slice(0, 5)}
             onStatusChange={handleStatusChange}
           />

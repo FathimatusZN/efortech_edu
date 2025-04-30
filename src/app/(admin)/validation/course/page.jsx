@@ -3,7 +3,7 @@
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ValidationCourseTable } from "@/components/admin/ValidationCourseTable";
+import { ValidationTrainingTable } from "@/components/admin/ValidationTrainingTable";
 import {
   Pagination,
   PaginationContent,
@@ -17,18 +17,15 @@ import { BsFillFilterSquareFill } from "react-icons/bs";
 import { AdditionalParticipantDialog } from "@/components/admin/AdditionalParticipantDialog";
 
 const ValidationCoursePage = () => {
+  // States for UI and logic control
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isFilterOpenProcessed, setIsFilterOpenProcessed] = useState(false);
   const [page, setPage] = useState(1);
   const itemsPerPage = 5;
 
-  const filterRef = useRef(null);
-  const filterRefProcessed = useRef(null);
   const [isSearchVisibleMobile, setIsSearchVisibleMobile] = useState(false);
-
   const [searchQuery, setSearchQuery] = useState("");
   const [processedFilter, setProcessedFilter] = useState(null);
 
@@ -40,11 +37,16 @@ const ValidationCoursePage = () => {
   const [selectedParticipants, setSelectedParticipants] = useState([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
+  const filterRef = useRef(null);
+  const filterRefProcessed = useRef(null);
+
+  // Show additional participants dialog
   const onShowParticipants = (participants) => {
     setSelectedParticipants(participants);
     setIsDialogOpen(true);
   };
 
+  // Handle updating status and moving item between process groups
   const handleStatusChange = (registrationId, newStatus) => {
     setCourseData((prev) => {
       const updatedNeedToProcess = prev.needToBeProcessed.filter(
@@ -55,7 +57,6 @@ const ValidationCoursePage = () => {
       const targetItemFromNeed = prev.needToBeProcessed.find(
         (item) => item.registration_id === registrationId
       );
-
       const targetItemFromProcessed = prev.processedData.find(
         (item) => item.registration_id === registrationId
       );
@@ -66,13 +67,11 @@ const ValidationCoursePage = () => {
       };
 
       if (newStatus === 4) {
-        // Pindahkan ke processed
         return {
           needToBeProcessed: updatedNeedToProcess,
           processedData: [...updatedProcessed, updatedItem],
         };
       } else {
-        // Tetap di posisi masing-masing, hanya update status
         return {
           needToBeProcessed: prev.needToBeProcessed.map((item) =>
             item.registration_id === registrationId ? updatedItem : item
@@ -85,6 +84,7 @@ const ValidationCoursePage = () => {
     });
   };
 
+  // Fetch data from API when component mounts
   useEffect(() => {
     const fetchCourseData = async () => {
       try {
@@ -114,6 +114,7 @@ const ValidationCoursePage = () => {
     fetchCourseData();
   }, []);
 
+  // Close filter dropdown if click outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -130,6 +131,7 @@ const ValidationCoursePage = () => {
     };
   }, []);
 
+  // Filter and search processed data
   const filteredAndSearchedData = courseData.processedData
     .filter((item) => {
       if (!processedFilter) return true;
@@ -155,7 +157,7 @@ const ValidationCoursePage = () => {
           Training Registration Validation
         </h1>
 
-        {/* Need to be Processed */}
+        {/* Section for unprocessed registration data */}
         <div className="bg-white outline outline-3 outline-mainBlue rounded-2xl p-4 md:p-6 mb-6 shadow-[4px_4px_0px_0px_#157ab2] md:shadow-[8px_8px_0px_0px_#157ab2] overflow-x-auto">
           <div className="relative">
             <div className="flex items-center justify-between mb-4">
@@ -212,7 +214,7 @@ const ValidationCoursePage = () => {
             participants={selectedParticipants}
             onClose={() => setIsDialogOpen(false)}
           />
-          <ValidationCourseTable
+          <ValidationTrainingTable
             data={courseData.needToBeProcessed}
             mode="needToProcess"
             onShowParticipants={onShowParticipants}
@@ -220,12 +222,13 @@ const ValidationCoursePage = () => {
           />
         </div>
 
-        {/* Processed Section */}
+        {/* Section for processed registration data */}
         <div className="bg-white outline outline-3 outline-mainBlue shadow-[4px_4px_0px_0px_#157ab2] md:shadow-[8px_8px_0px_0px_#157ab2] rounded-2xl p-4 md:p-6 overflow-x-auto">
           <div className="relative">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold">Processed</h2>
               <div className="flex items-center space-x-4">
+                {/* Desktop Search */}
                 <input
                   type="text"
                   placeholder="Search"
@@ -233,6 +236,8 @@ const ValidationCoursePage = () => {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
+
+                {/* Mobile Search */}
                 <div className="relative md:hidden">
                   {!isSearchVisibleMobile ? (
                     <button onClick={() => setIsSearchVisibleMobile(true)}>
@@ -253,6 +258,7 @@ const ValidationCoursePage = () => {
                   )}
                 </div>
 
+                {/* Filter Dropdown */}
                 <div className="relative" ref={filterRefProcessed}>
                   {!isFilterOpenProcessed && (
                     <BsFillFilterSquareFill
@@ -264,7 +270,11 @@ const ValidationCoursePage = () => {
                     <div className="absolute top-full z-50 mt-2 right-0 bg-white border border-gray-300 rounded-xl shadow-md w-40">
                       <p className="text-blue-600 font-bold p-2">Filter by</p>
                       <div className="border-t border-gray-300">
-                        {["accepted", "rejected", "finished"].map((status) => (
+                        {[
+                          "accepted",
+                          "rejected",
+                          "finished",
+                        ].map((status) => (
                           <p
                             key={status}
                             className="cursor-pointer hover:bg-gray-200 text-mainBlue p-2"
@@ -273,8 +283,8 @@ const ValidationCoursePage = () => {
                               setIsFilterOpenProcessed(false);
                             }}
                           >
-                            {status.charAt(0).toUpperCase() + status.slice(1)}{" "}
-                            Status
+                            {status.charAt(0).toUpperCase() +
+                              status.slice(1)} Status
                           </p>
                         ))}
                       </div>
@@ -294,7 +304,7 @@ const ValidationCoursePage = () => {
             </div>
           </div>
 
-          <ValidationCourseTable
+          <ValidationTrainingTable
             data={paginatedData}
             mode="processed"
             onStatusChange={handleStatusChange}
