@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useAuth } from "@/app/context/AuthContext";
-import { useRouter } from "next/navigation";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import funfacts from "@/components/data/funfacts";
 
 const SigninPage = () => {
     const { login } = useAuth();
@@ -67,37 +69,68 @@ const SigninPage = () => {
         }
     };
 
+    const randomFunfact = useMemo(() => {
+        const index = Math.floor(Math.random() * funfacts.length);
+        return funfacts[index];
+    }, [loading]);
+
 
     return (
-        <div className="w-full min-h-screen flex flex-col md:flex-row -mt-16">
-            <div className="relative w-full md:w-1/2 h-64 md:h-auto overflow-hidden">
+        <>
+        {loading ? (
+        <div className="w-full min-h-screen flex flex-col md:flex-row">
+            <div className="relative w-full md:w-1/2 aspect-[4/1] md:aspect-auto overflow-hidden">
                 <img
                     src="/assets/Gambar2.jpg"
                     alt="Signin Image"
                     className="w-full h-full object-cover object-top"
                 />
             </div>
+            <div className="w-full md:w-1/2 flex items-center justify-center md:px-8 py-10 md:py-14 xl:py-20">
+                <div className="w-full max-w-[90%] sm:max-w-[400px] md:max-w-[550px] lg:max-w-[650px] xl:max-w-[750px] mx-auto text-center space-y-6">
+                    <LoadingSpinner text="Signing you in..." />
+                    <div className="mt-6 px-6 py-4 bg-white shadow-lg rounded-lg border-l-4 border-mainOrange max-w-md mx-auto animate-fade-in">
+                        <p className="text-sm md:text-base font-medium text-gray-700 italic">
+                            💡 Fun Fact: <span className="text-black">{randomFunfact}</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    ) : (
+        <div className="w-full min-h-screen flex flex-col md:flex-row">
+            <div className="relative w-full md:w-1/2 aspect-[4/1] md:aspect-auto overflow-hidden">
+                <img
+                    src="/assets/Gambar2.jpg"
+                    alt="Signin Image"
+                    className="w-full h-full md:h-full object-cover object-top "
+                />
+            </div>
 
-            <div className="w-full md:w-1/2 h-auto flex items-center justify-center p-4">
-                <div className="w-[550px] space-y-6 mt-[-80px]">
-                    <h1 className="text-3xl font-bold text-[#333333] text-center">Sign In Form</h1>
+            <div className="w-full md:w-1/2 h-auto flex items-center justify-center md:px-8 pb-10 md:pb-14 xl:pb-20">
+                <div className="w-full max-w-[90%] sm:max-w-[400px] md:max-w-[550px] lg:max-w-[650px] xl:max-w-[750px] space-y-6 mx-auto pt-6 md:pt-10 xl:pt-16">
+                <h1 className="text-xl md:text-2xl lg:text-3xl xl:text-4xl font-bold text-black text-center">
+                    Sign In Form
+                </h1>
 
-                    <form
-                        onSubmit={handleSubmit}
-                        className="border-2 border-[#03649F] rounded-[10px] p-6 space-y-4 bg-white shadow-md"
-                    >
+                <form
+                onSubmit={handleSubmit}
+                className="border-2 border-mainBlue rounded-[10px] p-4 md:p-6 lg:p-8 xl:p-10 space-y-2 md:space-y-3 lg:space-y-3 xl:space-y-4 shadow-xl "
+                >
 
                         <div className="space-y-1">
-                            <label className="text-lg font-semibold text-[#333333] flex items-center">
-                                Email <span className="text-red-500 ml-1">*</span>
-                            </label>
+                        <label className="text-base md:text-lg lg:text-xl xl:text-2xl font-semibold text-black flex items-center">
+                            Email <span className="text-red-500 ml-1">*</span>
+                        </label>
                             <input
                                 type="email"
                                 placeholder="Enter your email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className={`w-full border rounded-[10px] px-4 py-2 focus:outline-none placeholder:text-[#D9D9D9] placeholder:text-[14px] shadow-md ${emailError ? "border-red-500" : "border-[#03649F]"
-                                    }`}
+                                className={`w-full border rounded-[10px] px-4 py-2 text-xs md:text-sm lg:text-base xl:text-lg
+                                        focus:outline-none placeholder:text-[#D9D9D9]
+                                        placeholder:text-[12px] md:placeholder:text-[14px] lg:placeholder:text-[15px] xl:placeholder:text-[16px]
+                                        shadow-md ${emailError ? "border-red-500" : "border-[#03649F]"}`}
                             />
                             <p className={`text-xs ${emailError ? "text-red-500" : "text-transparent"} min-h-[16px]`}>
                                 {emailError || "."}
@@ -106,15 +139,17 @@ const SigninPage = () => {
 
                         {/* PASSWORD */}
                         <div className="space-y-1">
-                            <label className="text-lg font-semibold text-[#333333] flex items-center">
+                            <label className="text-base md:text-lg lg:text-xl xl:text-2xl font-semibold text-black flex items-center">
                                 Password <span className="text-red-500 ml-1">*</span>
                             </label>
                             <div className="relative">
                                 <input
                                     type={showPassword ? "text" : "password"}
                                     placeholder="Enter your password"
-                                    className={`w-full border border-[#03649F] rounded-[10px] px-4 py-2 focus:outline-none placeholder:text-[#D9D9D9] placeholder:text-[14px] pr-12 shadow-md ${passwordError ? "border-red-500" : ""
-                                        }`}
+                                    className={`w-full border rounded-[10px] px-4 py-2 text-xs md:text-sm lg:text-base xl:text-lg
+                                            focus:outline-none placeholder:text-[#D9D9D9]
+                                            placeholder:text-[12px] md:placeholder:text-[14px] lg:placeholder:text-[15px] xl:placeholder:text-[16px]
+                                            shadow-md ${passwordError ? "border-red-500" : "border-[#03649F]"}`}
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                 />
@@ -130,28 +165,32 @@ const SigninPage = () => {
                                 {passwordError || "."}
                             </p>
 
-                            <div className="flex justify-end pt-4">
-                                <Link href="../auth/forgot-password" className="text-sm text-[#ED7117] font-semibold hover:underline">
+                            <div className="flex justify-end text-xs md:text-sm lg:text-base xl:text-lg">
+                                <Link href="../auth/forgot-password" className="text-mainOrange font-semibold hover:underline">
                                     Forgot Password?
                                 </Link>
                             </div>
                         </div>
 
                         {/* BUTTON LOGIN */}
-                        <div className="flex justify-center pt-16">
-                            <button
-                                type="submit"
-                                className="bg-[#ED7117] hover:bg-orange-600 text-white font-semibold rounded-[10px] w-[180px] h-[36px] transition"
-                                disabled={loading} // Disable button saat loading
-                            >
-                                {loading ? "Signing In..." : "Sign In"}
-                            </button>
+                        <div className="flex justify-center pt-10 md:pt-14 lg:pt-16 xl:pt-20">
+                        <Button
+                            type="submit"
+                            variant="orange"
+                            size="sm"
+                            className="w-[120px] h-8 text-xs font-semibold 
+                                    md:w-[180px] md:h-[36px] md:text-sm md:font-bold 
+                                    lg:w-[200px] lg:h-[40px] lg:text-base 
+                                    xl:w-[220px] xl:h-[44px] xl:text-base"
+                        >
+                            {loading ? "Signing In..." : "Sign In"}
+                        </Button>
                         </div>
 
                         {/* REGISTER LINK */}
-                        <p className="text-gray-500 text-center text-sm">
+                        <p className="text-gray-500 text-center text-xs md:text-sm lg:text-base xl:text-lg">
                             Don't have an account?{" "}
-                            <Link href="../auth/register" className="text-[#ED7117] font-semibold hover:underline">
+                            <Link href="../auth/register" className="text-mainOrange font-semibold hover:underline">
                                 Register
                             </Link>
                         </p>
@@ -159,6 +198,8 @@ const SigninPage = () => {
                 </div>
             </div>
         </div>
+        )}
+        </>
     );
 };
 
