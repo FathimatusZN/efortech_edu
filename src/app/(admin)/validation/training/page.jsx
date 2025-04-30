@@ -16,7 +16,7 @@ import { Search } from "lucide-react";
 import { BsFillFilterSquareFill } from "react-icons/bs";
 import { AdditionalParticipantDialog } from "@/components/admin/AdditionalParticipantDialog";
 
-const ValidationCoursePage = () => {
+const ValidationTrainingPage = () => {
   // States for UI and logic control
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -29,7 +29,7 @@ const ValidationCoursePage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [processedFilter, setProcessedFilter] = useState(null);
 
-  const [courseData, setCourseData] = useState({
+  const [trainingData, setTrainingData] = useState({
     needToBeProcessed: [],
     processedData: [],
   });
@@ -48,7 +48,7 @@ const ValidationCoursePage = () => {
 
   // Handle updating status and moving item between process groups
   const handleStatusChange = (registrationId, newStatus) => {
-    setCourseData((prev) => {
+    setTrainingData((prev) => {
       const updatedNeedToProcess = prev.needToBeProcessed.filter(
         (item) => item.registration_id !== registrationId
       );
@@ -86,7 +86,7 @@ const ValidationCoursePage = () => {
 
   // Fetch data from API when component mounts
   useEffect(() => {
-    const fetchCourseData = async () => {
+    const fetchTrainingData = async () => {
       try {
         setLoading(true);
         const res = await fetch(
@@ -98,7 +98,7 @@ const ValidationCoursePage = () => {
         const rawData = result.data || [];
         console.log("Raw API Data:", rawData);
 
-        setCourseData({
+        setTrainingData({
           needToBeProcessed: rawData.filter((item) =>
             [1, 2, 3].includes(item.status)
           ),
@@ -111,7 +111,7 @@ const ValidationCoursePage = () => {
         setLoading(false);
       }
     };
-    fetchCourseData();
+    fetchTrainingData();
   }, []);
 
   // Close filter dropdown if click outside
@@ -132,7 +132,7 @@ const ValidationCoursePage = () => {
   }, []);
 
   // Filter and search processed data
-  const filteredAndSearchedData = courseData.processedData
+  const filteredAndSearchedData = trainingData.processedData
     .filter((item) => {
       if (!processedFilter) return true;
       return (
@@ -143,7 +143,7 @@ const ValidationCoursePage = () => {
       item.fullName?.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-  const processedData = courseData.processedData;
+  const processedData = trainingData.processedData;
   const totalPages = Math.ceil(processedData.length / itemsPerPage);
   const paginatedData = processedData.slice(
     (page - 1) * itemsPerPage,
@@ -176,7 +176,7 @@ const ValidationCoursePage = () => {
                       <p
                         className="cursor-pointer hover:bg-gray-200 text-mainBlue p-2"
                         onClick={() => {
-                          setCourseData((prev) => ({
+                          setTrainingData((prev) => ({
                             ...prev,
                             needToBeProcessed: [...prev.needToBeProcessed].sort(
                               (a, b) => a.fullName.localeCompare(b.fullName)
@@ -190,7 +190,7 @@ const ValidationCoursePage = () => {
                       <p
                         className="cursor-pointer hover:bg-gray-200 text-mainBlue p-2"
                         onClick={() => {
-                          setCourseData((prev) => ({
+                          setTrainingData((prev) => ({
                             ...prev,
                             needToBeProcessed: [...prev.needToBeProcessed].sort(
                               (a, b) =>
@@ -215,7 +215,7 @@ const ValidationCoursePage = () => {
             onClose={() => setIsDialogOpen(false)}
           />
           <ValidationTrainingTable
-            data={courseData.needToBeProcessed}
+            data={trainingData.needToBeProcessed}
             mode="needToProcess"
             onShowParticipants={onShowParticipants}
             onStatusChange={handleStatusChange}
@@ -352,4 +352,4 @@ const ValidationCoursePage = () => {
   );
 };
 
-export default ValidationCoursePage;
+export default ValidationTrainingPage;
