@@ -1,10 +1,13 @@
 'use client'
 
-import { useState } from 'react';
+import Link from 'next/link';
+import { useState, useMemo } from 'react';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useRouter } from "next/navigation";
-import Link from 'next/link';
 import { toast } from 'react-hot-toast';
+import { Button } from "@/components/ui/button";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import funfacts from "@/components/data/funfacts";
 
 const RegisterPage = () => {
     const [fullName, setFullName] = useState('');
@@ -13,20 +16,54 @@ const RegisterPage = () => {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
     const router = useRouter();
+
+    const [fullNameError, setFullNameError] = useState('');
+    const [emailError, setEmailError] = useState('');
+    const [passwordError, setPasswordError] = useState('');
+    const [confirmPasswordError, setConfirmPasswordError] = useState('');
 
     const togglePasswordVisibility = () => setShowPassword((prev) => !prev);
     const toggleConfirmPasswordVisibility = () => setShowConfirmPassword((prev) => !prev);
 
+    const validateInputs = () => {
+        let valid = true;
+
+        setFullNameError('');
+        setEmailError('');
+        setPasswordError('');
+        setConfirmPasswordError('');
+
+        if (!fullName.trim()) {
+            setFullNameError('Full name is required.');
+            valid = false;
+        }
+
+        if (!email.includes("@")) {
+            setEmailError('Please enter a valid email.');
+            valid = false;
+        }
+
+        if (password.length < 6) {
+            setPasswordError('Password must be at least 6 characters.');
+            valid = false;
+        }
+
+        if (password !== confirmPassword) {
+            setConfirmPasswordError('Passwords do not match.');
+            valid = false;
+        }
+
+        return valid;
+    };
+
     const handleRegister = async (e) => {
         e.preventDefault();
-        setError("");
-
-        if (!email.includes("@")) return setError("Please enter a valid email.");
-        if (password !== confirmPassword) return setError("Passwords do not match.");
+        if (!validateInputs()) return;
 
         try {
+            setLoading(true);
             const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/register`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -34,8 +71,8 @@ const RegisterPage = () => {
             });
 
             const data = await res.json();
+            setLoading(false);
 
-            console.log("Register response:", data);
             if (!res.ok || data.success === false) {
                 throw new Error(data.message || "Registration failed.");
             }
@@ -43,13 +80,50 @@ const RegisterPage = () => {
             toast.success("Registration successful!");
             router.push("/auth/signin");
         } catch (e) {
-            setError(e.message);
+            setLoading(false);
+            toast.error(e.message);
         }
     };
 
+    const inputClass = (error) => `
+        w-full border rounded-[10px] px-4 py-2 shadow-md
+        text-xs md:text-sm lg:text-base xl:text-lg
+        focus:outline-none placeholder:text-[#D9D9D9]
+        placeholder:text-[12px] md:placeholder:text-[14px] lg:placeholder:text-[15px] xl:placeholder:text-[16px] 
+        ${error ? 'border-red-500' : 'border-[#03649F]'}`;
+
+    const randomFunfact = useMemo(() => {
+            const index = Math.floor(Math.random() * funfacts.length);
+            return funfacts[index];
+        }, [loading]);
+
     return (
+        <>
+        {loading ? (
+            <div className="w-full min-h-screen flex flex-col md:flex-row">
+            <div className="relative w-full md:w-1/2 overflow-hidden">
+                <img
+                src="/assets/Gambar2.jpg"
+                alt="Signin Image"
+                className="w-full h-full object-cover object-top"
+                />
+            </div>
+            <div className="w-full md:w-1/2 flex items-center justify-center md:px-8 py-10 md:py-14 xl:py-20">
+                <div className="w-full max-w-[90%] sm:max-w-[400px] md:max-w-[550px] lg:max-w-[650px] xl:max-w-[750px] mx-auto text-center">
+                <div className="flex flex-col items-center space-y-3">
+                    <LoadingSpinner text="Registering your account..." />
+                    <div className="bg-blue-50 rounded-xl px-4 py-3 shadow-md w-full max-w-[350px] sm:max-w-xl mx-auto">
+                    <p className="text-xs sm:text-sm text-black italic text-center">
+                        💡 {randomFunfact}
+                    </p>
+                    </div>
+                </div>
+                </div>
+            </div>
+        </div>
+    ) : (
         <div className="w-full min-h-screen flex flex-col md:flex-row">
-            <div className="relative w-full md:w-1/2 h-auto md:h-auto overflow-hidden">
+            <div className="relative w-full md:w-1/2 aspect-[4/1] md:aspect-auto overflow-hidden">
                 <img
                     src="/assets/Gambar2.jpg"
                     alt="Register Image"
@@ -57,88 +131,118 @@ const RegisterPage = () => {
                 />
             </div>
 
-            <div className="w-full md:w-1/2 flex items-center justify-center p-6">
-                <div className="w-[550px] h-[650px] space-y-6 flex flex-col justify-center">
-                    <h1 className="text-3xl font-bold text-[#333333] text-center">Register Form</h1>
-                    <form onSubmit={handleRegister} className="border-2 border-[#03649F] rounded-[10px] p-6 space-y-5 bg-white shadow-md h-full flex flex-col justify-between">
-                        <div className="space-y-4">
-                            <div className="space-y-2">
-                                <label className="text-lg font-semibold text-[#333333] flex items-center">
-                                    Full Name <span className="text-red-500 ml-1">*</span>
+            <div className="w-full md:w-1/2 h-auto flex items-center justify-center md:px-8 pb-10 md:pb-14 xl:pb-20">
+                <div className="w-full max-w-[90%] sm:max-w-[400px] md:max-w-[550px] lg:max-w-[650px] xl:max-w-[750px] space-y-6 mx-auto pt-6 md:pt-10 xl:pt-16">
+                    <h1 className="text-xl md:text-2xl lg:text-3xl xl:text-4xl font-bold text-black text-center">Register Form</h1>
+                    <form onSubmit={handleRegister} className="border-2 border-mainBlue rounded-[10px] p-4 md:p-6 lg:p-8 xl:p-10 space-y-2 md:space-y-3 lg:space-y-3 xl:space-y-4 shadow-xl">
+                    <div className="space-y-4">
+                    <div>
+                        <div className="flex justify-between items-end">
+                            <label className="text-base md:text-lg lg:text-xl xl:text-2xl font-semibold text-black flex items-center">
+                            Full Name <span className="text-red-500 ml-1">*</span>
+                            </label>
+                            {fullNameError && (
+                            <p className="text-red-600 text-xs text-right mb-1">{fullNameError}</p>
+                            )}
+                        </div>
+                        <input
+                            type="text"
+                            placeholder="Enter your name here"
+                            className={inputClass(fullNameError)}
+                            value={fullName}
+                            onChange={(e) => setFullName(e.target.value)}
+                        />
+                        </div>
+
+                        <div>
+                            <div className="flex justify-between items-end">
+                                <label className="text-base md:text-lg lg:text-xl xl:text-2xl font-semibold text-black flex items-center">
+                                Email <span className="text-red-500 ml-1">*</span>
                                 </label>
-                                <input
-                                    type="text"
-                                    placeholder="Enter your name here"
-                                    className="w-full border border-[#03649F] rounded-[10px] px-4 py-2 focus:outline-none placeholder:text-[#D9D9D9] shadow-md"
-                                    value={fullName}
-                                    onChange={(e) => setFullName(e.target.value)}
-                                    required
-                                />
+                                {emailError && (
+                                <p className="text-red-600 text-xs text-right mb-1">{emailError}</p>
+                                )}
                             </div>
-                            <div className="space-y-2">
-                                <label className="text-lg font-semibold text-[#333333] flex items-center">
-                                    Email <span className="text-red-500 ml-1">*</span>
+                            <input
+                                type="email"
+                                placeholder="Enter your email"
+                                className={inputClass(emailError)}
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                            />
+                        </div>
+
+                        <div>
+                            <div className="flex justify-between items-end">
+                                <label className="text-base md:text-lg lg:text-xl xl:text-2xl font-semibold text-black flex items-center">
+                                Password <span className="text-red-500 ml-1">*</span>
                                 </label>
-                                <input
-                                    type="email"
-                                    placeholder="Enter your email"
-                                    className="w-full border border-[#03649F] rounded-[10px] px-4 py-2 focus:outline-none placeholder:text-[#D9D9D9] shadow-md"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    required
-                                />
+                                {passwordError && (
+                                <p className="text-red-600 text-xs text-right mb-1">{passwordError}</p>
+                                )}
                             </div>
-                            <div className="space-y-2">
-                                <label className="text-lg font-semibold text-[#333333] flex items-center">
-                                    Password <span className="text-red-500 ml-1">*</span>
-                                </label>
-                                <div className="relative">
-                                    <input
-                                        type={showPassword ? "text" : "password"}
-                                        placeholder="Enter your password"
-                                        className="w-full border border-[#03649F] rounded-[10px] px-4 py-2 focus:outline-none placeholder:text-[#D9D9D9] pr-12 shadow-md"
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        required
-                                    />
-                                    <div onClick={togglePasswordVisibility} className="absolute inset-y-0 right-3 flex items-center cursor-pointer text-gray-500">
-                                        {showPassword ? <FaEye size={20} /> : <FaEyeSlash size={20} />}
-                                    </div>
+                            <div className="relative">
+                                <input
+                                type={showPassword ? "text" : "password"}
+                                placeholder="Enter your password"
+                                className={inputClass(passwordError)}
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                />
+                                <div onClick={togglePasswordVisibility} className="absolute inset-y-0 right-3 flex items-center cursor-pointer text-gray-500">
+                                {showPassword ? <FaEye size={20} /> : <FaEyeSlash size={20} />}
                                 </div>
                             </div>
-                            <div className="space-y-2">
-                                <label className="text-lg font-semibold text-[#333333] flex items-center">
-                                    Confirm Password <span className="text-red-500 ml-1">*</span>
+                        </div>
+
+                        <div>
+                            <div className="flex justify-between items-end">
+                                <label className="text-base md:text-lg lg:text-xl xl:text-2xl font-semibold text-black flex items-center">
+                                Confirm Password <span className="text-red-500 ml-1">*</span>
                                 </label>
-                                <div className="relative">
-                                    <input
-                                        type={showConfirmPassword ? "text" : "password"}
-                                        placeholder="Confirm your password"
-                                        className="w-full border border-[#03649F] rounded-[10px] px-4 py-2 focus:outline-none placeholder:text-[#D9D9D9] pr-12 shadow-md"
-                                        value={confirmPassword}
-                                        onChange={(e) => setConfirmPassword(e.target.value)}
-                                        required
-                                    />
-                                    <div onClick={toggleConfirmPasswordVisibility} className="absolute inset-y-0 right-3 flex items-center cursor-pointer text-gray-500">
-                                        {showConfirmPassword ? <FaEye size={20} /> : <FaEyeSlash size={20} />}
-                                    </div>
+                                {confirmPasswordError && (
+                                <p className="text-red-600 text-xs text-right mb-1">{confirmPasswordError}</p>
+                                )}
+                            </div>
+                            <div className="relative">
+                                <input
+                                type={showConfirmPassword ? "text" : "password"}
+                                placeholder="Confirm your password"
+                                className={inputClass(confirmPasswordError)}
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                />
+                                <div onClick={toggleConfirmPasswordVisibility} className="absolute inset-y-0 right-3 flex items-center cursor-pointer text-gray-500">
+                                {showConfirmPassword ? <FaEye size={20} /> : <FaEyeSlash size={20} />}
                                 </div>
                             </div>
-                            {error && <p className="text-red-600 text-sm">{error}</p>}
-                            <div className="flex justify-center pt-16">
-                                <button type="submit" className="bg-[#ED7117] hover:bg-orange-600 text-white font-semibold rounded-[10px] w-[180px] h-[40px] transition">
+                        </div>
+
+                            <div className="flex justify-center pt-10 md:pt-14 lg:pt-16 xl:pt-20">
+                                <Button
+                                    type="submit"
+                                    variant="orange"
+                                    size="sm"
+                                    className="w-[120px] h-8 text-xs font-semibold 
+                                        md:w-[180px] md:h-[36px] md:text-sm md:font-bold 
+                                        lg:w-[200px] lg:h-[40px] lg:text-base 
+                                        xl:w-[220px] xl:h-[44px] xl:text-base"
+                                >
                                     Register
-                                </button>
+                                </Button>
                             </div>
-                            <p className="text-gray-500 text-center text-sm">
+
+                            <p className="text-gray-500 text-center text-xs md:text-sm lg:text-base xl:text-lg">
                                 Already have an account?{' '}
-                                <Link href="../auth/signin" className="text-[#ED7117] font-semibold hover:underline">Sign In</Link>
+                                <Link href="../auth/signin" className="text-mainOrange font-semibold hover:underline">Sign In</Link>
                             </p>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
+    )}
+    </>
     );
 };
 
