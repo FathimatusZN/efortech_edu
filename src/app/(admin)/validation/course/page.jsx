@@ -3,12 +3,10 @@
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ValidationTable } from "@/components/ui/ValidationTable";
-import { dummyCourseData } from "@/app/(admin)/validation/Data";
+import { ValidationCourseTable } from "@/components/admin/ValidationCourseTable";
 import {
   Pagination,
   PaginationContent,
-  PaginationEllipsis,
   PaginationItem,
   PaginationLink,
   PaginationNext,
@@ -16,17 +14,11 @@ import {
 } from "@/components/ui/pagination";
 import { Search } from "lucide-react";
 import { BsFillFilterSquareFill } from "react-icons/bs";
+import { AdditionalParticipantDialog } from "@/components/admin/AdditionalParticipantDialog";
 
 const ValidationCoursePage = () => {
-  const router = useRouter();
-  const [courseData, setCourseData] = useState(dummyCourseData);
-
-  const needToBeProcessed = courseData.filter(
-    (item) => item.validation === "pending" || item.validation === "waiting for payment"
-  );
-  const processedData = courseData.filter(
-    (item) => item.validation === "validated"
-  );
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isFilterOpenProcessed, setIsFilterOpenProcessed] = useState(false);
@@ -39,6 +31,88 @@ const ValidationCoursePage = () => {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [processedFilter, setProcessedFilter] = useState(null);
+
+  const [courseData, setCourseData] = useState({
+    needToBeProcessed: [],
+    processedData: [],
+  });
+
+  const [selectedParticipants, setSelectedParticipants] = useState([]);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  const onShowParticipants = (participants) => {
+    setSelectedParticipants(participants);
+    setIsDialogOpen(true);
+  };
+
+  const handleStatusChange = (registrationId, newStatus) => {
+    setCourseData((prev) => {
+      const updatedNeedToProcess = prev.needToBeProcessed.filter(
+        (item) => item.registration_id !== registrationId
+      );
+      const updatedProcessed = [...prev.processedData];
+
+      const targetItemFromNeed = prev.needToBeProcessed.find(
+        (item) => item.registration_id === registrationId
+      );
+
+      const targetItemFromProcessed = prev.processedData.find(
+        (item) => item.registration_id === registrationId
+      );
+
+      const updatedItem = {
+        ...(targetItemFromNeed || targetItemFromProcessed),
+        status: newStatus,
+      };
+
+      if (newStatus === 4) {
+        // Pindahkan ke processed
+        return {
+          needToBeProcessed: updatedNeedToProcess,
+          processedData: [...updatedProcessed, updatedItem],
+        };
+      } else {
+        // Tetap di posisi masing-masing, hanya update status
+        return {
+          needToBeProcessed: prev.needToBeProcessed.map((item) =>
+            item.registration_id === registrationId ? updatedItem : item
+          ),
+          processedData: prev.processedData.map((item) =>
+            item.registration_id === registrationId ? updatedItem : item
+          ),
+        };
+      }
+    });
+  };
+
+  useEffect(() => {
+    const fetchCourseData = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/registration`
+        );
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        const result = await res.json();
+
+        const rawData = result.data || [];
+        console.log("Raw API Data:", rawData);
+
+        setCourseData({
+          needToBeProcessed: rawData.filter((item) =>
+            [1, 2, 3].includes(item.status)
+          ),
+          processedData: rawData.filter((item) => item.status === 4),
+        });
+      } catch (err) {
+        console.error(err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCourseData();
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -56,25 +130,20 @@ const ValidationCoursePage = () => {
     };
   }, []);
 
-  const handleStatusChange = (id, status) => {
-    setCourseData((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, validation: status } : item
-      )
-    );
-  };
-
-  const filteredAndSearchedData = processedData
+  const filteredAndSearchedData = courseData.processedData
     .filter((item) => {
       if (!processedFilter) return true;
-      return item.validation?.toLowerCase() === processedFilter.toLowerCase();
+      return (
+        item.validation?.toLowerCase?.() === processedFilter.toLowerCase?.()
+      );
     })
     .filter((item) =>
-      item.fullName.toLowerCase().includes(searchQuery.toLowerCase())
-    )
+      item.fullName?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
-  const totalPages = Math.ceil(filteredAndSearchedData.length / itemsPerPage);
-  const paginatedData = filteredAndSearchedData.slice(
+  const processedData = courseData.processedData;
+  const totalPages = Math.ceil(processedData.length / itemsPerPage);
+  const paginatedData = processedData.slice(
     (page - 1) * itemsPerPage,
     page * itemsPerPage
   );
@@ -82,16 +151,21 @@ const ValidationCoursePage = () => {
   return (
     <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
       <div className="max-w-screen mx-auto p-4 md:p-6">
-        <h1 className="text-xl md:text-2xl font-bold text-left mb-6">Training Registration Validation</h1>
+        <h1 className="text-xl md:text-2xl font-bold text-left mb-6">
+          Training Registration Validation
+        </h1>
 
-        {/* Need to be Processed Section */}
+        {/* Need to be Processed */}
         <div className="bg-white outline outline-3 outline-mainBlue rounded-2xl p-4 md:p-6 mb-6 shadow-[4px_4px_0px_0px_#157ab2] md:shadow-[8px_8px_0px_0px_#157ab2] overflow-x-auto">
           <div className="relative">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold">Need to be Processed</h2>
               <div className="relative" ref={filterRef}>
                 {!isFilterOpen && (
-                  <BsFillFilterSquareFill className="w-10 h-10 text-secondOrange cursor-pointer" onClick={() => setIsFilterOpen(true)} />
+                  <BsFillFilterSquareFill
+                    className="w-10 h-10 text-secondOrange cursor-pointer"
+                    onClick={() => setIsFilterOpen(true)}
+                  />
                 )}
                 {isFilterOpen && (
                   <div className="absolute top-full z-50 mt-2 right-0 bg-white border border-gray-300 rounded-xl shadow-md w-40">
@@ -100,17 +174,28 @@ const ValidationCoursePage = () => {
                       <p
                         className="cursor-pointer hover:bg-gray-200 text-mainBlue p-2"
                         onClick={() => {
-                          setCourseData([...needToBeProcessed].sort((a, b) => a.fullName.localeCompare(b.fullName)));
+                          setCourseData((prev) => ({
+                            ...prev,
+                            needToBeProcessed: [...prev.needToBeProcessed].sort(
+                              (a, b) => a.fullName.localeCompare(b.fullName)
+                            ),
+                          }));
                           setIsFilterOpen(false);
                         }}
                       >
                         Name
                       </p>
-
                       <p
                         className="cursor-pointer hover:bg-gray-200 text-mainBlue p-2"
                         onClick={() => {
-                          setCourseData([...needToBeProcessed].sort((a, b) => new Date(a.requestDate) - new Date(b.requestDate)));
+                          setCourseData((prev) => ({
+                            ...prev,
+                            needToBeProcessed: [...prev.needToBeProcessed].sort(
+                              (a, b) =>
+                                new Date(a.requestDate) -
+                                new Date(b.requestDate)
+                            ),
+                          }));
                           setIsFilterOpen(false);
                         }}
                       >
@@ -122,11 +207,16 @@ const ValidationCoursePage = () => {
               </div>
             </div>
           </div>
-          <ValidationTable
-            dataType="course"
-            statusType="needToProcess"
-            data={needToBeProcessed}
-            onStatusChange={handleStatusChange} // Panggil handleValidation untuk status menjadi 'validated'
+          <AdditionalParticipantDialog
+            open={isDialogOpen}
+            participants={selectedParticipants}
+            onClose={() => setIsDialogOpen(false)}
+          />
+          <ValidationCourseTable
+            data={courseData.needToBeProcessed}
+            mode="needToProcess"
+            onShowParticipants={onShowParticipants}
+            onStatusChange={handleStatusChange}
           />
         </div>
 
@@ -136,7 +226,6 @@ const ValidationCoursePage = () => {
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold">Processed</h2>
               <div className="flex items-center space-x-4">
-                {/* Search Desktop */}
                 <input
                   type="text"
                   placeholder="Search"
@@ -144,8 +233,6 @@ const ValidationCoursePage = () => {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
-
-                {/* Search Mobile */}
                 <div className="relative md:hidden">
                   {!isSearchVisibleMobile ? (
                     <button onClick={() => setIsSearchVisibleMobile(true)}>
@@ -166,7 +253,6 @@ const ValidationCoursePage = () => {
                   )}
                 </div>
 
-                {/* Filter */}
                 <div className="relative" ref={filterRefProcessed}>
                   {!isFilterOpenProcessed && (
                     <BsFillFilterSquareFill
@@ -178,11 +264,27 @@ const ValidationCoursePage = () => {
                     <div className="absolute top-full z-50 mt-2 right-0 bg-white border border-gray-300 rounded-xl shadow-md w-40">
                       <p className="text-blue-600 font-bold p-2">Filter by</p>
                       <div className="border-t border-gray-300">
-                        <p onClick={() => { setProcessedFilter("accepted"); setIsFilterOpenProcessed(false); }} className="cursor-pointer hover:bg-gray-200 text-mainBlue p-2">Accepted Status</p>
-                        <p onClick={() => { setProcessedFilter("rejected"); setIsFilterOpenProcessed(false); }} className="cursor-pointer hover:bg-gray-200 text-mainBlue p-2">Rejected Status</p>
-                        <p onClick={() => { setProcessedFilter("finished"); setIsFilterOpenProcessed(false); }} className="cursor-pointer hover:bg-gray-200 text-mainBlue p-2">Finished Course</p>
+                        {["accepted", "rejected", "finished"].map((status) => (
+                          <p
+                            key={status}
+                            className="cursor-pointer hover:bg-gray-200 text-mainBlue p-2"
+                            onClick={() => {
+                              setProcessedFilter(status);
+                              setIsFilterOpenProcessed(false);
+                            }}
+                          >
+                            {status.charAt(0).toUpperCase() + status.slice(1)}{" "}
+                            Status
+                          </p>
+                        ))}
                       </div>
-                      <p className="cursor-pointer text-red-600 hover:bg-gray-100 p-2" onClick={() => { setProcessedFilter(null); setIsFilterOpenProcessed(false); }}>
+                      <p
+                        className="cursor-pointer text-red-600 hover:bg-gray-100 p-2"
+                        onClick={() => {
+                          setProcessedFilter(null);
+                          setIsFilterOpenProcessed(false);
+                        }}
+                      >
                         Clear Filter
                       </p>
                     </div>
@@ -192,11 +294,10 @@ const ValidationCoursePage = () => {
             </div>
           </div>
 
-          <ValidationTable
-            dataType="course"
-            statusType="processed"
-            data={processedData.slice(0, 5)}
-            onStatusChange={handleStatusChange} // Handle status untuk course lainnya
+          <ValidationCourseTable
+            data={paginatedData}
+            mode="processed"
+            onStatusChange={handleStatusChange}
           />
 
           <Pagination className="flex mt-3 justify-end">

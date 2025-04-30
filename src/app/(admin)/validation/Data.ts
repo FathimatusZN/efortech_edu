@@ -4,7 +4,9 @@ export type CourseValidationData = {
   registrationDate: string;
   courseName: string;
   session: string;
-  validation?: "accepted" | "rejected" | "pending" | "waiting for payment" | "validated";
+  validation?: "pending" | "waiting for payment" | "validated"; // for Need to be Processed
+  attendance?: "present" | "absent"; // for Processed
+  certificateFile?: string; // uploaded certificate file path
   notes?: string;
 };
 
@@ -16,6 +18,8 @@ export const dummyCourseData: CourseValidationData[] = [
     courseName: "PMP Certificate Advanced Training",
     session: "08.00-12.00",
     validation: "pending",
+    attendance: undefined,
+    certificateFile: undefined,
     notes: "Well prepared and submitted early.",
   },
   {
@@ -25,6 +29,8 @@ export const dummyCourseData: CourseValidationData[] = [
     courseName: "Agile Scrum Professional Development",
     session: "13.00-17.00",
     validation: "pending",
+    attendance: undefined,
+    certificateFile: undefined,
     notes: "Missing required documents.",
   },
   {
@@ -34,6 +40,8 @@ export const dummyCourseData: CourseValidationData[] = [
     courseName: "UI/UX Design Bootcamp for Beginners",
     session: "09.00-11.00",
     validation: "pending",
+    attendance: undefined,
+    certificateFile: undefined,
     notes: "Pending review.",
   },
   {
@@ -43,6 +51,8 @@ export const dummyCourseData: CourseValidationData[] = [
     courseName: "Introduction to Data Science with Python",
     session: "14.00-16.00",
     validation: "pending",
+    attendance: undefined,
+    certificateFile: undefined,
   },
   {
     id: "ID0000005",
@@ -51,6 +61,8 @@ export const dummyCourseData: CourseValidationData[] = [
     courseName: "Hands-on Machine Learning Course",
     session: "10.00-12.00",
     validation: "pending",
+    attendance: undefined,
+    certificateFile: undefined,
   },
   {
     id: "ID0000006",
@@ -59,6 +71,8 @@ export const dummyCourseData: CourseValidationData[] = [
     courseName: "Certified Scrum Master Training",
     session: "15.00-17.00",
     validation: "pending",
+    attendance: undefined,
+    certificateFile: undefined,
     notes: "Need to confirm payment.",
   },
   {
@@ -68,6 +82,8 @@ export const dummyCourseData: CourseValidationData[] = [
     courseName: "ReactJS Fundamentals and Best Practices",
     session: "13.00-15.00",
     validation: "pending",
+    attendance: undefined,
+    certificateFile: undefined,
     notes: "Duplicate registration.",
   },
   {
@@ -77,6 +93,8 @@ export const dummyCourseData: CourseValidationData[] = [
     courseName: "Cloud Computing Basics with AWS",
     session: "11.00-13.00",
     validation: "pending",
+    attendance: undefined,
+    certificateFile: undefined,
   },
   {
     id: "ID0000009",
@@ -85,6 +103,8 @@ export const dummyCourseData: CourseValidationData[] = [
     courseName: "DevOps Tools and Automation Pipelines",
     session: "08.00-10.00",
     validation: "pending",
+    attendance: undefined,
+    certificateFile: undefined,
     notes: "Follow up needed.",
   },
   {
@@ -94,6 +114,8 @@ export const dummyCourseData: CourseValidationData[] = [
     courseName: "Cybersecurity for Business Professionals",
     session: "14.00-16.00",
     validation: "pending",
+    attendance: undefined,
+    certificateFile: undefined,
   },
   {
     id: "ID0000011",
@@ -102,6 +124,8 @@ export const dummyCourseData: CourseValidationData[] = [
     courseName: "Advanced Product Management Workshop",
     session: "10.00-12.00",
     validation: "pending",
+    attendance: undefined,
+    certificateFile: undefined,
     notes: "Validated by team.",
   },
   {
@@ -111,6 +135,8 @@ export const dummyCourseData: CourseValidationData[] = [
     courseName: "Artificial Intelligence for Beginners",
     session: "08.00-10.00",
     validation: "pending",
+    attendance: undefined,
+    certificateFile: undefined,
   },
   {
     id: "ID0000013",
@@ -119,6 +145,8 @@ export const dummyCourseData: CourseValidationData[] = [
     courseName: "SQL & Database Optimization Techniques",
     session: "13.00-15.00",
     validation: "pending",
+    attendance: undefined,
+    certificateFile: undefined,
   },
   {
     id: "ID0000014",
@@ -127,6 +155,8 @@ export const dummyCourseData: CourseValidationData[] = [
     courseName: "Mobile App Development with Flutter",
     session: "10.00-12.00",
     validation: "pending",
+    attendance: undefined,
+    certificateFile: undefined,
     notes: "Late submission.",
   },
   {
@@ -136,6 +166,8 @@ export const dummyCourseData: CourseValidationData[] = [
     courseName: "Introduction to Cloud DevOps",
     session: "08.00-10.00",
     validation: "pending",
+    attendance: undefined,
+    certificateFile: undefined,
   },
   {
     id: "ID0000016",
@@ -144,6 +176,8 @@ export const dummyCourseData: CourseValidationData[] = [
     courseName: "Data Engineering Foundations",
     session: "14.00-16.00",
     validation: "pending",
+    attendance: undefined,
+    certificateFile: undefined,
     notes: "Inconsistent information provided.",
   },
   {
@@ -153,6 +187,8 @@ export const dummyCourseData: CourseValidationData[] = [
     courseName: "Blockchain Essentials & Applications",
     session: "09.00-11.00",
     validation: "pending",
+    attendance: undefined,
+    certificateFile: undefined,
   },
   {
     id: "ID0000018",
@@ -161,6 +197,8 @@ export const dummyCourseData: CourseValidationData[] = [
     courseName: "Data Visualization with Power BI",
     session: "11.00-13.00",
     validation: "pending",
+    attendance: undefined,
+    certificateFile: undefined,
   },
   {
     id: "ID0000019",
@@ -169,6 +207,8 @@ export const dummyCourseData: CourseValidationData[] = [
     courseName: "Agile for Software Development Teams",
     session: "13.00-15.00",
     validation: "pending",
+    attendance: undefined,
+    certificateFile: undefined,
     notes: "Need to upload ID.",
   },
   {
@@ -178,6 +218,8 @@ export const dummyCourseData: CourseValidationData[] = [
     courseName: "Project Management in Tech Industries",
     session: "10.00-12.00",
     validation: "pending",
+    attendance: undefined,
+    certificateFile: undefined,
   },
 ];
 
