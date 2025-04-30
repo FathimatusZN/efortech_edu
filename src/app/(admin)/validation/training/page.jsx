@@ -15,6 +15,7 @@ import {
 import { Search } from "lucide-react";
 import { BsFillFilterSquareFill } from "react-icons/bs";
 import { AdditionalParticipantDialog } from "@/components/admin/AdditionalParticipantDialog";
+import { toast } from "react-hot-toast";
 
 const ValidationTrainingPage = () => {
   // States for UI and logic control
@@ -47,41 +48,66 @@ const ValidationTrainingPage = () => {
   };
 
   // Handle updating status and moving item between process groups
-  const handleStatusChange = (registrationId, newStatus) => {
-    setTrainingData((prev) => {
-      const updatedNeedToProcess = prev.needToBeProcessed.filter(
-        (item) => item.registration_id !== registrationId
+  const handleStatusChange = async (registrationId, newStatus) => {
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/registration/update/${registrationId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ status: newStatus }),
+        }
       );
-      const updatedProcessed = [...prev.processedData];
 
-      const targetItemFromNeed = prev.needToBeProcessed.find(
-        (item) => item.registration_id === registrationId
-      );
-      const targetItemFromProcessed = prev.processedData.find(
-        (item) => item.registration_id === registrationId
-      );
-
-      const updatedItem = {
-        ...(targetItemFromNeed || targetItemFromProcessed),
-        status: newStatus,
-      };
-
-      if (newStatus === 4) {
-        return {
-          needToBeProcessed: updatedNeedToProcess,
-          processedData: [...updatedProcessed, updatedItem],
-        };
-      } else {
-        return {
-          needToBeProcessed: prev.needToBeProcessed.map((item) =>
-            item.registration_id === registrationId ? updatedItem : item
-          ),
-          processedData: prev.processedData.map((item) =>
-            item.registration_id === registrationId ? updatedItem : item
-          ),
-        };
+      if (!res.ok) {
+        throw new Error("Failed to update status");
       }
-    });
+
+      // Update state if the API call is successful
+      setTrainingData((prev) => {
+        const updatedNeedToProcess = prev.needToBeProcessed.filter(
+          (item) => item.registration_id !== registrationId
+        );
+        const updatedProcessed = [...prev.processedData];
+
+        const targetItemFromNeed = prev.needToBeProcessed.find(
+          (item) => item.registration_id === registrationId
+        );
+        const targetItemFromProcessed = prev.processedData.find(
+          (item) => item.registration_id === registrationId
+        );
+
+        const updatedItem = {
+          ...(targetItemFromNeed || targetItemFromProcessed),
+          status: newStatus,
+          validation: newStatus,
+        };
+
+        if (newStatus === 4) {
+          return {
+            needToBeProcessed: updatedNeedToProcess,
+            processedData: [...updatedProcessed, updatedItem],
+          };
+        } else {
+          return {
+            needToBeProcessed: prev.needToBeProcessed.map((item) =>
+              item.registration_id === registrationId ? updatedItem : item
+            ),
+            processedData: prev.processedData.map((item) =>
+              item.registration_id === registrationId ? updatedItem : item
+            ),
+          };
+        }
+      });
+
+      toast.success("Status updated successfully");
+    } catch (err) {
+      console.error("Error updating status:", err.message);
+      toast.error("Error updating status");
+      alert("Failed to update status. Please try again.");
+    }
   };
 
   // Fetch data from API when component mounts
@@ -90,7 +116,7 @@ const ValidationTrainingPage = () => {
       try {
         setLoading(true);
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/registration`
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/registration/search?status=1,2`
         );
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         const result = await res.json();

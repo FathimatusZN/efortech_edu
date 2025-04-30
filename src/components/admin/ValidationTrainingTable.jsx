@@ -17,6 +17,7 @@ const STATUS_LABELS = {
   2: "Waiting for Payment",
   3: "Validated",
   4: "Completed",
+  5: "Cancelled",
 };
 
 // Dropdown component for selecting status
@@ -185,7 +186,7 @@ export const ValidationTrainingTable = ({
                     </TableCell>
                     <TableCell>
                       <StatusDropdown
-                        value={item.validation}
+                        value={item.status}
                         onChange={(newStatus) =>
                           onStatusChange(item.registration_id, newStatus)
                         }
