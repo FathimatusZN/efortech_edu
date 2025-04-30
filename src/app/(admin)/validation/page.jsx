@@ -6,11 +6,11 @@ import { useRouter } from "next/navigation";
 import { BsFillFilterSquareFill } from "react-icons/bs";
 import { ValidationTrainingTable } from "@/components/admin/ValidationTrainingTable";
 import { ValidationCertificateTable } from "@/components/admin/ValidationCertificateTable";
-import { dummyCourseData, dummyCertificateData } from "./Data";
+import { dummyTrainingData, dummyCertificateData } from "./Data";
 
 const ValidationPage = () => {
   const router = useRouter();
-  const [trainingData, setTrainingData] = useState(dummyCourseData);
+  const [trainingData, setTrainingData] = useState(dummyTrainingData);
   const [certificateData, setCertificateData] = useState(dummyCertificateData);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const filterRef = useRef(null);
