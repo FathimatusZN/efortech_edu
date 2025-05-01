@@ -1,390 +1,269 @@
 "use client";
 
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
-import { useState, useRef, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ValidationTrainingTable } from "@/components/admin/ValidationTrainingTable";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
-import { Search } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { BsFillFilterSquareFill } from "react-icons/bs";
-import { AdditionalParticipantDialog } from "@/components/admin/AdditionalParticipantDialog";
 import { toast } from "react-hot-toast";
+import { AdditionalParticipantDialog } from "@/components/admin/AdditionalParticipantDialog";
+import { FaSearch } from "react-icons/fa";
+import {
+    Select,
+    SelectTrigger,
+    SelectContent,
+    SelectItem,
+    SelectValue,
+} from "@/components/ui/select";
 
 const ValidationTrainingPage = () => {
-  // States for UI and logic control
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [isFilterOpenProcessed, setIsFilterOpenProcessed] = useState(false);
-  const [page, setPage] = useState(1);
-  const itemsPerPage = 5;
+    const [tab, setTab] = useState("needprocess");
+    const [trainingData, setTrainingData] = useState({
+        needProcessData: null,
+        onProgressData: null,
+        completedData: null,
+        canceledData: null,
+    });
+    const [loading, setLoading] = useState(true);
+    const [isFilterOpen, setIsFilterOpen] = useState(false);
+    const [selectedParticipants, setSelectedParticipants] = useState([]);
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const filterRef = useRef(null);
+    const [searchQuery, setSearchQuery] = useState("");
 
-  const [isSearchVisibleMobile, setIsSearchVisibleMobile] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [processedFilter, setProcessedFilter] = useState(null);
-
-  const [trainingData, setTrainingData] = useState({
-    needToBeProcessed: [],
-    processedData: [],
-  });
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
+    // Fetch training data 
+    const fetchTabData = async (tabKey) => {
         setLoading(true);
+        try {
+            let response;
+            switch (tabKey) {
+                case "needprocess":
+                    response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/registration/search?status=1,2,3`);
+                    if (!response.ok) throw new Error();
+                    const needProcess = (await response.json()).data || [];
+                    setTrainingData((prev) => ({ ...prev, needProcessData: needProcess }));
+                    break;
 
-        const [regRes, processedRes] = await Promise.all([
-          fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/registration/search?status=1,2,3`),
-          fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/enrollment/participants`)
-        ]);
+                case "onprogress":
+                    response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/enrollment/participants`);
+                    if (!response.ok) throw new Error();
+                    const onProgress = (await response.json()).data || [];
+                    setTrainingData((prev) => ({ ...prev, onProgressData: onProgress }));
+                    break;
 
-        if (!regRes.ok || !processedRes.ok) throw new Error("Fetch failed");
-
-        const regData = await regRes.json();
-        const processedData = await processedRes.json();
-        console.log("regData", regData);
-
-        const rawReg = regData.data || [];
-        const rawProcessed = processedData.data || [];
-        console.log("processedData", processedData);
-
-        setTrainingData({
-          needToBeProcessed: rawReg.filter((item) => [1, 2, 3].includes(item.status)),
-          processedData: rawProcessed.length > 0
-            ? rawProcessed
-            : rawReg.filter((item) => item.status === 4)
-        });
-      } catch (err) {
-        console.error(err);
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
+                // case "completed":
+                // case "canceled":
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error("Failed to fetch data for tab: " + tabKey);
+        } finally {
+            setLoading(false);
+        }
     };
 
-    fetchData();
-  }, []);
+    // Default load
+    useEffect(() => {
+        fetchTabData("needprocess");
+    }, []);
 
-
-  const [selectedParticipants, setSelectedParticipants] = useState([]);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-
-  const filterRef = useRef(null);
-  const filterRefProcessed = useRef(null);
-
-  // Show additional participants dialog
-  const onShowParticipants = (participants) => {
-    setSelectedParticipants(participants);
-    setIsDialogOpen(true);
-  };
-
-  // Handle updating status and moving item between process groups
-  const handleStatusChange = async (registrationId, newStatus) => {
-    try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/registration/update/${registrationId}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ status: newStatus }),
+    // Fetch data for the selected tab when the component mounts or when the tab changes
+    useEffect(() => {
+        if (!trainingData[`${tab}Data`]) {
+            fetchTabData(tab);
         }
-      );
+    }, [tab]);
 
-      if (!res.ok) {
-        throw new Error("Failed to update status");
-      }
+    // Function to handle showing participants in a dialog
+    const onShowParticipants = (participants) => {
+        setSelectedParticipants(participants);
+        setIsDialogOpen(true);
+    };
 
-      // Update state if the API call is successful
-      setTrainingData((prev) => {
-        const updatedNeedToProcess = prev.needToBeProcessed.filter(
-          (item) => item.registration_id !== registrationId
-        );
-        const updatedProcessed = [...prev.processedData];
+    // Function to handle status change for training registrations
+    const handleStatusChange = async (registrationId, newStatus) => {
+        try {
+            const res = await fetch(
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/registration/update/${registrationId}`,
+                {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ status: newStatus }),
+                }
+            );
 
-        const targetItemFromNeed = prev.needToBeProcessed.find(
-          (item) => item.registration_id === registrationId
-        );
-        const targetItemFromProcessed = prev.processedData.find(
-          (item) => item.registration_id === registrationId
-        );
+            if (!res.ok) throw new Error("Failed to update status");
 
-        const updatedItem = {
-          ...(targetItemFromNeed || targetItemFromProcessed),
-          status: newStatus,
-          validation: newStatus,
+            setTrainingData((prev) => {
+                const updatedNeed = prev.needProcessData.filter(
+                    (item) => item.registration_id !== registrationId
+                );
+                const updatedOnProgress = [...prev.onProgressData];
+
+                const originalItem = prev.needProcessData.find(
+                    (item) => item.registration_id === registrationId
+                );
+
+                const updatedItem = {
+                    ...originalItem,
+                    status: newStatus,
+                    validation: newStatus,
+                };
+
+                if (newStatus === 4) {
+                    return {
+                        needProcessData: updatedNeed,
+                        onProgressData: [...updatedOnProgress, updatedItem],
+                    };
+                } else {
+                    return {
+                        needProcessData: [...prev.needProcessData.map((item) =>
+                            item.registration_id === registrationId ? updatedItem : item
+                        )],
+                        onProgressData: [...prev.onProgressData],
+                    };
+                }
+            });
+
+            toast.success("Status updated successfully");
+        } catch (err) {
+            console.error(err);
+            toast.error("Error updating status");
+        }
+    };
+
+    // Function to handle click outside the filter dropdown
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (filterRef.current && !filterRef.current.contains(event.target)) {
+                setIsFilterOpen(false);
+            }
         };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
 
-        if (newStatus === 4) {
-          return {
-            needToBeProcessed: updatedNeedToProcess,
-            processedData: [...updatedProcessed, updatedItem],
-          };
-        } else {
-          return {
-            needToBeProcessed: prev.needToBeProcessed.map((item) =>
-              item.registration_id === registrationId ? updatedItem : item
-            ),
-            processedData: prev.processedData.map((item) =>
-              item.registration_id === registrationId ? updatedItem : item
-            ),
-          };
-        }
-      });
+    return (
+        <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
+            <div className="max-w-screen mx-auto p-4 md:p-6">
+                <h1 className="text-xl md:text-2xl font-bold text-left">
+                    Training Registration Validation
+                </h1>
 
-      toast.success("Status updated successfully");
-    } catch (err) {
-      console.error("Error updating status:", err.message);
-      toast.error("Error updating status");
-      alert("Failed to update status. Please try again.");
-    }
-  };
+                {/* Tabs */}
+                <Tabs value={tab} onValueChange={setTab} className="w-full">
+                    <div className="bg-white overflow-hidden">
+                        {/* Tabs Header and Filter */}
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-4">
+                            {/* Tabs */}
+                            <TabsList className="flex flex-wrap gap-2">
+                                <TabsTrigger value="needprocess">Need to Process</TabsTrigger>
+                                <TabsTrigger value="onprogress">On Progress</TabsTrigger>
+                                <TabsTrigger value="completed">Completed</TabsTrigger>
+                                <TabsTrigger value="canceled">Canceled</TabsTrigger>
+                            </TabsList>
 
-  // Close filter dropdown if click outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        filterRefProcessed.current &&
-        !filterRefProcessed.current.contains(event.target)
-      ) {
-        setIsFilterOpenProcessed(false);
-      }
-    };
+                            {/* Filter and Search */}
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-4 w-full sm:w-auto">
+                                {/* Search Input */}
+                                <div className="relative w-full sm:w-[250px]">
+                                    <input
+                                        type="text"
+                                        placeholder="Search by name..."
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        className="text-sm w-full pl-6 pr-10 py-2 rounded-md border border-mainBlue focus:ring-0 focus:outline-none"
+                                    />
+                                    <FaSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
+                                </div>
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
+                                {/* Sort Dropdown */}
+                                <Select
+                                    onValueChange={(value) => {
+                                        if (value === "name") {
+                                            setTrainingData((prev) => ({
+                                                ...prev,
+                                                needProcessData: [...prev.needProcessData].sort((a, b) =>
+                                                    a.fullName.localeCompare(b.fullName)
+                                                ),
+                                            }));
+                                        } else if (value === "date") {
+                                            setTrainingData((prev) => ({
+                                                ...prev,
+                                                needProcessData: [...prev.needProcessData].sort((a, b) =>
+                                                    new Date(a.requestDate) - new Date(b.requestDate)
+                                                ),
+                                            }));
+                                        }
+                                    }}
+                                >
+                                    <SelectTrigger className="w-full sm:w-[180px] border border-mainBlue rounded-md text-sm">
+                                        <SelectValue placeholder="Sort by" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="name">Name</SelectItem>
+                                        <SelectItem value="date">Registration Date</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                        <div className="border-t border-gray-200 mt-2" />
 
-  // Filter and search processed data
-  const filteredAndSearchedData = trainingData.processedData
-    .filter((item) => {
-      if (!processedFilter) return true;
-      return (
-        item.validation?.toLowerCase?.() === processedFilter.toLowerCase?.()
-      );
-    })
-    .filter((item) =>
-      item.fullName?.toLowerCase().includes(searchQuery.toLowerCase())
+                        <div className="p-1 mt-2 mr-1">
+                            <div className="bg-white outline outline-3 outline-mainBlue rounded-2xl px-4 py-2 mb-4 shadow-[8px_8px_0px_0px_#157ab2] overflow-x-auto">
+                                <div className="flex items-center justify-between">
+                                    {/* Need to be process tab */}
+                                    <TabsContent value="needprocess">
+                                        <AdditionalParticipantDialog
+                                            open={isDialogOpen}
+                                            participants={selectedParticipants}
+                                            onClose={() => setIsDialogOpen(false)}
+                                        />
+                                        {trainingData.needProcessData ? (
+                                            <ValidationTrainingTable
+                                                data={trainingData.needProcessData}
+                                                mode="needToProcess"
+                                                onShowParticipants={onShowParticipants}
+                                                onStatusChange={handleStatusChange}
+                                            />
+                                        ) : (
+                                            <p>Loading...</p>
+                                        )}
+                                    </TabsContent>
+
+                                    {/* On Progress tab */}
+                                    <TabsContent value="onprogress">
+                                        {trainingData.onProgressData ? (
+                                            <ValidationTrainingTable
+                                                data={trainingData.onProgressData}
+                                                mode="onprogress"
+                                                onShowParticipants={onShowParticipants}
+                                                onStatusChange={handleStatusChange}
+                                            />
+                                        ) : (
+                                            <p>Loading...</p>
+                                        )}
+                                    </TabsContent>
+
+                                    <TabsContent value="completed">
+                                        <h2 className="text-lg md:text-xl font-semibold mb-4">Completed</h2>
+                                        {/* Konten lainnya */}
+                                    </TabsContent>
+
+                                    <TabsContent value="canceled">
+                                        <h2 className="text-lg md:text-xl font-semibold mb-4">Cancelled</h2>
+                                        {/* Konten lainnya */}
+                                    </TabsContent>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </Tabs>
+            </div>
+        </ProtectedRoute>
     );
-
-  const processedData = trainingData.processedData;
-  const totalPages = Math.ceil(processedData.length / itemsPerPage);
-  const paginatedData = processedData.slice(
-    (page - 1) * itemsPerPage,
-    page * itemsPerPage
-  );
-
-  return (
-    <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
-      <div className="max-w-screen mx-auto p-4 md:p-6">
-        <h1 className="text-xl md:text-2xl font-bold text-left mb-6">
-          Training Registration Validation
-        </h1>
-
-        {/* Section for unprocessed registration data */}
-        <div className="bg-white outline outline-3 outline-mainBlue rounded-2xl p-4 md:p-6 mb-6 shadow-[4px_4px_0px_0px_#157ab2] md:shadow-[8px_8px_0px_0px_#157ab2] overflow-x-auto">
-          <div className="relative">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold">Need to be Processed</h2>
-              <div className="relative" ref={filterRef}>
-                {!isFilterOpen && (
-                  <BsFillFilterSquareFill
-                    className="w-10 h-10 text-secondOrange cursor-pointer"
-                    onClick={() => setIsFilterOpen(true)}
-                  />
-                )}
-                {isFilterOpen && (
-                  <div className="absolute top-full z-50 mt-2 right-0 bg-white border border-gray-300 rounded-xl shadow-md w-40">
-                    <p className="text-blue-600 font-bold p-2">Sort by</p>
-                    <div className="border-t border-gray-300">
-                      <p
-                        className="cursor-pointer hover:bg-gray-200 text-mainBlue p-2"
-                        onClick={() => {
-                          setTrainingData((prev) => ({
-                            ...prev,
-                            needToBeProcessed: [...prev.needToBeProcessed].sort(
-                              (a, b) => a.fullName.localeCompare(b.fullName)
-                            ),
-                          }));
-                          setIsFilterOpen(false);
-                        }}
-                      >
-                        Name
-                      </p>
-                      <p
-                        className="cursor-pointer hover:bg-gray-200 text-mainBlue p-2"
-                        onClick={() => {
-                          setTrainingData((prev) => ({
-                            ...prev,
-                            needToBeProcessed: [...prev.needToBeProcessed].sort(
-                              (a, b) =>
-                                new Date(a.requestDate) -
-                                new Date(b.requestDate)
-                            ),
-                          }));
-                          setIsFilterOpen(false);
-                        }}
-                      >
-                        Registration Date
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-          <AdditionalParticipantDialog
-            open={isDialogOpen}
-            participants={selectedParticipants}
-            onClose={() => setIsDialogOpen(false)}
-          />
-          <ValidationTrainingTable
-            data={trainingData.needToBeProcessed}
-            mode="needToProcess"
-            onShowParticipants={onShowParticipants}
-            onStatusChange={handleStatusChange}
-          />
-        </div>
-
-        {/* Section for processed registration data */}
-        <div className="bg-white outline outline-3 outline-mainBlue shadow-[4px_4px_0px_0px_#157ab2] md:shadow-[8px_8px_0px_0px_#157ab2] rounded-2xl p-4 md:p-6 overflow-x-auto">
-          <div className="relative">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold">Processed</h2>
-              <div className="flex items-center space-x-4">
-                {/* Desktop Search */}
-                <input
-                  type="text"
-                  placeholder="Search"
-                  className="hidden md:flex justify-end border border-mainOrange rounded-lg px-3 py-1"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-
-                {/* Mobile Search */}
-                <div className="relative md:hidden">
-                  {!isSearchVisibleMobile ? (
-                    <button onClick={() => setIsSearchVisibleMobile(true)}>
-                      <Search className="w-6 h-6 text-mainBlue" />
-                    </button>
-                  ) : (
-                    <div className="absolute right-0 z-50">
-                      <input
-                        type="text"
-                        placeholder="Search"
-                        className="border border-neutral3 rounded-lg px-3 py-1 w-48"
-                        autoFocus
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        onBlur={() => setIsSearchVisibleMobile(false)}
-                      />
-                    </div>
-                  )}
-                </div>
-
-                {/* Filter Dropdown */}
-                <div className="relative" ref={filterRefProcessed}>
-                  {!isFilterOpenProcessed && (
-                    <BsFillFilterSquareFill
-                      className="w-10 h-10 text-secondOrange cursor-pointer"
-                      onClick={() => setIsFilterOpenProcessed(true)}
-                    />
-                  )}
-                  {isFilterOpenProcessed && (
-                    <div className="absolute top-full z-50 mt-2 right-0 bg-white border border-gray-300 rounded-xl shadow-md w-40">
-                      <p className="text-blue-600 font-bold p-2">Filter by</p>
-                      <div className="border-t border-gray-300">
-                        {[
-                          "accepted",
-                          "rejected",
-                          "finished",
-                        ].map((status) => (
-                          <p
-                            key={status}
-                            className="cursor-pointer hover:bg-gray-200 text-mainBlue p-2"
-                            onClick={() => {
-                              setProcessedFilter(status);
-                              setIsFilterOpenProcessed(false);
-                            }}
-                          >
-                            {status.charAt(0).toUpperCase() +
-                              status.slice(1)} Status
-                          </p>
-                        ))}
-                      </div>
-                      <p
-                        className="cursor-pointer text-red-600 hover:bg-gray-100 p-2"
-                        onClick={() => {
-                          setProcessedFilter(null);
-                          setIsFilterOpenProcessed(false);
-                        }}
-                      >
-                        Clear Filter
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <ValidationTrainingTable
-            data={trainingData.processedData}
-            mode="processed"
-            onShowParticipants={onShowParticipants}
-            onStatusChange={handleStatusChange} // meskipun mungkin tidak terlalu diperlukan di mode processed
-          />
-
-          <Pagination className="flex mt-3 justify-end">
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (page > 1) setPage(page - 1);
-                  }}
-                />
-              </PaginationItem>
-              {Array.from({ length: totalPages }, (_, i) => (
-                <PaginationItem key={i}>
-                  <PaginationLink
-                    href="#"
-                    isActive={page === i + 1}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setPage(i + 1);
-                    }}
-                  >
-                    {i + 1}
-                  </PaginationLink>
-                </PaginationItem>
-              ))}
-              <PaginationItem>
-                <PaginationNext
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (page < totalPages) setPage(page + 1);
-                  }}
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
-        </div>
-      </div>
-    </ProtectedRoute>
-  );
 };
 
 export default ValidationTrainingPage;

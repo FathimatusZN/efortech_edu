@@ -119,7 +119,7 @@ export const ValidationTrainingTable = ({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Registration ID</TableHead>
+              <TableHead>ID</TableHead>
               {mode === "needToProcess" && (
                 <TableHead>Registrant Name</TableHead>
               )}
@@ -150,7 +150,11 @@ export const ValidationTrainingTable = ({
                   (item.registration_participant_id || "")
                 }
               >
-                <TableCell>{item.registration_id}</TableCell>
+                <TableCell>
+                  {mode === "needToProcess"
+                    ? item.registration_id
+                    : item.registration_participant_id}
+                </TableCell>
 
                 {mode === "needToProcess" && (
                   <TableCell>{item.registrant_name}</TableCell>
