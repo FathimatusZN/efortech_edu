@@ -40,29 +40,27 @@ export const ValidationTrainingTable = ({
   mode,
   onStatusChange,
   onShowParticipants,
+  onAttendanceClick,
 }) => {
-  const [attendanceStatus, setAttendanceStatus] = useState({});
-
-  // Update local attendance status for a participant
-  const handleAttendanceClick = (id, status) => {
-    setAttendanceStatus((prev) => ({
-      ...prev,
-      [id]: status,
-    }));
-  };
-
   const processedData = data;
 
   // Render column for attendance control or status label
   const renderAttendanceColumn = (item) => {
-    const status = item.attendance_status;
+    const id = item.registration_participant_id;
+    const effectiveStatus = item.attendance_status;
 
-    const renderButton = (label, icon, color, onClick, disabled = false) => (
+    const isPresent = effectiveStatus === true;
+    const isAbsent = effectiveStatus === false;
+    const isNull = effectiveStatus === null || effectiveStatus === undefined;
+
+    const renderButton = (label, icon, active, onClick) => (
       <Button
         variant="ghost"
-        className={`${color} ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
+        className={`${active ? "opacity-100" : "opacity-30"} ${label === "Present"
+          ? "text-green-600 hover:bg-green-100"
+          : "text-red-600 hover:bg-red-100"
+          }`}
         onClick={onClick}
-        disabled={disabled}
       >
         {icon}
         {label}
@@ -74,16 +72,14 @@ export const ValidationTrainingTable = ({
         {renderButton(
           "Present",
           <BsCheckCircleFill className="w-5 h-5 mr-1" />,
-          "text-green-600 hover:bg-green-100",
-          () => handleAttendanceClick(item.registration_participant_id, true),
-          status === false // disable if marked as Absent
+          isPresent || isNull,
+          () => onAttendanceClick(item.registration_participant_id, true)
         )}
         {renderButton(
           "Absent",
           <BsFillXCircleFill className="w-5 h-5 mr-1" />,
-          "text-red-600 hover:bg-red-100",
-          () => handleAttendanceClick(item.registration_participant_id, false),
-          status === true // disable if marked as Present
+          isAbsent || isNull,
+          () => onAttendanceClick(item.registration_participant_id, false)
         )}
       </div>
     );
@@ -135,8 +131,8 @@ export const ValidationTrainingTable = ({
               ) : (
                 <>
                   <TableHead>Participant Name</TableHead>
-                  <TableHead>Absensi</TableHead>
-                  <TableHead>Upload Sertifikat</TableHead>
+                  <TableHead>Attendance</TableHead>
+                  <TableHead>Certificate</TableHead>
                 </>
               )}
             </TableRow>

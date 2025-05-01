@@ -4,7 +4,6 @@ import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ValidationTrainingTable } from "@/components/admin/ValidationTrainingTable";
 import { useEffect, useRef, useState } from "react";
-import { BsFillFilterSquareFill } from "react-icons/bs";
 import { toast } from "react-hot-toast";
 import { AdditionalParticipantDialog } from "@/components/admin/AdditionalParticipantDialog";
 import { FaSearch } from "react-icons/fa";
@@ -30,6 +29,7 @@ const ValidationTrainingPage = () => {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const filterRef = useRef(null);
     const [searchQuery, setSearchQuery] = useState("");
+    const [attendanceStatus, setAttendanceStatus] = useState({});
 
     // Fetch training data 
     const fetchTabData = async (tabKey) => {
@@ -145,6 +145,35 @@ const ValidationTrainingPage = () => {
         };
     }, []);
 
+    // Function to handle attendance status change
+    const handleAttendanceClick = async (id, status) => {
+        try {
+            // Update attendance status in the database
+            const res = await fetch(
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/enrollment/attendance/${id}`,
+                {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ attendance_status: status }),
+                }
+            );
+
+            if (!res.ok) throw new Error("Failed to update attendance");
+
+            // renew attendance status in component state
+            setAttendanceStatus((prev) => ({
+                ...prev,
+                [id]: status,
+            }));
+
+            toast.success("Attendance updated");
+            fetchTabData(tab);
+        } catch (error) {
+            console.error("Error updating attendance:", error);
+            toast.error("Error updating attendance");
+        }
+    };
+
     return (
         <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
             <div className="max-w-screen mx-auto p-4 md:p-6">
@@ -239,8 +268,7 @@ const ValidationTrainingPage = () => {
                                             <ValidationTrainingTable
                                                 data={trainingData.onProgressData}
                                                 mode="onprogress"
-                                                onShowParticipants={onShowParticipants}
-                                                onStatusChange={handleStatusChange}
+                                                onAttendanceClick={handleAttendanceClick}
                                             />
                                         ) : (
                                             <p>Loading...</p>
