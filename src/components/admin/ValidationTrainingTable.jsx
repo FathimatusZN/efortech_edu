@@ -55,57 +55,55 @@ export const ValidationTrainingTable = ({
 
   // Render column for attendance control or status label
   const renderAttendanceColumn = (item) => {
-    const isPresent = attendanceStatus[item.registration_participant_id];
+    const status = item.attendance_status;
 
-    if (isPresent !== undefined) {
-      return (
-        <span
-          className={`px-3 py-1 rounded-full text-white text-xs font-medium ${isPresent ? "bg-green-600" : "bg-red-600"
-            }`}
-        >
-          {isPresent ? "Present" : "Absent"}
-        </span>
-      );
-    }
+    const renderButton = (label, icon, color, onClick, disabled = false) => (
+      <Button
+        variant="ghost"
+        className={`${color} ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
+        onClick={onClick}
+        disabled={disabled}
+      >
+        {icon}
+        {label}
+      </Button>
+    );
 
     return (
       <div className="flex gap-2 justify-center">
-        <Button
-          variant="ghost"
-          className="text-green-600 hover:bg-green-100"
-          onClick={() =>
-            handleAttendanceClick(item.registration_participant_id, true)
-          }
-        >
-          <BsCheckCircleFill className="w-5 h-5 mr-1" />
-          Present
-        </Button>
-        <Button
-          variant="ghost"
-          className="text-red-600 hover:bg-red-100"
-          onClick={() =>
-            handleAttendanceClick(item.registration_participant_id, false)
-          }
-        >
-          <BsFillXCircleFill className="w-5 h-5 mr-1" />
-          Absent
-        </Button>
+        {renderButton(
+          "Present",
+          <BsCheckCircleFill className="w-5 h-5 mr-1" />,
+          "text-green-600 hover:bg-green-100",
+          () => handleAttendanceClick(item.registration_participant_id, true),
+          status === false // disable if marked as Absent
+        )}
+        {renderButton(
+          "Absent",
+          <BsFillXCircleFill className="w-5 h-5 mr-1" />,
+          "text-red-600 hover:bg-red-100",
+          () => handleAttendanceClick(item.registration_participant_id, false),
+          status === true // disable if marked as Present
+        )}
       </div>
     );
   };
 
   // Render column for certificate upload button or status
   const renderCertificateUploadColumn = (item) => {
-    const isPresent =
-      attendanceStatus[item.registration_participant_id] === true;
+    const status = item.attendance_status;
 
-    return item.has_certificate ? (
-      <span className="text-green-600">Uploaded</span>
-    ) : (
+    if (item.has_certificate) {
+      return <span className="text-green-600">Uploaded</span>;
+    }
+
+    const canUpload = status === true;
+
+    return (
       <Button
         variant="orange"
         onClick={() => console.log("Upload Certificate")}
-        disabled={!isPresent}
+        disabled={!canUpload}
       >
         Upload
         <TbCloudUpload className="ml-2" />
