@@ -51,16 +51,7 @@ export const ValidationTrainingTable = ({
     }));
   };
 
-  // Flatten participant data if in "processed" mode
-  const processedData =
-    mode === "processed"
-      ? data.flatMap((registration) =>
-        (registration.participants || []).map((participant) => ({
-          ...registration,
-          ...participant,
-        }))
-      )
-      : data;
+  const processedData = data;
 
   // Render column for attendance control or status label
   const renderAttendanceColumn = (item) => {
@@ -106,7 +97,7 @@ export const ValidationTrainingTable = ({
   // Render column for certificate upload button or status
   const renderCertificateUploadColumn = (item) => {
     const isPresent =
-      attendanceStatus[item.registration_participant_id] === "present";
+      attendanceStatus[item.registration_participant_id] === true;
 
     return item.has_certificate ? (
       <span className="text-green-600">Uploaded</span>
@@ -195,7 +186,7 @@ export const ValidationTrainingTable = ({
                   </>
                 ) : (
                   <>
-                    <TableCell>{item.participant_name}</TableCell>
+                    <TableCell>{item.fullname}</TableCell>
                     <TableCell>{renderAttendanceColumn(item)}</TableCell>
                     <TableCell>
                       {renderCertificateUploadColumn(item)}

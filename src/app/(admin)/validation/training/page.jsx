@@ -35,6 +35,44 @@ const ValidationTrainingPage = () => {
     processedData: [],
   });
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+
+        const [regRes, processedRes] = await Promise.all([
+          fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/registration/search?status=1,2,3`),
+          fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/enrollment/participants`)
+        ]);
+
+        if (!regRes.ok || !processedRes.ok) throw new Error("Fetch failed");
+
+        const regData = await regRes.json();
+        const processedData = await processedRes.json();
+        console.log("regData", regData);
+
+        const rawReg = regData.data || [];
+        const rawProcessed = processedData.data || [];
+        console.log("processedData", processedData);
+
+        setTrainingData({
+          needToBeProcessed: rawReg.filter((item) => [1, 2, 3].includes(item.status)),
+          processedData: rawProcessed.length > 0
+            ? rawProcessed
+            : rawReg.filter((item) => item.status === 4)
+        });
+      } catch (err) {
+        console.error(err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+
   const [selectedParticipants, setSelectedParticipants] = useState([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -109,36 +147,6 @@ const ValidationTrainingPage = () => {
       alert("Failed to update status. Please try again.");
     }
   };
-
-  // Fetch data from API when component mounts
-  useEffect(() => {
-    const fetchTrainingData = async () => {
-      try {
-        setLoading(true);
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/registration/search?status=1,2`
-        );
-        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-        const result = await res.json();
-
-        const rawData = result.data || [];
-        console.log("Raw API Data:", rawData);
-
-        setTrainingData({
-          needToBeProcessed: rawData.filter((item) =>
-            [1, 2, 3].includes(item.status)
-          ),
-          processedData: rawData.filter((item) => item.status === 4),
-        });
-      } catch (err) {
-        console.error(err);
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchTrainingData();
-  }, []);
 
   // Close filter dropdown if click outside
   useEffect(() => {
@@ -331,9 +339,10 @@ const ValidationTrainingPage = () => {
           </div>
 
           <ValidationTrainingTable
-            data={paginatedData}
+            data={trainingData.processedData}
             mode="processed"
-            onStatusChange={handleStatusChange}
+            onShowParticipants={onShowParticipants}
+            onStatusChange={handleStatusChange} // meskipun mungkin tidak terlalu diperlukan di mode processed
           />
 
           <Pagination className="flex mt-3 justify-end">
