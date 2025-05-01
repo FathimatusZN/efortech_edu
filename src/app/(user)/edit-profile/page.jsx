@@ -284,7 +284,7 @@ export default function EditProfile() {
 
       {/* History Course Section */}
       <div className="mt-8">
-        <HistoryCourse />
+        <HistoryCourse userId={user?.uid} />
       </div>
     </div>
   );
