@@ -16,8 +16,6 @@ export function UploadCertificateDialog({
     open,
     setOpen,
     participant,
-    onUploadFile,
-    onSave,
     onShowSuccess,
 }) {
     const [certificateNumber, setCertificateNumber] = useState("");
@@ -28,6 +26,7 @@ export function UploadCertificateDialog({
     const [errors, setErrors] = useState({});
     const [saving, setSaving] = useState(false);
 
+    // Reset form state when dialog is closed
     const resetForm = () => {
         setCertificateNumber("");
         setIssuedDate("");
@@ -37,17 +36,19 @@ export function UploadCertificateDialog({
         setErrors({});
     };
 
+    // Reset form when dialog is closed
     useEffect(() => {
         if (!open) resetForm();
     }, [open]);
 
+    // Handle file upload and preview
     const handleFileChange = async (e) => {
         const file = e.target.files[0];
         if (file) {
             setCertFile(null);
             setCertPreviewUrl("");
             try {
-                const url = await onUploadFile(file); // file upload async
+                const url = await uploadFile(file);
                 setCertFile(file);
                 setCertPreviewUrl(url);
                 setErrors((prev) => ({ ...prev, certFile: null }));
@@ -60,6 +61,7 @@ export function UploadCertificateDialog({
         }
     };
 
+    // Handle submit and save certificate data
     const handleSubmit = async () => {
         setSaving(true);
         setErrors({});
@@ -76,26 +78,79 @@ export function UploadCertificateDialog({
         }
 
         try {
-            await onSave({
-                registration_participant_id: participant.registration_participant_id,
-                certificate_number: certificateNumber,
-                issued_date: issuedDate,
-                expired_date: expiredDate,
-                cert_file_url: certPreviewUrl,
-            });
+            await saveCertificate();
+            onShowSuccess?.();
             setOpen(false);
-            resetForm();
-            onShowSuccess();
         } catch (err) {
-            setErrors({ submit: "Failed to save certificate. Try again." });
+            setErrors((prev) => ({
+                ...prev,
+                general: err.message || "Failed to save certificate",
+            }));
         } finally {
             setSaving(false);
         }
     };
 
+    // Upload certificate file to backend
+    const uploadFile = async (file) => {
+        const allowedTypes = [
+            "image/jpeg", "image/png", "image/webp", "image/jpg", "image/heic", "application/pdf",
+        ];
+
+        if (!allowedTypes.includes(file.type)) {
+            throw new Error("Only image or PDF files are allowed.");
+        }
+
+        const formData = new FormData();
+        formData.append("files", file);
+
+        const res = await fetch(
+            `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/certificate/upload-certificate`,
+            {
+                method: "POST",
+                body: formData,
+            }
+        );
+
+        const data = await res.json();
+
+        if (!res.ok || data.status !== "success") {
+            throw new Error(data.message || "File upload failed");
+        }
+
+        return data.data.fileUrl;
+    };
+
+    // Save certificate metadata to backend
+    const saveCertificate = async () => {
+        const body = {
+            issued_date: issuedDate,
+            expired_date: expiredDate,
+            certificate_number: certificateNumber,
+            cert_file: certPreviewUrl,
+            registration_participant_id: participant.registration_participant_id,
+        };
+
+        console.log("Saving certificate...", body);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/certificate/`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(body),
+        });
+
+        if (!response.ok) {
+            const errData = await response.json();
+            throw new Error(errData.message || "API error");
+        }
+    };
+
+    // Check if form is valid
     const isFormValid =
         certificateNumber && issuedDate && expiredDate && certPreviewUrl;
 
+    // Render file icon based on file type
     const renderFileIcon = () => {
         if (!certFile) return <AiOutlineFileUnknown className="text-gray-500 w-5 h-5" />;
         if (certFile.type === "application/pdf")
@@ -113,7 +168,7 @@ export function UploadCertificateDialog({
                 </DialogHeader>
 
                 <div className="grid md:grid-cols-2 gap-6 mt-4 max-h-[80vh] overflow-auto px-1">
-                    {/* Left - Form */}
+                    {/* Left - Certificate metadata form */}
                     <div className="space-y-4">
                         <div>
                             <Label>Participant ID</Label>
@@ -161,7 +216,7 @@ export function UploadCertificateDialog({
                         </div>
                     </div>
 
-                    {/* Right - File & Save */}
+                    {/* Right - File upload and preview */}
                     <div className="space-y-4">
                         <div>
                             <Label>Certificate File</Label>
@@ -210,7 +265,7 @@ export function UploadCertificateDialog({
                         )}
 
                         <Button
-                            className="w-full mt-4 bg-mainBlue text-white hover:bg-blue-700"
+                            className="w-full mt-4 bg-mainBlue text-white hover:bg-lightBlue"
                             onClick={handleSubmit}
                             disabled={!isFormValid || saving}
                         >

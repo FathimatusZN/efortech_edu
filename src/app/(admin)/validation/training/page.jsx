@@ -6,6 +6,7 @@ import { ValidationTrainingTable } from "@/components/admin/ValidationTrainingTa
 import { useEffect, useRef, useState } from "react";
 import { toast } from "react-hot-toast";
 import { AdditionalParticipantDialog } from "@/components/admin/AdditionalParticipantDialog";
+import { UploadCertificateDialog } from "@/components/admin/UploadCertificateDialog";
 import { FaSearch } from "react-icons/fa";
 import {
     Select,
@@ -25,8 +26,6 @@ const ValidationTrainingPage = () => {
     });
     const [loading, setLoading] = useState(true);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
-    const [selectedParticipants, setSelectedParticipants] = useState([]);
-    const [isDialogOpen, setIsDialogOpen] = useState(false);
     const filterRef = useRef(null);
     const [searchQuery, setSearchQuery] = useState("");
     const [attendanceStatus, setAttendanceStatus] = useState({});
@@ -75,10 +74,22 @@ const ValidationTrainingPage = () => {
     }, [tab]);
 
     // Function to handle showing participants in a dialog
+    const [selectedParticipants, setSelectedParticipants] = useState([]);
+    const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
+
     const onShowParticipants = (participants) => {
         setSelectedParticipants(participants);
-        setIsDialogOpen(true);
+        setIsDetailDialogOpen(true);
     };
+
+    // Function to handle showing upload certificate dialog
+    const [selectedParticipant, setSelectedParticipant] = useState(null);
+    const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
+
+    const onShowUploadDialog = (participant) => {
+        setSelectedParticipant(participant);
+        setIsUploadDialogOpen(true);
+    }
 
     // Function to handle status change for training registrations
     const handleStatusChange = async (registrationId, newStatus) => {
@@ -132,21 +143,8 @@ const ValidationTrainingPage = () => {
         }
     };
 
-    // Function to handle click outside the filter dropdown
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (filterRef.current && !filterRef.current.contains(event.target)) {
-                setIsFilterOpen(false);
-            }
-        };
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
-    }, []);
-
     // Function to handle attendance status change
-    const handleAttendanceClick = async (id, status) => {
+    const handleAttendanceChange = async (id, status) => {
         try {
             // Update attendance status in the database
             const res = await fetch(
@@ -173,6 +171,19 @@ const ValidationTrainingPage = () => {
             toast.error("Error updating attendance");
         }
     };
+
+    // Function to handle click outside the filter dropdown
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (filterRef.current && !filterRef.current.contains(event.target)) {
+                setIsFilterOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
 
     return (
         <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
@@ -246,9 +257,9 @@ const ValidationTrainingPage = () => {
                                     {/* Need to be process tab */}
                                     <TabsContent value="needprocess">
                                         <AdditionalParticipantDialog
-                                            open={isDialogOpen}
+                                            open={isDetailDialogOpen}
                                             participants={selectedParticipants}
-                                            onClose={() => setIsDialogOpen(false)}
+                                            onClose={() => setIsDetailDialogOpen(false)}
                                         />
                                         {trainingData.needProcessData ? (
                                             <ValidationTrainingTable
@@ -264,11 +275,22 @@ const ValidationTrainingPage = () => {
 
                                     {/* On Progress tab */}
                                     <TabsContent value="onprogress">
+                                        <UploadCertificateDialog
+                                            open={isUploadDialogOpen}
+                                            setOpen={setIsUploadDialogOpen}
+                                            participant={selectedParticipant}
+                                            onShowSuccess={() => {
+                                                toast.success("Certificate saved successfully!");
+                                                fetchTabData(tab);
+                                            }}
+                                        />
                                         {trainingData.onProgressData ? (
                                             <ValidationTrainingTable
                                                 data={trainingData.onProgressData}
                                                 mode="onprogress"
-                                                onAttendanceClick={handleAttendanceClick}
+                                                onAttendanceChange={handleAttendanceChange}
+                                                onShowUploadDialog={onShowUploadDialog}
+                                                onUploadClick={onShowUploadDialog}
                                             />
                                         ) : (
                                             <p>Loading...</p>
