@@ -22,7 +22,7 @@ const ValidationTrainingPage = () => {
         needProcessData: null,
         onProgressData: null,
         completedData: null,
-        canceledData: null,
+        cancelledData: null,
     });
     const [loading, setLoading] = useState(true);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -30,56 +30,59 @@ const ValidationTrainingPage = () => {
     const [searchQuery, setSearchQuery] = useState("");
     const [attendanceStatus, setAttendanceStatus] = useState({});
 
+    // Tab configuration for fetching data
+    const tabConfig = {
+        needprocess: {
+            url: "/api/registration/search?status=1,2,3",
+            key: "needProcessData",
+        },
+        onprogress: {
+            url: "/api/enrollment/participants?mode=onprogress",
+            key: "onProgressData",
+        },
+        completed: {
+            url: "/api/enrollment/participants?mode=completed",
+            key: "completedData",
+        },
+        cancelled: {
+            url: "/api/registration/search?status=5",
+            key: "cancelledData",
+        },
+    };
+
     // Fetch training data 
     const fetchTabData = async (tabKey) => {
+        const config = tabConfig[tabKey];
+        if (!config) return;
+
         setLoading(true);
         try {
-            let response;
-            switch (tabKey) {
-                case "needprocess":
-                    response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/registration/search?status=1,2,3`);
-                    if (!response.ok) throw new Error();
-                    const needProcess = (await response.json()).data || [];
-                    setTrainingData((prev) => ({ ...prev, needProcessData: needProcess }));
-                    break;
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}${config.url}`);
+            if (!response.ok) throw new Error();
 
-                case "onprogress":
-                    response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/enrollment/participants?mode=onprogress`);
-                    if (!response.ok) throw new Error();
-                    const onProgress = (await response.json()).data || [];
-                    setTrainingData((prev) => ({ ...prev, onProgressData: onProgress }));
-                    break;
+            const result = await response.json();
+            const data = result?.data || [];
 
-                case "completed":
-                    response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/enrollment/participants?mode=completed`);
-                    if (!response.ok) throw new Error();
-                    const completed = (await response.json()).data || [];
-                    setTrainingData((prev) => ({ ...prev, completedData: completed }));
-                    break;
-
-                case "cancelled":
-                    response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/registration/search?status=5`);
-                    if (!response.ok) throw new Error();
-                    const cancelled = (await response.json()).data || [];
-                    setTrainingData((prev) => ({ ...prev, cancelledData: cancelled }));
-                    break;
-            }
-        } catch (error) {
-            console.error(error);
+            setTrainingData((prev) => ({
+                ...prev,
+                [config.key]: data,
+            }));
+        } catch (err) {
+            console.error(err);
             toast.error("Failed to fetch data for tab: " + tabKey);
         } finally {
             setLoading(false);
         }
     };
 
-    // Default load
+    // Automatically fetch data for the selected tab when the component mounts
     useEffect(() => {
-        fetchTabData("needprocess");
-    }, []);
+        fetchTabData(tab);
+    }, [tab]);
 
     // Fetch data for the selected tab when the component mounts or when the tab changes
     useEffect(() => {
-        if (!trainingData[`${tab}Data`]) {
+        if (!trainingData[`${tabConfig[tab]?.key}`]) {
             fetchTabData(tab);
         }
     }, [tab]);
@@ -116,38 +119,8 @@ const ValidationTrainingPage = () => {
 
             if (!res.ok) throw new Error("Failed to update status");
 
-            setTrainingData((prev) => {
-                const updatedNeed = prev.needProcessData.filter(
-                    (item) => item.registration_id !== registrationId
-                );
-                const updatedOnProgress = [...prev.onProgressData];
-
-                const originalItem = prev.needProcessData.find(
-                    (item) => item.registration_id === registrationId
-                );
-
-                const updatedItem = {
-                    ...originalItem,
-                    status: newStatus,
-                    validation: newStatus,
-                };
-
-                if (newStatus === 4) {
-                    return {
-                        needProcessData: updatedNeed,
-                        onProgressData: [...updatedOnProgress, updatedItem],
-                    };
-                } else {
-                    return {
-                        needProcessData: [...prev.needProcessData.map((item) =>
-                            item.registration_id === registrationId ? updatedItem : item
-                        )],
-                        onProgressData: [...prev.onProgressData],
-                    };
-                }
-            });
-
             toast.success("Status updated successfully");
+            fetchTabData(tab); // Re-fetch data after status change
         } catch (err) {
             console.error(err);
             toast.error("Error updating status");
@@ -213,7 +186,7 @@ const ValidationTrainingPage = () => {
                                 <TabsTrigger value="needprocess">Need to Process</TabsTrigger>
                                 <TabsTrigger value="onprogress">On Progress</TabsTrigger>
                                 <TabsTrigger value="completed">Completed</TabsTrigger>
-                                <TabsTrigger value="canceled">Canceled</TabsTrigger>
+                                <TabsTrigger value="cancelled">Cancelled</TabsTrigger>
                             </TabsList>
 
                             {/* Filter and Search */}
@@ -233,17 +206,18 @@ const ValidationTrainingPage = () => {
                                 {/* Sort Dropdown */}
                                 <Select
                                     onValueChange={(value) => {
+                                        const targetKey = `${tab}Data`;
                                         if (value === "name") {
                                             setTrainingData((prev) => ({
                                                 ...prev,
-                                                needProcessData: [...prev.needProcessData].sort((a, b) =>
+                                                [targetKey]: [...prev[targetKey]].sort((a, b) =>
                                                     a.fullName.localeCompare(b.fullName)
                                                 ),
                                             }));
                                         } else if (value === "date") {
                                             setTrainingData((prev) => ({
                                                 ...prev,
-                                                needProcessData: [...prev.needProcessData].sort((a, b) =>
+                                                [targetKey]: [...prev[targetKey]].sort((a, b) =>
                                                     new Date(a.requestDate) - new Date(b.requestDate)
                                                 ),
                                             }));
@@ -308,14 +282,47 @@ const ValidationTrainingPage = () => {
                                         )}
                                     </TabsContent>
 
+                                    {/* Completed tab */}
                                     <TabsContent value="completed">
-                                        <h2 className="text-lg md:text-xl font-semibold mb-4">Completed</h2>
-                                        {/* Konten lainnya */}
+                                        <UploadCertificateDialog
+                                            open={isUploadDialogOpen}
+                                            setOpen={setIsUploadDialogOpen}
+                                            participant={selectedParticipant}
+                                            onShowSuccess={() => {
+                                                toast.success("Certificate saved successfully!");
+                                                fetchTabData(tab);
+                                            }}
+                                        />
+                                        {trainingData.completedData ? (
+                                            <ValidationTrainingTable
+                                                data={trainingData.completedData}
+                                                mode="completed"
+                                                onAttendanceChange={handleAttendanceChange}
+                                                onShowUploadDialog={onShowUploadDialog}
+                                                onUploadClick={onShowUploadDialog}
+                                            />
+                                        ) : (
+                                            <p>Loading...</p>
+                                        )}
                                     </TabsContent>
 
-                                    <TabsContent value="canceled">
-                                        <h2 className="text-lg md:text-xl font-semibold mb-4">Cancelled</h2>
-                                        {/* Konten lainnya */}
+                                    {/* Cancelled tab */}
+                                    <TabsContent value="cancelled">
+                                        <AdditionalParticipantDialog
+                                            open={isDetailDialogOpen}
+                                            participants={selectedParticipants}
+                                            onClose={() => setIsDetailDialogOpen(false)}
+                                        />
+                                        {trainingData.cancelledData ? (
+                                            <ValidationTrainingTable
+                                                data={trainingData.cancelledData}
+                                                mode="needToProcess"
+                                                onShowParticipants={onShowParticipants}
+                                                onStatusChange={handleStatusChange}
+                                            />
+                                        ) : (
+                                            <p>Loading...</p>
+                                        )}
                                     </TabsContent>
                                 </div>
                             </div>
