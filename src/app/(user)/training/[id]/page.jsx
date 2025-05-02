@@ -7,6 +7,13 @@ import { useRouter } from "next/navigation";
 import { auth } from "@/app/firebase/config";
 import { getIdToken } from "firebase/auth";
 import { NotFound } from "../../../../components/ui/ErrorPage";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const TrainingDetail = () => {
   const { id } = useParams();
@@ -18,6 +25,8 @@ const TrainingDetail = () => {
   const [sortOrder, setSortOrder] = useState("newest");
   const [filterRating, setFilterRating] = useState(null);
   const [user, setUser] = useState(null);
+
+  const [reviews, setReviews] = useState([]);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -41,7 +50,12 @@ const TrainingDetail = () => {
         if (res.ok && data.data) {
           setTrainingData(data.data);
         } else {
-          return <NotFound message={"Training Not Found"} buttons={[{ text: "Back to Training Page", href: "/training" }]} />;
+          return (
+            <NotFound
+              message={"Training Not Found"}
+              buttons={[{ text: "Back to Training Page", href: "/training" }]}
+            />
+          );
         }
       } catch (err) {
         console.error("Error fetching training detail:", err);
@@ -52,6 +66,27 @@ const TrainingDetail = () => {
     };
 
     fetchTrainingDetail();
+  }, [id]);
+
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/review/search?training_id=${id}`
+        );
+        const data = await res.json();
+        if (res.ok && data.data) {
+          setReviews(data.data);
+          console.log("Reviews:", data.data);
+        } else {
+          console.error("Failed to fetch reviews");
+        }
+      } catch (err) {
+        console.error("Error fetching reviews:", err);
+      }
+    };
+
+    if (id) fetchReviews();
   }, [id]);
 
   useEffect(() => {
@@ -84,26 +119,35 @@ const TrainingDetail = () => {
   if (error || !trainingData) {
     return (
       <div className="px-10 text-center text-red-600 font-bold text-xl">
-        <NotFound message={"Training Not Found"} buttons={[{ text: "Back to Training Page", href: "/training" }]} />
+        <NotFound
+          message={"Training Not Found"}
+          buttons={[{ text: "Back to Training Page", href: "/training" }]}
+        />
       </div>
     );
   }
 
-  const averageRating = trainingData.reviews?.length
+  const validScores = reviews
+    .map((review) => review.score)
+    .filter((score) => typeof score === "number" && !isNaN(score));
+
+  const averageRating = validScores.length
     ? (
-      trainingData.reviews.reduce((acc, review) => acc + review.rating, 0) /
-      trainingData.reviews.length
-    ).toFixed(2)
+        validScores.reduce((acc, score) => acc + score, 0) / validScores.length
+      ).toFixed(2)
     : "0.00";
 
-  const sortedReviews =
-    trainingData.reviews
-      ?.filter((review) =>
-        filterRating ? review.rating === filterRating : true
-      )
-      .sort((a, b) =>
-        sortOrder === "newest" ? b.rating - a.rating : a.rating - b.rating
-      ) || [];
+  const sortedReviews = reviews
+    .filter((review) =>
+      filterRating !== null ? review.score === filterRating : true
+    )
+    .sort((a, b) => {
+      if (sortOrder === "newest") {
+        return new Date(b.review_date) - new Date(a.review_date);
+      } else {
+        return new Date(a.review_date) - new Date(b.review_date);
+      }
+    });
 
   return (
     <div className="mx-auto p-8">
@@ -117,8 +161,9 @@ const TrainingDetail = () => {
               alt={`Slide ${index + 1}`}
               width={800}
               height={500}
-              className={`absolute transition-opacity duration-1000 w-full h-full object-cover ${currentSlide === index ? "opacity-100" : "opacity-0"
-                }`}
+              className={`absolute transition-opacity duration-1000 w-full h-full object-cover ${
+                currentSlide === index ? "opacity-100" : "opacity-0"
+              }`}
             />
           ))}
           <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
@@ -126,14 +171,16 @@ const TrainingDetail = () => {
               <button
                 key={index}
                 onClick={() => setCurrentSlide(index)}
-                className={`w-3 h-3 rounded-full border-2 flex items-center justify-center transition-all ${currentSlide === index
-                  ? "border-mainOrange"
-                  : "border-gray-400"
-                  }`}
+                className={`w-3 h-3 rounded-full border-2 flex items-center justify-center transition-all ${
+                  currentSlide === index
+                    ? "border-mainOrange"
+                    : "border-gray-400"
+                }`}
               >
                 <div
-                  className={`w-1 h-1 rounded-full ${currentSlide === index ? "bg-mainOrange" : "bg-transparent"
-                    }`}
+                  className={`w-1 h-1 rounded-full ${
+                    currentSlide === index ? "bg-mainOrange" : "bg-transparent"
+                  }`}
                 ></div>
               </button>
             ))}
@@ -173,8 +220,8 @@ const TrainingDetail = () => {
                 {trainingData.level === 1
                   ? "Beginner"
                   : trainingData.level === 2
-                    ? "Medium"
-                    : "Advanced"}
+                  ? "Medium"
+                  : "Advanced"}
               </p>
             </div>
             <div className="flex-1">
@@ -183,8 +230,9 @@ const TrainingDetail = () => {
               </p>
               <p className="text-sm text-black font-semibold whitespace-nowrap">
                 {trainingData.validity_period
-                  ? `${trainingData.validity_period} ${trainingData.validity_period > 1 ? "Months" : "Month"
-                  }`
+                  ? `${trainingData.validity_period} ${
+                      trainingData.validity_period > 1 ? "Months" : "Month"
+                    }`
                   : "N/A"}
               </p>
             </div>
@@ -194,10 +242,11 @@ const TrainingDetail = () => {
             {trainingData.skills.map((tag, index) => (
               <span
                 key={index}
-                className={`px-2 py-1 text-sm border rounded-lg ${index % 2 === 0
-                  ? "border-mainOrange text-black"
-                  : "border-mainBlue text-black"
-                  }`}
+                className={`px-2 py-1 text-sm border rounded-lg ${
+                  index % 2 === 0
+                    ? "border-mainOrange text-black"
+                    : "border-mainBlue text-black"
+                }`}
               >
                 {tag}
               </span>
@@ -256,13 +305,16 @@ const TrainingDetail = () => {
           </div>
 
           <div className="mt-4 flex gap-4 w-full">
-            <button onClick={handleEnrollClick} className="px-6 py-1 border-2 border-mainOrange text-mainOrange font-semibold rounded-lg w-full md:w-[310px] transition duration-300 ease-in-out hover:bg-mainOrange hover:text-white active:scale-95">
+            <button
+              onClick={handleEnrollClick}
+              className="px-6 py-1 border-2 border-mainOrange text-mainOrange font-semibold rounded-lg w-full md:w-[310px] transition duration-300 ease-in-out hover:bg-mainOrange hover:text-white active:scale-95"
+            >
               Enroll Now
             </button>
             <button
               onClick={() =>
-              (window.location.href =
-                "mailto:info@efortechsolutions.com?subject=Question%20about%20Training%20Registration%20at%20Efortech&body=Dear%20Efortech%20Team,%0D%0A%0D%0AI%20hope%20this%20message%20finds%20you%20well.%0D%0A%0D%0AI%20would%20like%20to%20ask%20for%20further%20information%20regarding%20the%20training%20registration.%20Could%20you%20please%20provide%20more%20details%20about%20the%20process%20or%20requirements?%0D%0A%0D%0AThank%20you%20in%20advance%20for%20your%20assistance.%0D%0A%0D%0ABest%20regards,%0D%0A[Your%20Name]")
+                (window.location.href =
+                  "mailto:info@efortechsolutions.com?subject=Question%20about%20Training%20Registration%20at%20Efortech&body=Dear%20Efortech%20Team,%0D%0A%0D%0AI%20hope%20this%20message%20finds%20you%20well.%0D%0A%0D%0AI%20would%20like%20to%20ask%20for%20further%20information%20regarding%20the%20training%20registration.%20Could%20you%20please%20provide%20more%20details%20about%20the%20process%20or%20requirements?%0D%0A%0D%0AThank%20you%20in%20advance%20for%20your%20assistance.%0D%0A%0D%0ABest%20regards,%0D%0A[Your%20Name]")
               }
               className="px-6 py-1 border-2 border-mainOrange text-mainOrange font-semibold rounded-lg w-full md:w-[310px] transition duration-300 ease-in-out hover:bg-mainOrange hover:text-white active:scale-95"
             >
@@ -280,30 +332,40 @@ const TrainingDetail = () => {
             <span className="text-xl text-black drop-shadow font-semibold">
               ⭐ {averageRating} / 5.00
             </span>{" "}
-            <span className="text-xl text-gray-500">
-              ({trainingData.reviews?.length || 0})
-            </span>
+            <span className="text-xl text-gray-500">({reviews.length})</span>
           </h2>
 
           <div className="flex gap-4 mt-4 md:mt-0 w-full md:w-auto">
-            <select
-              onChange={(e) => setSortOrder(e.target.value)}
-              className="border p-2 rounded w-full md:w-auto"
+            {/* Sort Order Select */}
+            <Select value={sortOrder} onValueChange={setSortOrder}>
+              <SelectTrigger className="w-full md:w-[180px]">
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="newest">Sort by Newest</SelectItem>
+                <SelectItem value="oldest">Sort by Oldest</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {/* Filter Rating Select */}
+            <Select
+              value={filterRating?.toString() || "all"}
+              onValueChange={(value) =>
+                setFilterRating(value === "all" ? null : Number(value))
+              }
             >
-              <option value="newest">Sort by Newest</option>
-              <option value="oldest">Sort by Oldest</option>
-            </select>
-            <select
-              onChange={(e) => setFilterRating(Number(e.target.value) || null)}
-              className="border p-2 rounded w-full md:w-auto"
-            >
-              <option value="">Filter by Rating</option>
-              <option value="5">⭐⭐⭐⭐⭐</option>
-              <option value="4">⭐⭐⭐⭐</option>
-              <option value="3">⭐⭐⭐</option>
-              <option value="2">⭐⭐</option>
-              <option value="1">⭐</option>
-            </select>
+              <SelectTrigger className="w-full md:w-[180px]">
+                <SelectValue placeholder="Filter by Rating" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Ratings</SelectItem>
+                <SelectItem value="5">⭐⭐⭐⭐⭐</SelectItem>
+                <SelectItem value="4">⭐⭐⭐⭐</SelectItem>
+                <SelectItem value="3">⭐⭐⭐</SelectItem>
+                <SelectItem value="2">⭐⭐</SelectItem>
+                <SelectItem value="1">⭐</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
@@ -314,20 +376,32 @@ const TrainingDetail = () => {
               className="mt-4 border-b pb-4 flex items-start gap-4"
             >
               <Image
-                src={review.avatar || "/default-avatar.png"}
-                alt={review.name}
+                src={review.user_photo || "/default-avatar.png"}
+                alt={review.fullname}
                 width={50}
                 height={50}
-                className="rounded-full"
+                className="rounded-full object-cover"
+                style={{ aspectRatio: "1 / 1" }} 
               />
               <div>
                 <p className="text-black text-lg font-semibold">
-                  {review.name}
+                  {review.fullname}
                 </p>
                 <p className="text-black text-lg">
-                  {review.rating.toFixed(2)} / 5.00 ⭐
+                  {review.score.toFixed(2)} / 5.00 ⭐
                 </p>
-                <p className="text-black text-sm">{review.comment}</p>
+                <p className="text-black text-sm">
+                  {review.review_description}
+                </p>
+                {/* Tampilkan tanggal review */}
+                <p className="text-sm text-gray-500 pt-2">
+                  {new Date(review.review_date).toLocaleDateString("en-US", {
+                    weekday: "short", 
+                    year: "numeric", 
+                    month: "short", 
+                    day: "numeric", 
+                  })}
+                </p>
               </div>
             </div>
           ))}

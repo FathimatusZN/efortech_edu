@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 export default function HistoryCourseCard({
   id,
   trainingId,
+  participantId,
   images,
   title,
   status,
@@ -26,7 +27,7 @@ export default function HistoryCourseCard({
   }, [images?.length]);
 
   const handleWriteReview = () => {
-    router.push(`/edit-profile/review/${id}`);
+    router.push(`/edit-profile/review/${participantId}`);
   };
 
   const handleUploadPayment = () => {
