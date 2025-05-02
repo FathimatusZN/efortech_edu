@@ -44,14 +44,25 @@ const ValidationTrainingPage = () => {
                     break;
 
                 case "onprogress":
-                    response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/enrollment/participants`);
+                    response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/enrollment/participants?mode=onprogress`);
                     if (!response.ok) throw new Error();
                     const onProgress = (await response.json()).data || [];
                     setTrainingData((prev) => ({ ...prev, onProgressData: onProgress }));
                     break;
 
-                // case "completed":
-                // case "canceled":
+                case "completed":
+                    response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/enrollment/participants?mode=completed`);
+                    if (!response.ok) throw new Error();
+                    const completed = (await response.json()).data || [];
+                    setTrainingData((prev) => ({ ...prev, completedData: completed }));
+                    break;
+
+                case "cancelled":
+                    response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/registration/search?status=5`);
+                    if (!response.ok) throw new Error();
+                    const cancelled = (await response.json()).data || [];
+                    setTrainingData((prev) => ({ ...prev, cancelledData: cancelled }));
+                    break;
             }
         } catch (error) {
             console.error(error);
