@@ -96,7 +96,7 @@ export default function ForgotPasswordPage() {
 
       {loading ? (
         <div className="w-full min-h-screen flex flex-col md:flex-row">
-          <div className="relative w-full md:w-1/2 overflow-hidden">
+          <div className="relative w-full md:w-1/2 aspect-[4/1] md:aspect-auto overflow-hidden">
             <img
               src="/assets/Gambar2.jpg"
               alt="Signin Image"
