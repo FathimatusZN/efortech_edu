@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { BsCheckCircleFill, BsFillXCircleFill } from "react-icons/bs";
 import { TbCloudUpload } from "react-icons/tb";
 import { UploadCertificateDialog } from "./UploadCertificateDialog";
+import { toast } from "react-hot-toast";
 
 // Status labels mapped to status codes
 const STATUS_LABELS = {
@@ -94,6 +95,35 @@ export const ValidationTrainingTable = ({
         <TbCloudUpload className="ml-2" />
       </Button>
     );
+  };
+
+  // Function to save certificate data to the backend
+  const saveCertificate = async (data) => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/certificate/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          issued_date: data.issued_date,
+          expired_date: data.expired_date,
+          certificate_number: data.certificate_number,
+          cert_file: data.cert_file_url, // sesuai field dari API
+          registration_participant_id: data.registration_participant_id,
+        }),
+      });
+
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.message || "API error");
+      }
+
+      console.log("Certificate saved successfully");
+    } catch (err) {
+      console.error("Failed to save certificate:", err);
+      throw err;
+    }
   };
 
   return (
@@ -222,16 +252,10 @@ export const ValidationTrainingTable = ({
           }}
 
           // Save certificate metadata to backend
-          onSave={async (payload) => {
-            await fetch("/api/certificate", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(payload),
-            });
-          }}
-          // Success handler (show toast or alert)
+          onSave={saveCertificate}
+          // Success handler 
           onShowSuccess={() => {
-            alert("Certificate uploaded successfully!");
+            toast.success("Certificate uploaded successfully!");
           }}
         />
       )}
