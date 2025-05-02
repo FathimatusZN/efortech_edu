@@ -1,17 +1,13 @@
 import React, { useState } from "react";
 import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell,
+  Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { BsCheckCircleFill, BsFillXCircleFill } from "react-icons/bs";
 import { TbCloudUpload } from "react-icons/tb";
+import { UploadCertificateDialog } from "./UploadCertificateDialog";
 
-// Status labels mapped to numerical status codes
+// Status labels mapped to status codes
 const STATUS_LABELS = {
   1: "Pending",
   2: "Waiting for Payment",
@@ -20,7 +16,7 @@ const STATUS_LABELS = {
   5: "Cancelled",
 };
 
-// Dropdown component for selecting status
+// Dropdown for status selection
 const StatusDropdown = ({ value, onChange }) => (
   <select
     value={value}
@@ -28,9 +24,7 @@ const StatusDropdown = ({ value, onChange }) => (
     className="border rounded p-1 text-sm"
   >
     {Object.entries(STATUS_LABELS).map(([key, label]) => (
-      <option key={key} value={key}>
-        {label}
-      </option>
+      <option key={key} value={key}>{label}</option>
     ))}
   </select>
 );
@@ -42,50 +36,42 @@ export const ValidationTrainingTable = ({
   onShowParticipants,
   onAttendanceClick,
 }) => {
-  const processedData = data;
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedParticipant, setSelectedParticipant] = useState(null);
 
-  // Render column for attendance control or status label
+  // Render attendance buttons or status
   const renderAttendanceColumn = (item) => {
     const id = item.registration_participant_id;
-    const effectiveStatus = item.attendance_status;
-
-    const isPresent = effectiveStatus === true;
-    const isAbsent = effectiveStatus === false;
-    const isNull = effectiveStatus === null || effectiveStatus === undefined;
+    const status = item.attendance_status;
+    const isPresent = status === true;
+    const isAbsent = status === false;
+    const isNull = status === null || status === undefined;
 
     const renderButton = (label, icon, active, onClick) => (
       <Button
         variant="ghost"
-        className={`${active ? "opacity-100" : "opacity-30"} ${label === "Present"
-          ? "text-green-600 hover:bg-green-100"
-          : "text-red-600 hover:bg-red-100"
-          }`}
+        className={`flex flex-col items-center justify-center gap-1 p-2 h-auto w-auto px-4 ${active ? "opacity-100" : "opacity-30"
+          } ${label === "Present" ? "text-green-600 hover:bg-green-100" : "text-red-600 hover:bg-red-100"}`}
         onClick={onClick}
       >
         {icon}
-        {label}
+        <span className="text-xs">{label}</span>
       </Button>
     );
 
     return (
       <div className="flex gap-2 justify-center">
-        {renderButton(
-          "Present",
-          <BsCheckCircleFill className="w-5 h-5 mr-1" />,
-          isPresent || isNull,
-          () => onAttendanceClick(item.registration_participant_id, true)
+        {renderButton("Present", <BsCheckCircleFill className="w-10 h-10" />, isPresent || isNull, () =>
+          onAttendanceClick(id, true)
         )}
-        {renderButton(
-          "Absent",
-          <BsFillXCircleFill className="w-5 h-5 mr-1" />,
-          isAbsent || isNull,
-          () => onAttendanceClick(item.registration_participant_id, false)
+        {renderButton("Absent", <BsFillXCircleFill className="w-10 h-10" />, isAbsent || isNull, () =>
+          onAttendanceClick(id, false)
         )}
       </div>
     );
   };
 
-  // Render column for certificate upload button or status
+  // Render certificate upload status or button
   const renderCertificateUploadColumn = (item) => {
     const status = item.attendance_status;
 
@@ -98,7 +84,10 @@ export const ValidationTrainingTable = ({
     return (
       <Button
         variant="orange"
-        onClick={() => console.log("Upload Certificate")}
+        onClick={() => {
+          setSelectedParticipant(item);
+          setDialogOpen(true);
+        }}
         disabled={!canUpload}
       >
         Upload
@@ -116,13 +105,10 @@ export const ValidationTrainingTable = ({
           <TableHeader>
             <TableRow>
               <TableHead>ID</TableHead>
-              {mode === "needToProcess" && (
-                <TableHead>Registrant Name</TableHead>
-              )}
+              {mode === "needToProcess" && <TableHead>Registrant Name</TableHead>}
               <TableHead>Registration Date</TableHead>
               <TableHead>Training Date</TableHead>
               <TableHead>Training Name</TableHead>
-
               {mode === "needToProcess" ? (
                 <>
                   <TableHead>Participant Count</TableHead>
@@ -137,14 +123,10 @@ export const ValidationTrainingTable = ({
               )}
             </TableRow>
           </TableHeader>
-
           <TableBody>
-            {processedData.map((item) => (
+            {data.map((item) => (
               <TableRow
-                key={
-                  item.registration_id +
-                  (item.registration_participant_id || "")
-                }
+                key={item.registration_id + (item.registration_participant_id || "")}
               >
                 <TableCell>
                   {mode === "needToProcess"
@@ -167,9 +149,7 @@ export const ValidationTrainingTable = ({
                 {mode === "needToProcess" ? (
                   <>
                     <TableCell>
-                      <Button
-                        onClick={() => onShowParticipants(item.participants)}
-                      >
+                      <Button onClick={() => onShowParticipants(item.participants)}>
                         {item.participants.length} Participants
                       </Button>
                     </TableCell>
@@ -186,15 +166,74 @@ export const ValidationTrainingTable = ({
                   <>
                     <TableCell>{item.fullname}</TableCell>
                     <TableCell>{renderAttendanceColumn(item)}</TableCell>
-                    <TableCell>
-                      {renderCertificateUploadColumn(item)}
-                    </TableCell>
+                    <TableCell>{renderCertificateUploadColumn(item)}</TableCell>
                   </>
                 )}
               </TableRow>
             ))}
           </TableBody>
         </Table>
+      )}
+
+      {/* Certificate upload dialog */}
+      {selectedParticipant && (
+        <UploadCertificateDialog
+          open={dialogOpen}
+          setOpen={setDialogOpen}
+          participant={selectedParticipant}
+          // Uploads the file to remote API using env variable
+          onUploadFile={async (file) => {
+            const allowedTypes = [
+              "image/jpeg", "image/png", "image/webp", "image/jpg", "image/heic",
+              "application/pdf",
+            ];
+
+            if (!allowedTypes.includes(file.type)) {
+              throw new Error("Only image or PDF files are allowed.");
+            }
+
+            const formData = new FormData();
+            formData.append("files", file);
+
+            try {
+              const res = await fetch(
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/certificate/upload-certificate`,
+                {
+                  method: "POST",
+                  body: formData,
+                }
+              );
+
+              const data = await res.json();
+
+              if (!res.ok) {
+                throw new Error(data.message || "File upload failed");
+              }
+
+              if (data.status === "success") {
+                return data.data.fileUrl;
+              } else {
+                throw new Error(data.message || "File upload failed");
+              }
+            } catch (error) {
+              console.error("Upload failed:", error);
+              throw error;
+            }
+          }}
+
+          // Save certificate metadata to backend
+          onSave={async (payload) => {
+            await fetch("/api/certificate", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload),
+            });
+          }}
+          // Success handler (show toast or alert)
+          onShowSuccess={() => {
+            alert("Certificate uploaded successfully!");
+          }}
+        />
       )}
     </div>
   );
