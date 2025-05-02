@@ -1,15 +1,21 @@
 'use client'
 
-import Link from 'next/link';
 import { useState, useMemo } from 'react';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useRouter } from "next/navigation";
-import { toast } from 'react-hot-toast';
 import { Button } from "@/components/ui/button";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import funfacts from "@/components/data/funfacts";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogFooter,
+    DialogTitle,
+    DialogDescription,
+  } from "@/components/ui/dialog";  
 
-const RegisterPage = () => {
+  const RegisterPage = () => {
     const [fullName, setFullName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -17,6 +23,11 @@ const RegisterPage = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [loading2, setLoading2] = useState("");
+    const [dialogMessage, setDialogMessage] = useState("");
+    const [successDialog, setSuccessDialog] = useState(false);
+    const [failedDialog, setFailedDialog] = useState(false);
+
     const router = useRouter();
 
     const [fullNameError, setFullNameError] = useState('');
@@ -74,14 +85,22 @@ const RegisterPage = () => {
             setLoading(false);
 
             if (!res.ok || data.success === false) {
-                throw new Error(data.message || "Registration failed.");
+                setDialogMessage(data.message || "Registration failed.");
+                setFailedDialog(true);
+                return;
             }
 
-            toast.success("Registration successful!");
-            router.push("/auth/signin");
+            setDialogMessage("Registration successful! Redirecting to Sign In...");
+            setSuccessDialog(true);
+
+            setTimeout(() => {
+                router.push("/auth/signin");
+            }, 2000);
+
         } catch (e) {
             setLoading(false);
-            toast.error(e.message);
+            setDialogMessage(e.message);
+            setFailedDialog(true);
         }
     };
 
@@ -92,13 +111,61 @@ const RegisterPage = () => {
         placeholder:text-[12px] md:placeholder:text-[14px] lg:placeholder:text-[15px] xl:placeholder:text-[16px] 
         ${error ? 'border-red-500' : 'border-[#03649F]'}`;
 
-    const randomFunfact = useMemo(() => {
-            const index = Math.floor(Math.random() * funfacts.length);
-            return funfacts[index];
-        }, [loading]);
+    const handleRedirectToSignIn = async () => {
+            setLoading2("Redirecting to sign in...");
+            await new Promise((r) => setTimeout(r, 300));
+            router.push("/auth/signin");
+          };
+    
+          const randomFunfact = useMemo(() => {
+        const index = Math.floor(Math.random() * funfacts.length);
+        return funfacts[index];
+    }, [loading]);
 
     return (
         <>
+        <Dialog open={successDialog} onOpenChange={setSuccessDialog}>
+                <DialogContent className="rounded-xl shadow-2xl px-8 py-6 text-center space-y-4">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center justify-center gap-2 text-2xl font-bold text-green-600">
+                            ✅ Registration Successful
+                        </DialogTitle>
+                        <DialogDescription className="text-gray-600 text-sm">{dialogMessage}</DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter className="flex justify-center">
+                        <Button
+                            onClick={() => setSuccessDialog(false)}
+                            variant="orange"
+                            size="sm"
+                            className="w-[120px]"
+                        >
+                            {loading ? <LoadingSpinner size="sm" /> : "OK"}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={failedDialog} onOpenChange={setFailedDialog}>
+                <DialogContent className="rounded-xl shadow-2xl px-8 py-6 text-center space-y-4">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center justify-center gap-2 text-2xl font-bold text-red-600">
+                            ⚠️ Registration Failed
+                        </DialogTitle>
+                        <DialogDescription className="text-gray-600 text-sm">{dialogMessage}</DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter className="flex justify-center">
+                        <Button
+                            onClick={() => setFailedDialog(false)}
+                            variant="orange"
+                            size="sm"
+                            className="w-[120px]"
+                        >
+                            {loading ? <LoadingSpinner size="sm" /> : "OK"}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
         {loading ? (
             <div className="w-full min-h-screen flex flex-col md:flex-row">
             <div className="relative w-full md:w-1/2 overflow-hidden">
@@ -233,9 +300,17 @@ const RegisterPage = () => {
                             </div>
 
                             <p className="text-gray-500 text-center text-xs md:text-sm lg:text-base xl:text-lg">
-                                Already have an account?{' '}
-                                <Link href="../auth/signin" className="text-mainOrange font-semibold hover:underline">Sign In</Link>
+                                Already have an account?{" "}
+                                <span
+                                    className={`text-[#ED7117] font-semibold hover:underline cursor-pointer ${
+                                        loading ? "pointer-events-none opacity-50" : ""
+                                    }`}
+                                    onClick={handleRedirectToSignIn}
+                                >
+                                    Sign In
+                                </span>
                             </p>
+
                         </div>
                     </form>
                 </div>
