@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useParams } from "next/navigation";
 import { Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -26,49 +26,10 @@ const StarRating = ({ rating, onRate }) => (
 );
 
 export default function FeedbackForm() {
-  const { id: registrationParticipantId } = useParams(); // ini masih REGT seharusnya REGP
+  const { id: registrationParticipantId } = useParams();
   const [rating, setRating] = useState(5);
   const [review, setReview] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-
-  // Training details
-  const [trainingTitle, setTrainingTitle] = useState("");
-  const [trainingImage, setTrainingImage] = useState("");
-  const [loading, setLoading] = useState(true);
-
-  // Fetch data training berdasarkan registration_participant_id
-  useEffect(() => {
-    const fetchTrainingDetail = async () => {
-      try {
-        setLoading(true);
-
-        // 1. Ambil detail registration (dapatkan training_id)
-        const regRes = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/registration/${registrationParticipantId}`
-        );
-        const regData = await regRes.json();
-        const trainingId = regData.data.training_id;
-     
-
-        // 2. Ambil detail training
-        const trainingRes = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/training/id/${trainingId}`
-        );
-        const trainingData = await trainingRes.json();
-
-        setTrainingTitle(trainingData.data.training_name);
-        setTrainingImage(trainingData.data.images?.[0] || "");
-      } catch (err) {
-        console.error("Gagal mengambil detail training:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (registrationParticipantId) {
-      fetchTrainingDetail();
-    }
-  }, [registrationParticipantId]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -92,7 +53,6 @@ export default function FeedbackForm() {
         setRating(5);
         setReview("");
       } else {
-        console.log("ID:", registrationParticipantId);
         alert("Gagal submit review: " + result.message);
       }
     } catch (err) {
@@ -107,40 +67,27 @@ export default function FeedbackForm() {
         onSubmit={handleSubmit}
         className="bg-white p-8 rounded-lg shadow-md w-full max-w-xl"
       >
-        {loading ? (
-          <p className="text-center text-gray-500">Loading training details...</p>
-        ) : (
-          <>
-            {trainingImage && (
-              <img
-                src={trainingImage}
-                alt={trainingTitle}
-                className="w-full h-40 object-cover rounded-md mb-4"
-              />
-            )}
-            <h2 className="text-xl font-semibold text-center mb-4 text-gray-800">
-              How was your experience in <span className="text-orange-500">{trainingTitle}</span>?
-            </h2>
+        <h2 className="text-xl font-semibold text-center mb-4 text-gray-800">
+          How was your experience?
+        </h2>
 
-            <StarRating rating={rating} onRate={setRating} />
+        <StarRating rating={rating} onRate={setRating} />
 
-            <label className="block text-left font-medium text-black mb-1">
-              Review
-            </label>
-            <textarea
-              className="w-full h-32 p-3 border border-orange-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400 placeholder:text-gray-400 resize-none"
-              placeholder="Write your review here.."
-              value={review}
-              onChange={(e) => setReview(e.target.value)}
-            />
+        <label className="block text-left font-medium text-black mb-1">
+          Review
+        </label>
+        <textarea
+          className="w-full h-32 p-3 border border-orange-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400 placeholder:text-gray-400 resize-none"
+          placeholder="Write your review here.."
+          value={review}
+          onChange={(e) => setReview(e.target.value)}
+        />
 
-            <div className="flex justify-center mt-6">
-              <Button type="submit" variant="orange">
-                Submit Review
-              </Button>
-            </div>
-          </>
-        )}
+        <div className="flex justify-center mt-6">
+          <Button type="submit" variant="orange">
+            Submit Review
+          </Button>
+        </div>
       </form>
 
       <SuccessDialog

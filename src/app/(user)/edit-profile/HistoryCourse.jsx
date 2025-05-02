@@ -25,12 +25,22 @@ export default function HistoryCourse({ userId }) {
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         const result = await res.json();
 
+        console.log("Course history result:", result);
+
         const promises = result.data.map(async (training) => {
+          const participantId = training.registration_participant_id;
           // Fetch detail registration untuk ambil training_id
           const regRes = await fetch(
             `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/registration/${training.registration_id}`
           );
           const regResult = await regRes.json();
+          if (!regResult?.data?.training_id) {
+            console.warn(
+              "training_id not found in registration data:",
+              regResult
+            );
+            return null; // atau skip this item
+          }
           const trainingId = regResult.data.training_id;
 
           // Fetch detail training untuk ambil gambar
@@ -41,12 +51,14 @@ export default function HistoryCourse({ userId }) {
           const imageUrls = trainingDetail.data?.images || [];
 
           const statusStr = statusMap[training.status] || "unknown";
-  
+          const isCompleted = training.status === 4;
+
           const hasCertificate = training.certificate_id !== null;
 
           return {
             id: training.registration_id,
             trainingId,
+            participantId,
             title: training.training_name,
             images: imageUrls,
             status: statusStr,
@@ -56,10 +68,11 @@ export default function HistoryCourse({ userId }) {
             certificateId: training.certificate_id,
             userPhoto: training.user_photo,
             email: training.email,
+            isCompleted,
           };
         });
 
-        const transformed = await Promise.all(promises);
+        const transformed = (await Promise.all(promises)).filter(Boolean);
         setCourses(transformed);
       } catch (err) {
         console.error("Failed to fetch course history:", err);
@@ -73,20 +86,21 @@ export default function HistoryCourse({ userId }) {
     }
   }, [userId]);
 
-  const filteredCourses = courses.filter((course) => {
-    if (activeTab === "All") return true;
-    if (activeTab === "Upcoming") {
-      return (
-        course.status === "waiting for payment" ||
-        course.status === "pending" ||
-        (course.status === "validated" && !course.isCompleted)
-      );
+  const filteredCourses = () => {
+    switch (activeTab) {
+      case "Upcoming":
+        return courses.filter(
+          (c) =>
+            c.status === "waiting for payment" ||
+            c.status === "pending" ||
+            (c.status === "validated" && !c.isCompleted)
+        );
+      case "Done":
+        return courses.filter((c) => c.status === "completed" && c.isCompleted);
+      default:
+        return courses;
     }
-    if (activeTab === "Done") {
-      return course.status === "completed" && course.isCompleted;
-    }
-    return false;
-  });
+  };
 
   return (
     <>
@@ -115,8 +129,8 @@ export default function HistoryCourse({ userId }) {
           <p className="col-span-full text-center py-10 text-gray-500">
             Loading...
           </p>
-        ) : filteredCourses.length > 0 ? (
-          filteredCourses.map((course) => (
+        ) : filteredCourses().length > 0 ? (
+          filteredCourses().map((course) => (
             <HistoryCourseCard key={course.id} {...course} />
           ))
         ) : (
