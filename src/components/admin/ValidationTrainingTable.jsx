@@ -98,18 +98,21 @@ export const ValidationTrainingTable = ({
           <TableHeader>
             <TableRow>
               <TableHead>ID</TableHead>
-              {mode === "needToProcess" && <TableHead>Registrant Name</TableHead>}
+              {mode === "needprocess" || mode === "cancelled" ? (
+                <TableHead>Registrant Name</TableHead>
+              ) : (
+                <TableHead>Participant Name</TableHead>
+              )}
               <TableHead>Registration Date</TableHead>
               <TableHead>Training Date</TableHead>
               <TableHead>Training Name</TableHead>
-              {mode === "needToProcess" ? (
+              {mode === "needprocess" || mode === "cancelled" ? (
                 <>
                   <TableHead>Participant Count</TableHead>
                   <TableHead>Status</TableHead>
                 </>
               ) : (
                 <>
-                  <TableHead>Participant Name</TableHead>
                   <TableHead>Attendance</TableHead>
                   <TableHead>Certificate</TableHead>
                 </>
@@ -122,13 +125,15 @@ export const ValidationTrainingTable = ({
                 key={item.registration_id + (item.registration_participant_id || "")}
               >
                 <TableCell>
-                  {mode === "needToProcess"
+                  {mode === "needprocess" || mode === "cancelled"
                     ? item.registration_id
                     : item.registration_participant_id}
                 </TableCell>
 
-                {mode === "needToProcess" && (
+                {mode === "needprocess" || mode === "cancelled" ? (
                   <TableCell>{item.registrant_name}</TableCell>
+                ) : (
+                  <TableCell>{item.fullname}</TableCell>
                 )}
 
                 <TableCell>
@@ -139,7 +144,7 @@ export const ValidationTrainingTable = ({
                 </TableCell>
                 <TableCell>{item.training_name}</TableCell>
 
-                {mode === "needToProcess" ? (
+                {mode === "needprocess" || mode === "cancelled" ? (
                   <>
                     <TableCell>
                       <Button onClick={() => onShowParticipants(item.participants)}>
@@ -157,7 +162,6 @@ export const ValidationTrainingTable = ({
                   </>
                 ) : (
                   <>
-                    <TableCell>{item.fullname}</TableCell>
                     <TableCell>{renderAttendanceColumn(item)}</TableCell>
                     <TableCell>{renderCertificateUploadColumn(item)}</TableCell>
                   </>

@@ -249,7 +249,7 @@ const ValidationTrainingPage = () => {
                                         {trainingData.needProcessData ? (
                                             <ValidationTrainingTable
                                                 data={trainingData.needProcessData}
-                                                mode="needToProcess"
+                                                mode="needprocess"
                                                 onShowParticipants={onShowParticipants}
                                                 onStatusChange={handleStatusChange}
                                             />
@@ -316,7 +316,7 @@ const ValidationTrainingPage = () => {
                                         {trainingData.cancelledData ? (
                                             <ValidationTrainingTable
                                                 data={trainingData.cancelledData}
-                                                mode="needToProcess"
+                                                mode="cancelled"
                                                 onShowParticipants={onShowParticipants}
                                                 onStatusChange={handleStatusChange}
                                             />
