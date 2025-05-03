@@ -2,57 +2,87 @@
 
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import { BsFillFilterSquareFill } from "react-icons/bs";
 import { ValidationTrainingTable } from "@/components/admin/ValidationTrainingTable";
 import { ValidationCertificateTable } from "@/components/admin/ValidationCertificateTable";
-import { dummyTrainingData, dummyCertificateData } from "./Data";
+import { toast } from "react-hot-toast";
 
 const ValidationPage = () => {
-  const router = useRouter();
-  const [trainingData, setTrainingData] = useState(dummyTrainingData);
-  const [certificateData, setCertificateData] = useState(dummyCertificateData);
+  const [trainingData, setTrainingData] = useState([]);
+  const [certificateData, setCertificateData] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const filterRef = useRef(null);
 
-  const needToBeProcessedTraining = trainingData.filter(
-    (item) =>
-      item.validation === "pending" || item.validation === "waiting for payment"
-  );
-  const needToBeProcessedCertificate = certificateData.filter(
-    (item) => !item.status || item.status === ""
-  );
+  // Fetch training data for needprocess (same as /validation/training)
+  const fetchTrainingData = async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/registration/search?status=1,2,3`
+      );
+      if (!res.ok) throw new Error("Failed to fetch training data");
+
+      const result = await res.json();
+      setTrainingData(result.data || []);
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to load training data");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Dummy: fetch certificate data (tetap seperti sebelumnya)
+  const fetchCertificateData = async () => {
+    // Gantilah dengan API jika sudah tersedia
+    setCertificateData([]); // Kosongkan default-nya
+  };
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (filterRef.current && !filterRef.current.contains(event.target)) {
-        setIsFilterOpen(false);
-      }
-    };
+    fetchTrainingData();
+    fetchCertificateData();
+  }, []);
 
+  const handleClickOutside = (event) => {
+    if (filterRef.current && !filterRef.current.contains(event.target)) {
+      setIsFilterOpen(false);
+    }
+  };
+
+  useEffect(() => {
     if (isFilterOpen) {
       document.addEventListener("mousedown", handleClickOutside);
     }
-
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isFilterOpen]);
 
-  const handleValidation = (type, id) => {
-    if (type === "training") {
-      setTrainingData((prev) => prev.filter((item) => item.id !== id));
-    } else {
-      setCertificateData((prev) => prev.filter((item) => item.id !== id));
+  const handleStatusChange = async (registrationId, newStatus) => {
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/registration/update/${registrationId}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: newStatus }),
+        }
+      );
+
+      if (!res.ok) throw new Error("Failed to update status");
+      toast.success("Status updated successfully");
+      fetchTrainingData(); // Refresh
+    } catch (err) {
+      console.error(err);
+      toast.error("Error updating status");
     }
   };
 
-  const handleStatusChange = (id, status) => {
-    setTrainingData((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, validation: status } : item
-      )
-    );
+  const handleValidation = (type, id) => {
+    if (type === "certificate") {
+      setCertificateData((prev) => prev.filter((item) => item.id !== id));
+    }
   };
 
   return (
@@ -73,7 +103,6 @@ const ValidationPage = () => {
                 {!isFilterOpen && (
                   <BsFillFilterSquareFill
                     className="w-10 h-10 text-secondOrange cursor-pointer"
-                    size={28}
                     onClick={() => setIsFilterOpen(true)}
                   />
                 )}
@@ -97,10 +126,16 @@ const ValidationPage = () => {
             </div>
           </div>
 
-          <ValidationTrainingTable
-            data={needToBeProcessedTraining.slice(0, 5)}
-            onStatusChange={handleStatusChange}
-          />
+          {isLoading ? (
+            <p>Loading...</p>
+          ) : (
+            <ValidationTrainingTable
+              data={trainingData.slice(0, 5)}
+              mode="needprocess"
+              onStatusChange={handleStatusChange}
+              disablePagination={true}
+            />
+          )}
 
           <div className="flex justify-end mt-4">
             <a
@@ -123,7 +158,6 @@ const ValidationPage = () => {
                 {!isFilterOpen && (
                   <BsFillFilterSquareFill
                     className="text-secondOrange cursor-pointer w-10 h-10"
-                    size={28}
                     onClick={() => setIsFilterOpen(true)}
                   />
                 )}
@@ -148,7 +182,7 @@ const ValidationPage = () => {
           </div>
 
           <ValidationCertificateTable
-            data={needToBeProcessedCertificate.slice(0, 5)}
+            data={certificateData.slice(0, 5)}
             onAccept={(id) => handleValidation("certificate", id)}
             onReject={(id) => handleValidation("certificate", id)}
           />

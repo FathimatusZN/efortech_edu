@@ -45,6 +45,7 @@ export const ValidationTrainingTable = ({
   onShowParticipants,
   onAttendanceChange,
   onUploadClick,
+  disablePagination = false,
 }) => {
 
   const [page, setPage] = useState(1);
@@ -217,50 +218,54 @@ export const ValidationTrainingTable = ({
         </Table>
       )}
       {/* Pagination */}
-      <div className="flex justify-center mt-8">
-        <Pagination>
-          <PaginationContent className="gap-2">
-            <PaginationItem>
-              <PaginationPrevious
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  setPage((prev) => Math.max(prev - 1, 1));
-                }}
-                className={page === 1 ? "pointer-events-none opacity-50" : ""}
-              />
-            </PaginationItem>
-            {Array.from({ length: totalPages }, (_, i) => (
-              <PaginationItem key={i}>
-                <PaginationLink
+      {!disablePagination && (
+        <div className="flex justify-center mt-8">
+          <Pagination>
+            <PaginationContent className="gap-2">
+              <PaginationItem>
+                <PaginationPrevious
                   href="#"
-                  isActive={page === i + 1}
                   onClick={(e) => {
                     e.preventDefault();
-                    setPage(i + 1);
+                    setPage((prev) => Math.max(prev - 1, 1));
                   }}
-                >
-                  {i + 1}
-                </PaginationLink>
+                  className={page === 1 ? "pointer-events-none opacity-50" : ""}
+                />
               </PaginationItem>
-            ))}
-            <PaginationItem>
-              <PaginationNext
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  setPage((prev) => Math.min(prev + 1, totalPages));
-                }}
-                className={page === totalPages ? "pointer-events-none opacity-50" : ""}
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
-      </div>
-      <div className="text-xs text-gray-600 text-center mt-2">
-        Showing {(page - 1) * PAGE_SIZE + 1} to{" "}
-        {Math.min(page * PAGE_SIZE, data.length)} of {data.length} data
-      </div>
+              {Array.from({ length: totalPages }, (_, i) => (
+                <PaginationItem key={i}>
+                  <PaginationLink
+                    href="#"
+                    isActive={page === i + 1}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setPage(i + 1);
+                    }}
+                  >
+                    {i + 1}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
+              <PaginationItem>
+                <PaginationNext
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setPage((prev) => Math.min(prev + 1, totalPages));
+                  }}
+                  className={page === totalPages ? "pointer-events-none opacity-50" : ""}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
+      )}
+      {!disablePagination && (
+        <div className="text-xs text-gray-600 text-center mt-2">
+          Showing {(page - 1) * PAGE_SIZE + 1} to{" "}
+          {Math.min(page * PAGE_SIZE, data.length)} of {data.length} data
+        </div>
+      )}
     </div>
   );
 };
