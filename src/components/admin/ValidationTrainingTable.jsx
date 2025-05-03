@@ -1,9 +1,20 @@
+import React, { useState } from "react";
 import {
   Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { BsCheckCircleFill, BsFillXCircleFill } from "react-icons/bs";
 import { TbCloudUpload } from "react-icons/tb";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+
+const PAGE_SIZE = 10;
 
 // Status labels mapped to status codes
 const STATUS_LABELS = {
@@ -35,6 +46,11 @@ export const ValidationTrainingTable = ({
   onAttendanceChange,
   onUploadClick,
 }) => {
+
+  const [page, setPage] = useState(1);
+  const totalPages = Math.ceil(data.length / PAGE_SIZE);
+  const paginatedData = data.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
   // Render attendance buttons or status
   const renderAttendanceColumn = (item) => {
     const id = item.registration_participant_id;
@@ -91,7 +107,7 @@ export const ValidationTrainingTable = ({
 
   return (
     <div>
-      {data.length === 0 ? (
+      {paginatedData.length === 0 ? (
         <p className="text-center text-gray-500 py-4">No data available</p>
       ) : (
         <Table>
@@ -120,7 +136,7 @@ export const ValidationTrainingTable = ({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data.map((item) => (
+            {paginatedData.map((item) => (
               <TableRow
                 key={item.registration_id + (item.registration_participant_id || "")}
               >
@@ -171,6 +187,51 @@ export const ValidationTrainingTable = ({
           </TableBody>
         </Table>
       )}
+      {/* Pagination */}
+      <div className="flex justify-center mt-8">
+        <Pagination>
+          <PaginationContent className="gap-2">
+            <PaginationItem>
+              <PaginationPrevious
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setPage((prev) => Math.max(prev - 1, 1));
+                }}
+                className={page === 1 ? "pointer-events-none opacity-50" : ""}
+              />
+            </PaginationItem>
+            {Array.from({ length: totalPages }, (_, i) => (
+              <PaginationItem key={i}>
+                <PaginationLink
+                  href="#"
+                  isActive={page === i + 1}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setPage(i + 1);
+                  }}
+                >
+                  {i + 1}
+                </PaginationLink>
+              </PaginationItem>
+            ))}
+            <PaginationItem>
+              <PaginationNext
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setPage((prev) => Math.min(prev + 1, totalPages));
+                }}
+                className={page === totalPages ? "pointer-events-none opacity-50" : ""}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      </div>
+      <div className="text-xs text-gray-600 text-center mt-2">
+        Showing {(page - 1) * PAGE_SIZE + 1} to{" "}
+        {Math.min(page * PAGE_SIZE, data.length)} of {data.length} data
+      </div>
     </div>
   );
 };
