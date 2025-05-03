@@ -42,7 +42,7 @@ export const ValidationTrainingTable = ({
   data,
   mode,
   onStatusChange,
-  onShowParticipants,
+  onShowDetailRegistration,
   onAttendanceChange,
   onUploadClick,
   disablePagination = false,
@@ -154,7 +154,7 @@ export const ValidationTrainingTable = ({
               <TableHead>Training Name</TableHead>
               {mode === "needprocess" || mode === "cancelled" ? (
                 <>
-                  <TableHead>Participant Count</TableHead>
+                  <TableHead>Participant</TableHead>
                   <TableHead>Status</TableHead>
                 </>
               ) : (
@@ -193,7 +193,10 @@ export const ValidationTrainingTable = ({
                 {mode === "needprocess" || mode === "cancelled" ? (
                   <>
                     <TableCell>
-                      <Button onClick={() => onShowParticipants(item.participants)}>
+                      <Button
+                        onClick={() => onShowDetailRegistration(item)}
+                        className="bg-white text-black hover:bg-lightBlue hover:text-white transition duration-300 ease-in-out py-2 px-4 rounded-md"
+                      >
                         {item.participants.length} Participants
                       </Button>
                     </TableCell>

@@ -88,11 +88,11 @@ const ValidationTrainingPage = () => {
     }, [tab]);
 
     // Function to handle showing participants in a dialog
-    const [selectedParticipants, setSelectedParticipants] = useState([]);
     const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
+    const [selectedRegistration, setSelectedRegistration] = useState(null);
 
-    const onShowParticipants = (participants) => {
-        setSelectedParticipants(participants);
+    const onShowDetailRegistration = (registration) => {
+        setSelectedRegistration(registration);
         setIsDetailDialogOpen(true);
     };
 
@@ -242,15 +242,15 @@ const ValidationTrainingPage = () => {
                                     {/* Need to be process tab */}
                                     <TabsContent value="needprocess">
                                         <AdditionalParticipantDialog
-                                            open={isDetailDialogOpen}
-                                            participants={selectedParticipants}
-                                            onClose={() => setIsDetailDialogOpen(false)}
+                                            open={selectedRegistration !== null}
+                                            onClose={() => setSelectedRegistration(null)}
+                                            registration={selectedRegistration}
                                         />
                                         {trainingData.needProcessData ? (
                                             <ValidationTrainingTable
                                                 data={trainingData.needProcessData}
                                                 mode="needprocess"
-                                                onShowParticipants={onShowParticipants}
+                                                onShowDetailRegistration={onShowDetailRegistration}
                                                 onStatusChange={handleStatusChange}
                                             />
                                         ) : (
@@ -309,15 +309,15 @@ const ValidationTrainingPage = () => {
                                     {/* Cancelled tab */}
                                     <TabsContent value="cancelled">
                                         <AdditionalParticipantDialog
-                                            open={isDetailDialogOpen}
-                                            participants={selectedParticipants}
-                                            onClose={() => setIsDetailDialogOpen(false)}
+                                            open={selectedRegistration !== null}
+                                            onClose={() => setSelectedRegistration(null)}
+                                            registration={selectedRegistration}
                                         />
                                         {trainingData.cancelledData ? (
                                             <ValidationTrainingTable
                                                 data={trainingData.cancelledData}
                                                 mode="cancelled"
-                                                onShowParticipants={onShowParticipants}
+                                                onShowDetailRegistration={onShowDetailRegistration}
                                                 onStatusChange={handleStatusChange}
                                             />
                                         ) : (
