@@ -59,25 +59,54 @@ export const ValidationTrainingTable = ({
     const isAbsent = status === false;
     const isNull = status === null || status === undefined;
 
-    const renderButton = (label, icon, active, onClick) => (
-      <Button
-        variant="ghost"
-        className={`flex flex-col items-center justify-center gap-1 p-2 h-auto w-auto px-4 ${active ? "opacity-100" : "opacity-30"
-          } ${label === "Present" ? "text-green-600 hover:bg-green-100" : "text-red-600 hover:bg-red-100"}`}
-        onClick={onClick}
-      >
-        {icon}
-        <span className="text-xs">{label}</span>
-      </Button>
-    );
+    const attendanceLocked = item.has_certificate && status === true;
+
+    const renderButton = (label, icon, active, onClick, disabled, tooltip) => {
+      const isPresentButton = label === "Present";
+      const textColor = isPresentButton ? "text-green-600" : "text-red-600";
+      const hoverColor = isPresentButton ? "hover:bg-green-100" : "hover:bg-red-100";
+
+      return (
+        <div className={`relative group`}>
+          <div
+            className={`
+              flex flex-col items-center justify-center gap-1 p-2 px-4 h-auto w-auto rounded-md transition
+              ${active ? "opacity-100" : "opacity-30"}
+              ${textColor} ${hoverColor}
+              ${disabled ? "cursor-not-allowed pointer-events-none" : "cursor-pointer"}
+            `}
+            onClick={!disabled ? onClick : undefined}
+          >
+            {icon}
+            <span className="text-xs">{label}</span>
+          </div>
+
+          {disabled && (
+            <div className="absolute bottom-full mb-1 w-max max-w-[150px] bg-neutral1 text-mainOrange text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+              {tooltip}
+            </div>
+          )}
+        </div>
+      );
+    };
 
     return (
-      <div className="flex gap-2 justify-center">
-        {renderButton("Present", <BsCheckCircleFill className="w-10 h-10" />, isPresent || isNull, () =>
-          onAttendanceChange(id, true)
+      <div className="flex gap-1 justify-center">
+        {renderButton(
+          "Present",
+          <BsCheckCircleFill className="w-7 h-7" />,
+          isPresent || isNull,
+          () => onAttendanceChange(id, true),
+          attendanceLocked,
+          "Attendance cannot be changed after certificate is issued"
         )}
-        {renderButton("Absent", <BsFillXCircleFill className="w-10 h-10" />, isAbsent || isNull, () =>
-          onAttendanceChange(id, false)
+        {renderButton(
+          "Absent",
+          <BsFillXCircleFill className="w-7 h-7" />,
+          isAbsent || isNull,
+          () => onAttendanceChange(id, false),
+          attendanceLocked,
+          "Attendance cannot be changed after certificate is issued"
         )}
       </div>
     );
