@@ -1,3 +1,5 @@
+//efortech_edu\src\app\(admin)\validation\training\page.jsx
+
 "use client";
 
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
@@ -15,6 +17,7 @@ import {
     SelectItem,
     SelectValue,
 } from "@/components/ui/select";
+import { Checkbox } from '@/components/ui/checkbox';
 
 const ValidationTrainingPage = () => {
     const [tab, setTab] = useState("needprocess");
@@ -27,37 +30,95 @@ const ValidationTrainingPage = () => {
     const [loading, setLoading] = useState(true);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const filterRef = useRef(null);
-    const [searchQuery, setSearchQuery] = useState("");
     const [attendanceStatus, setAttendanceStatus] = useState({});
+
+    const [searchQuery, setSearchQuery] = useState("");
+    const [selectedFilter, setSelectedFilter] = useState({});
+    const [sortBy, setSortBy] = useState("");
+    const [sortOrder, setSortOrder] = useState("ASC");
+    const [sortOpen, setSortOpen] = useState(false);
+    const [tempSortField, setTempSortField] = useState(sortBy);
+    const [tempSortOrder, setTempSortOrder] = useState(sortOrder);
 
     // Tab configuration for fetching data
     const tabConfig = {
         needprocess: {
             url: "/api/registration/search?status=1,2,3",
             key: "needProcessData",
+            searchFields: ["registration_id", "registration_date", "registrant_name", "training_name"],
+            filters: {
+                status: ["1", "2", "3", "4", "5"],
+            },
+            sortFields: ["registration_id", "registrant_name", "registration_date", "training_date", "training_name", "participant_count"],
         },
         onprogress: {
             url: "/api/enrollment/participants?mode=onprogress",
             key: "onProgressData",
+            searchFields: ["registration_participant_id", "fullname", "training_name"],
+            filters: {
+                attendance_status: ["null", "true", "false"],
+            },
+            sortFields: ["registration_participant_id", "fullname", "registration_date", "training_date", "training_name"],
         },
         completed: {
             url: "/api/enrollment/participants?mode=completed",
             key: "completedData",
+            searchFields: ["registration_participant_id", "fullname", "training_name"],
+            filters: {
+                attendance_status: ["true", "false"],
+            },
+            sortFields: ["registration_participant_id", "fullname", "registration_date", "training_date", "training_name"],
         },
         cancelled: {
             url: "/api/registration/search?status=5",
             key: "cancelledData",
+            searchFields: ["registration_id", "registration_date", "registrant_name", "training_name"],
+            filters: {
+                status: ["5"],
+            },
+            sortFields: ["registration_id", "registrant_name", "registration_date", "training_date", "training_name", "participant_count"],
         },
     };
 
+    const buildQueryParams = () => {
+        const config = tabConfig[tab];
+        const params = new URLSearchParams();
+
+        if (searchQuery) params.append("keyword", searchQuery);
+
+        const rawStatus = selectedFilter.status || [];
+        const uniqueStatus = [...new Set(rawStatus)];
+        uniqueStatus.forEach((statusCode) => {
+            if (statusCode) params.append("status", statusCode);
+        });
+
+        if (sortBy) params.append("sort_by", sortBy);
+        if (sortOrder) params.append("sort_order", sortOrder);
+
+        Object.entries(selectedFilter).forEach(([key, value]) => {
+            if (key !== "status") {
+                if (Array.isArray(value)) {
+                    [...new Set(value)].forEach((val) => params.append(key, val));
+                } else if (value) {
+                    params.append(key, value);
+                }
+            }
+        });
+
+        const baseURL = config.url.split("?")[0];
+        return `${baseURL}?${params.toString()}`;
+    };
+
     // Fetch training data 
-    const fetchTabData = async (tabKey) => {
+    const fetchTabData = async (tabKey = tab) => {
         const config = tabConfig[tabKey];
         if (!config) return;
 
         setLoading(true);
         try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}${config.url}`);
+            const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}${buildQueryParams()}`;
+            console.log(url);  // Debugging URL yang dibangun
+            const response = await fetch(url);
             if (!response.ok) throw new Error();
 
             const result = await response.json();
@@ -75,6 +136,8 @@ const ValidationTrainingPage = () => {
         }
     };
 
+    const currentConfig = tabConfig[tab];
+
     // Automatically fetch data for the selected tab when the component mounts
     useEffect(() => {
         fetchTabData(tab);
@@ -85,6 +148,34 @@ const ValidationTrainingPage = () => {
         if (!trainingData[`${tabConfig[tab]?.key}`]) {
             fetchTabData(tab);
         }
+    }, [tab]);
+
+    useEffect(() => {
+        fetchTabData();  // Fetch data after filter or sort changes for the active tab
+    }, [searchQuery, selectedFilter, sortBy, sortOrder, tab]);
+
+    useEffect(() => {
+        const config = tabConfig[tab];
+        if (!config) return;
+
+        let defaultFilter = { ...config.filters };
+
+        if (tab === "needprocess") {
+            defaultFilter.status = ["1", "2", "3"];
+        } else if (tab === "onprogress") {
+            defaultFilter.attendance_status = ["null", "true", "false"];
+        } else if (tab === "completed") {
+            defaultFilter.has_certificate = ["true", "false"];
+        } else if (tab === "cancelled") {
+            defaultFilter.status = ["5"];
+        }
+
+        // ensure status key always exists (even empty)
+        if (!defaultFilter.status) {
+            defaultFilter.status = [];
+        }
+
+        setSelectedFilter(defaultFilter);
     }, [tab]);
 
     // Function to handle showing participants in a dialog
@@ -189,50 +280,150 @@ const ValidationTrainingPage = () => {
                                 <TabsTrigger value="cancelled">Cancelled</TabsTrigger>
                             </TabsList>
 
-                            {/* Filter and Search */}
+                            {/* Search, Filter and Sort */}
                             <div className="flex flex-col sm:flex-row sm:items-center gap-4 w-full sm:w-auto">
                                 {/* Search Input */}
                                 <div className="relative w-full sm:w-[250px]">
                                     <input
-                                        type="text"
-                                        placeholder="Search by name..."
+                                        placeholder={`Search ID, Name, or Training...`}
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === "Enter") fetchTabData(); // trigger search
+                                        }}
                                         className="text-sm w-full pl-6 pr-10 py-2 rounded-md border border-mainBlue focus:ring-0 focus:outline-none"
                                     />
                                     <FaSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
                                 </div>
 
+                                {/* Filter Button (Checkbox List Dropdown) */}
+                                <div className="relative" ref={filterRef}>
+                                    <button
+                                        className="w-full sm:w-[180px] border border-mainBlue rounded-md text-sm px-4 py-2 text-left"
+                                        onClick={() => setIsFilterOpen(!isFilterOpen)}
+                                    >
+                                        Filter by
+                                    </button>
+
+                                    {isFilterOpen && (
+                                        <div className="absolute z-10 mt-2 w-[180px] bg-white border border-gray-300 rounded-md shadow-md p-2 space-y-2 text-sm">
+                                            {/* Status Filter */}
+                                            {currentConfig.filters?.status?.map((statusCode) => (
+                                                <div key={statusCode} className="flex items-center gap-2">
+                                                    <Checkbox
+                                                        id={`status-${statusCode}`}
+                                                        checked={selectedFilter.status?.includes(statusCode) || false}
+                                                        onCheckedChange={(checked) => {
+                                                            setSelectedFilter((prev) => {
+                                                                const prevStatus = prev.status || [];
+                                                                return {
+                                                                    ...prev,
+                                                                    status: checked
+                                                                        ? [...prevStatus, statusCode]
+                                                                        : prevStatus.filter((s) => s !== statusCode),
+                                                                };
+                                                            });
+                                                        }}
+                                                    />
+                                                    <label htmlFor={`status-${statusCode}`}>Status {statusCode}</label>
+                                                </div>
+                                            ))}
+
+                                            {/* Attendance Status Filter */}
+                                            {currentConfig.filters?.attendance_status?.map((attendanceStatus) => (
+                                                <div key={attendanceStatus} className="flex items-center gap-2">
+                                                    <Checkbox
+                                                        id={`attendance-status-${attendanceStatus}`}
+                                                        checked={selectedFilter.attendance_status?.includes(attendanceStatus) || false}
+                                                        onCheckedChange={(checked) => {
+                                                            setSelectedFilter((prev) => {
+                                                                const prevAttendance = prev.attendance_status || [];
+                                                                return {
+                                                                    ...prev,
+                                                                    attendance_status: checked
+                                                                        ? [...prevAttendance, attendanceStatus]
+                                                                        : prevAttendance.filter((s) => s !== attendanceStatus),
+                                                                };
+                                                            });
+                                                        }}
+                                                    />
+                                                    <label htmlFor={`attendance-status-${attendanceStatus}`}>Attendance : {attendanceStatus}</label>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+
                                 {/* Sort Dropdown */}
-                                <Select
-                                    onValueChange={(value) => {
-                                        const targetKey = `${tab}Data`;
-                                        if (value === "name") {
-                                            setTrainingData((prev) => ({
-                                                ...prev,
-                                                [targetKey]: [...prev[targetKey]].sort((a, b) =>
-                                                    a.fullName.localeCompare(b.fullName)
-                                                ),
-                                            }));
-                                        } else if (value === "date") {
-                                            setTrainingData((prev) => ({
-                                                ...prev,
-                                                [targetKey]: [...prev[targetKey]].sort((a, b) =>
-                                                    new Date(a.requestDate) - new Date(b.requestDate)
-                                                ),
-                                            }));
-                                        }
-                                    }}
-                                >
-                                    <SelectTrigger className="w-full sm:w-[180px] border border-mainBlue rounded-md text-sm">
-                                        <SelectValue placeholder="Sort by" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="name">Name</SelectItem>
-                                        <SelectItem value="date">Registration Date</SelectItem>
-                                    </SelectContent>
-                                </Select>
+                                <div className="relative">
+                                    <button
+                                        onClick={() => setSortOpen(!sortOpen)}
+                                        className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                                    >
+                                        Sort
+                                    </button>
+
+                                    {sortOpen && (
+                                        <div className="absolute right-0 z-10 mt-2 w-64 bg-white border border-gray-300 rounded-md shadow-lg p-4">
+                                            <p className="text-sm font-medium mb-2">Sort Order</p>
+                                            <div className="flex gap-4 mb-4">
+                                                <label className="flex items-center gap-2 text-sm">
+                                                    <input
+                                                        type="radio"
+                                                        value="ASC"
+                                                        checked={tempSortOrder === "ASC"}
+                                                        onChange={() => setTempSortOrder("ASC")}
+                                                    />
+                                                    Ascending
+                                                </label>
+                                                <label className="flex items-center gap-2 text-sm">
+                                                    <input
+                                                        type="radio"
+                                                        value="DESC"
+                                                        checked={tempSortOrder === "DESC"}
+                                                        onChange={() => setTempSortOrder("DESC")}
+                                                    />
+                                                    Descending
+                                                </label>
+                                            </div>
+
+                                            <p className="text-sm font-medium mb-2">Sort By</p>
+                                            <div className="space-y-2 max-h-32 overflow-y-auto">
+                                                {currentConfig.sortFields.map((field) => (
+                                                    <button
+                                                        key={field}
+                                                        onClick={() => setTempSortField(field)}
+                                                        className={`w-full text-left px-2 py-1 rounded hover:bg-gray-100 text-sm ${tempSortField === field ? "bg-blue-100 font-semibold" : ""}`}
+                                                    >
+                                                        {field.replaceAll("_", " ")}
+                                                    </button>
+                                                ))}
+                                            </div>
+
+                                            <div className="flex justify-end mt-4 gap-2">
+                                                <button
+                                                    className="text-sm text-gray-500 hover:underline"
+                                                    onClick={() => setSortOpen(false)}
+                                                >
+                                                    Cancel
+                                                </button>
+                                                <button
+                                                    onClick={() => {
+                                                        setSortBy(tempSortField);
+                                                        setSortOrder(tempSortOrder);
+                                                        setSortOpen(false);
+                                                        fetchTabData(); // apply sorting
+                                                    }}
+                                                    className="text-sm bg-mainBlue text-white px-3 py-1 rounded"
+                                                >
+                                                    Apply
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
+
                         </div>
                         <div className="border-t border-gray-200 mt-2" />
 
