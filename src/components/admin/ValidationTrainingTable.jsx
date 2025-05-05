@@ -5,8 +5,16 @@ import {
 import { Button } from "@/components/ui/button";
 import { BsCheckCircleFill, BsFillXCircleFill } from "react-icons/bs";
 import { TbCloudUpload } from "react-icons/tb";
-import { UploadCertificateDialog } from "./UploadCertificateDialog";
-import { toast } from "react-hot-toast";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+
+const PAGE_SIZE = 10;
 
 // Status labels mapped to status codes
 const STATUS_LABELS = {
@@ -34,11 +42,15 @@ export const ValidationTrainingTable = ({
   data,
   mode,
   onStatusChange,
-  onShowParticipants,
-  onAttendanceClick,
+  onShowDetailRegistration,
+  onAttendanceChange,
+  onUploadClick,
+  disablePagination = false,
 }) => {
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedParticipant, setSelectedParticipant] = useState(null);
+
+  const [page, setPage] = useState(1);
+  const totalPages = Math.ceil(data.length / PAGE_SIZE);
+  const paginatedData = data.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   // Render attendance buttons or status
   const renderAttendanceColumn = (item) => {
@@ -48,25 +60,54 @@ export const ValidationTrainingTable = ({
     const isAbsent = status === false;
     const isNull = status === null || status === undefined;
 
-    const renderButton = (label, icon, active, onClick) => (
-      <Button
-        variant="ghost"
-        className={`flex flex-col items-center justify-center gap-1 p-2 h-auto w-auto px-4 ${active ? "opacity-100" : "opacity-30"
-          } ${label === "Present" ? "text-green-600 hover:bg-green-100" : "text-red-600 hover:bg-red-100"}`}
-        onClick={onClick}
-      >
-        {icon}
-        <span className="text-xs">{label}</span>
-      </Button>
-    );
+    const attendanceLocked = item.has_certificate && status === true;
+
+    const renderButton = (label, icon, active, onClick, disabled, tooltip) => {
+      const isPresentButton = label === "Present";
+      const textColor = isPresentButton ? "text-green-600" : "text-red-600";
+      const hoverColor = isPresentButton ? "hover:bg-green-100" : "hover:bg-red-100";
+
+      return (
+        <div className={`relative group`}>
+          <div
+            className={`
+              flex flex-col items-center justify-center gap-1 p-2 px-4 h-auto w-auto rounded-md transition
+              ${active ? "opacity-100" : "opacity-30"}
+              ${textColor} ${hoverColor}
+              ${disabled ? "cursor-not-allowed pointer-events-none" : "cursor-pointer"}
+            `}
+            onClick={!disabled ? onClick : undefined}
+          >
+            {icon}
+            <span className="text-xs">{label}</span>
+          </div>
+
+          {disabled && (
+            <div className="absolute bottom-full mb-1 w-max max-w-[150px] bg-neutral1 text-mainOrange text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+              {tooltip}
+            </div>
+          )}
+        </div>
+      );
+    };
 
     return (
-      <div className="flex gap-2 justify-center">
-        {renderButton("Present", <BsCheckCircleFill className="w-10 h-10" />, isPresent || isNull, () =>
-          onAttendanceClick(id, true)
+      <div className="flex gap-1 justify-center">
+        {renderButton(
+          "Present",
+          <BsCheckCircleFill className="w-7 h-7" />,
+          isPresent || isNull,
+          () => onAttendanceChange(id, true),
+          attendanceLocked,
+          "Attendance cannot be changed after certificate is issued"
         )}
-        {renderButton("Absent", <BsFillXCircleFill className="w-10 h-10" />, isAbsent || isNull, () =>
-          onAttendanceClick(id, false)
+        {renderButton(
+          "Absent",
+          <BsFillXCircleFill className="w-7 h-7" />,
+          isAbsent || isNull,
+          () => onAttendanceChange(id, false),
+          attendanceLocked,
+          "Attendance cannot be changed after certificate is issued"
         )}
       </div>
     );
@@ -85,10 +126,7 @@ export const ValidationTrainingTable = ({
     return (
       <Button
         variant="orange"
-        onClick={() => {
-          setSelectedParticipant(item);
-          setDialogOpen(true);
-        }}
+        onClick={() => onUploadClick(item)}
         disabled={!canUpload}
       >
         Upload
@@ -97,56 +135,30 @@ export const ValidationTrainingTable = ({
     );
   };
 
-  // Function to save certificate data to the backend
-  const saveCertificate = async (data) => {
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/certificate/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          issued_date: data.issued_date,
-          expired_date: data.expired_date,
-          certificate_number: data.certificate_number,
-          cert_file: data.cert_file_url, // sesuai field dari API
-          registration_participant_id: data.registration_participant_id,
-        }),
-      });
-
-      if (!response.ok) {
-        const errData = await response.json();
-        throw new Error(errData.message || "API error");
-      }
-
-      console.log("Certificate saved successfully");
-    } catch (err) {
-      console.error("Failed to save certificate:", err);
-      throw err;
-    }
-  };
-
   return (
     <div>
-      {data.length === 0 ? (
+      {paginatedData.length === 0 ? (
         <p className="text-center text-gray-500 py-4">No data available</p>
       ) : (
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>ID</TableHead>
-              {mode === "needToProcess" && <TableHead>Registrant Name</TableHead>}
+              {mode === "needprocess" || mode === "cancelled" ? (
+                <TableHead>Registrant Name</TableHead>
+              ) : (
+                <TableHead>Participant Name</TableHead>
+              )}
               <TableHead>Registration Date</TableHead>
               <TableHead>Training Date</TableHead>
               <TableHead>Training Name</TableHead>
-              {mode === "needToProcess" ? (
+              {mode === "needprocess" || mode === "cancelled" ? (
                 <>
-                  <TableHead>Participant Count</TableHead>
+                  <TableHead>Participant</TableHead>
                   <TableHead>Status</TableHead>
                 </>
               ) : (
                 <>
-                  <TableHead>Participant Name</TableHead>
                   <TableHead>Attendance</TableHead>
                   <TableHead>Certificate</TableHead>
                 </>
@@ -154,18 +166,20 @@ export const ValidationTrainingTable = ({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data.map((item) => (
+            {paginatedData.map((item) => (
               <TableRow
                 key={item.registration_id + (item.registration_participant_id || "")}
               >
                 <TableCell>
-                  {mode === "needToProcess"
+                  {mode === "needprocess" || mode === "cancelled"
                     ? item.registration_id
                     : item.registration_participant_id}
                 </TableCell>
 
-                {mode === "needToProcess" && (
+                {mode === "needprocess" || mode === "cancelled" ? (
                   <TableCell>{item.registrant_name}</TableCell>
+                ) : (
+                  <TableCell>{item.fullname}</TableCell>
                 )}
 
                 <TableCell>
@@ -176,10 +190,13 @@ export const ValidationTrainingTable = ({
                 </TableCell>
                 <TableCell>{item.training_name}</TableCell>
 
-                {mode === "needToProcess" ? (
+                {mode === "needprocess" || mode === "cancelled" ? (
                   <>
                     <TableCell>
-                      <Button onClick={() => onShowParticipants(item.participants)}>
+                      <Button
+                        onClick={() => onShowDetailRegistration(item)}
+                        className="bg-white text-black hover:bg-lightBlue hover:text-white transition duration-300 ease-in-out py-2 px-4 rounded-md"
+                      >
                         {item.participants.length} Participants
                       </Button>
                     </TableCell>
@@ -194,7 +211,6 @@ export const ValidationTrainingTable = ({
                   </>
                 ) : (
                   <>
-                    <TableCell>{item.fullname}</TableCell>
                     <TableCell>{renderAttendanceColumn(item)}</TableCell>
                     <TableCell>{renderCertificateUploadColumn(item)}</TableCell>
                   </>
@@ -204,60 +220,54 @@ export const ValidationTrainingTable = ({
           </TableBody>
         </Table>
       )}
-
-      {/* Certificate upload dialog */}
-      {selectedParticipant && (
-        <UploadCertificateDialog
-          open={dialogOpen}
-          setOpen={setDialogOpen}
-          participant={selectedParticipant}
-          // Uploads the file to remote API using env variable
-          onUploadFile={async (file) => {
-            const allowedTypes = [
-              "image/jpeg", "image/png", "image/webp", "image/jpg", "image/heic",
-              "application/pdf",
-            ];
-
-            if (!allowedTypes.includes(file.type)) {
-              throw new Error("Only image or PDF files are allowed.");
-            }
-
-            const formData = new FormData();
-            formData.append("files", file);
-
-            try {
-              const res = await fetch(
-                `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/certificate/upload-certificate`,
-                {
-                  method: "POST",
-                  body: formData,
-                }
-              );
-
-              const data = await res.json();
-
-              if (!res.ok) {
-                throw new Error(data.message || "File upload failed");
-              }
-
-              if (data.status === "success") {
-                return data.data.fileUrl;
-              } else {
-                throw new Error(data.message || "File upload failed");
-              }
-            } catch (error) {
-              console.error("Upload failed:", error);
-              throw error;
-            }
-          }}
-
-          // Save certificate metadata to backend
-          onSave={saveCertificate}
-          // Success handler 
-          onShowSuccess={() => {
-            toast.success("Certificate uploaded successfully!");
-          }}
-        />
+      {/* Pagination */}
+      {!disablePagination && (
+        <div className="flex justify-center mt-8">
+          <Pagination>
+            <PaginationContent className="gap-2">
+              <PaginationItem>
+                <PaginationPrevious
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setPage((prev) => Math.max(prev - 1, 1));
+                  }}
+                  className={page === 1 ? "pointer-events-none opacity-50" : ""}
+                />
+              </PaginationItem>
+              {Array.from({ length: totalPages }, (_, i) => (
+                <PaginationItem key={i}>
+                  <PaginationLink
+                    href="#"
+                    isActive={page === i + 1}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setPage(i + 1);
+                    }}
+                  >
+                    {i + 1}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
+              <PaginationItem>
+                <PaginationNext
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setPage((prev) => Math.min(prev + 1, totalPages));
+                  }}
+                  className={page === totalPages ? "pointer-events-none opacity-50" : ""}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
+      )}
+      {!disablePagination && (
+        <div className="text-xs text-gray-600 text-center mt-2">
+          Showing {(page - 1) * PAGE_SIZE + 1} to{" "}
+          {Math.min(page * PAGE_SIZE, data.length)} of {data.length} data
+        </div>
       )}
     </div>
   );

@@ -6,6 +6,7 @@ import { ValidationTrainingTable } from "@/components/admin/ValidationTrainingTa
 import { useEffect, useRef, useState } from "react";
 import { toast } from "react-hot-toast";
 import { AdditionalParticipantDialog } from "@/components/admin/AdditionalParticipantDialog";
+import { UploadCertificateDialog } from "@/components/admin/UploadCertificateDialog";
 import { FaSearch } from "react-icons/fa";
 import {
     Select,
@@ -21,64 +22,88 @@ const ValidationTrainingPage = () => {
         needProcessData: null,
         onProgressData: null,
         completedData: null,
-        canceledData: null,
+        cancelledData: null,
     });
     const [loading, setLoading] = useState(true);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
-    const [selectedParticipants, setSelectedParticipants] = useState([]);
-    const [isDialogOpen, setIsDialogOpen] = useState(false);
     const filterRef = useRef(null);
     const [searchQuery, setSearchQuery] = useState("");
     const [attendanceStatus, setAttendanceStatus] = useState({});
 
+    // Tab configuration for fetching data
+    const tabConfig = {
+        needprocess: {
+            url: "/api/registration/search?status=1,2,3",
+            key: "needProcessData",
+        },
+        onprogress: {
+            url: "/api/enrollment/participants?mode=onprogress",
+            key: "onProgressData",
+        },
+        completed: {
+            url: "/api/enrollment/participants?mode=completed",
+            key: "completedData",
+        },
+        cancelled: {
+            url: "/api/registration/search?status=5",
+            key: "cancelledData",
+        },
+    };
+
     // Fetch training data 
     const fetchTabData = async (tabKey) => {
+        const config = tabConfig[tabKey];
+        if (!config) return;
+
         setLoading(true);
         try {
-            let response;
-            switch (tabKey) {
-                case "needprocess":
-                    response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/registration/search?status=1,2,3`);
-                    if (!response.ok) throw new Error();
-                    const needProcess = (await response.json()).data || [];
-                    setTrainingData((prev) => ({ ...prev, needProcessData: needProcess }));
-                    break;
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}${config.url}`);
+            if (!response.ok) throw new Error();
 
-                case "onprogress":
-                    response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/enrollment/participants`);
-                    if (!response.ok) throw new Error();
-                    const onProgress = (await response.json()).data || [];
-                    setTrainingData((prev) => ({ ...prev, onProgressData: onProgress }));
-                    break;
+            const result = await response.json();
+            const data = result?.data || [];
 
-                // case "completed":
-                // case "canceled":
-            }
-        } catch (error) {
-            console.error(error);
+            setTrainingData((prev) => ({
+                ...prev,
+                [config.key]: data,
+            }));
+        } catch (err) {
+            console.error(err);
             toast.error("Failed to fetch data for tab: " + tabKey);
         } finally {
             setLoading(false);
         }
     };
 
-    // Default load
+    // Automatically fetch data for the selected tab when the component mounts
     useEffect(() => {
-        fetchTabData("needprocess");
-    }, []);
+        fetchTabData(tab);
+    }, [tab]);
 
     // Fetch data for the selected tab when the component mounts or when the tab changes
     useEffect(() => {
-        if (!trainingData[`${tab}Data`]) {
+        if (!trainingData[`${tabConfig[tab]?.key}`]) {
             fetchTabData(tab);
         }
     }, [tab]);
 
     // Function to handle showing participants in a dialog
-    const onShowParticipants = (participants) => {
-        setSelectedParticipants(participants);
-        setIsDialogOpen(true);
+    const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
+    const [selectedRegistration, setSelectedRegistration] = useState(null);
+
+    const onShowDetailRegistration = (registration) => {
+        setSelectedRegistration(registration);
+        setIsDetailDialogOpen(true);
     };
+
+    // Function to handle showing upload certificate dialog
+    const [selectedParticipant, setSelectedParticipant] = useState(null);
+    const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
+
+    const onShowUploadDialog = (participant) => {
+        setSelectedParticipant(participant);
+        setIsUploadDialogOpen(true);
+    }
 
     // Function to handle status change for training registrations
     const handleStatusChange = async (registrationId, newStatus) => {
@@ -94,59 +119,16 @@ const ValidationTrainingPage = () => {
 
             if (!res.ok) throw new Error("Failed to update status");
 
-            setTrainingData((prev) => {
-                const updatedNeed = prev.needProcessData.filter(
-                    (item) => item.registration_id !== registrationId
-                );
-                const updatedOnProgress = [...prev.onProgressData];
-
-                const originalItem = prev.needProcessData.find(
-                    (item) => item.registration_id === registrationId
-                );
-
-                const updatedItem = {
-                    ...originalItem,
-                    status: newStatus,
-                    validation: newStatus,
-                };
-
-                if (newStatus === 4) {
-                    return {
-                        needProcessData: updatedNeed,
-                        onProgressData: [...updatedOnProgress, updatedItem],
-                    };
-                } else {
-                    return {
-                        needProcessData: [...prev.needProcessData.map((item) =>
-                            item.registration_id === registrationId ? updatedItem : item
-                        )],
-                        onProgressData: [...prev.onProgressData],
-                    };
-                }
-            });
-
             toast.success("Status updated successfully");
+            fetchTabData(tab); // Re-fetch data after status change
         } catch (err) {
             console.error(err);
             toast.error("Error updating status");
         }
     };
 
-    // Function to handle click outside the filter dropdown
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (filterRef.current && !filterRef.current.contains(event.target)) {
-                setIsFilterOpen(false);
-            }
-        };
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
-    }, []);
-
     // Function to handle attendance status change
-    const handleAttendanceClick = async (id, status) => {
+    const handleAttendanceChange = async (id, status) => {
         try {
             // Update attendance status in the database
             const res = await fetch(
@@ -174,6 +156,19 @@ const ValidationTrainingPage = () => {
         }
     };
 
+    // Function to handle click outside the filter dropdown
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (filterRef.current && !filterRef.current.contains(event.target)) {
+                setIsFilterOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
+
     return (
         <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
             <div className="max-w-screen mx-auto p-4 md:p-6">
@@ -191,7 +186,7 @@ const ValidationTrainingPage = () => {
                                 <TabsTrigger value="needprocess">Need to Process</TabsTrigger>
                                 <TabsTrigger value="onprogress">On Progress</TabsTrigger>
                                 <TabsTrigger value="completed">Completed</TabsTrigger>
-                                <TabsTrigger value="canceled">Canceled</TabsTrigger>
+                                <TabsTrigger value="cancelled">Cancelled</TabsTrigger>
                             </TabsList>
 
                             {/* Filter and Search */}
@@ -211,17 +206,18 @@ const ValidationTrainingPage = () => {
                                 {/* Sort Dropdown */}
                                 <Select
                                     onValueChange={(value) => {
+                                        const targetKey = `${tab}Data`;
                                         if (value === "name") {
                                             setTrainingData((prev) => ({
                                                 ...prev,
-                                                needProcessData: [...prev.needProcessData].sort((a, b) =>
+                                                [targetKey]: [...prev[targetKey]].sort((a, b) =>
                                                     a.fullName.localeCompare(b.fullName)
                                                 ),
                                             }));
                                         } else if (value === "date") {
                                             setTrainingData((prev) => ({
                                                 ...prev,
-                                                needProcessData: [...prev.needProcessData].sort((a, b) =>
+                                                [targetKey]: [...prev[targetKey]].sort((a, b) =>
                                                     new Date(a.requestDate) - new Date(b.requestDate)
                                                 ),
                                             }));
@@ -246,15 +242,15 @@ const ValidationTrainingPage = () => {
                                     {/* Need to be process tab */}
                                     <TabsContent value="needprocess">
                                         <AdditionalParticipantDialog
-                                            open={isDialogOpen}
-                                            participants={selectedParticipants}
-                                            onClose={() => setIsDialogOpen(false)}
+                                            open={selectedRegistration !== null}
+                                            onClose={() => setSelectedRegistration(null)}
+                                            registration={selectedRegistration}
                                         />
                                         {trainingData.needProcessData ? (
                                             <ValidationTrainingTable
                                                 data={trainingData.needProcessData}
-                                                mode="needToProcess"
-                                                onShowParticipants={onShowParticipants}
+                                                mode="needprocess"
+                                                onShowDetailRegistration={onShowDetailRegistration}
                                                 onStatusChange={handleStatusChange}
                                             />
                                         ) : (
@@ -264,25 +260,69 @@ const ValidationTrainingPage = () => {
 
                                     {/* On Progress tab */}
                                     <TabsContent value="onprogress">
+                                        <UploadCertificateDialog
+                                            open={isUploadDialogOpen}
+                                            setOpen={setIsUploadDialogOpen}
+                                            participant={selectedParticipant}
+                                            onShowSuccess={() => {
+                                                toast.success("Certificate saved successfully!");
+                                                fetchTabData(tab);
+                                            }}
+                                        />
                                         {trainingData.onProgressData ? (
                                             <ValidationTrainingTable
                                                 data={trainingData.onProgressData}
                                                 mode="onprogress"
-                                                onAttendanceClick={handleAttendanceClick}
+                                                onAttendanceChange={handleAttendanceChange}
+                                                onShowUploadDialog={onShowUploadDialog}
+                                                onUploadClick={onShowUploadDialog}
                                             />
                                         ) : (
                                             <p>Loading...</p>
                                         )}
                                     </TabsContent>
 
+                                    {/* Completed tab */}
                                     <TabsContent value="completed">
-                                        <h2 className="text-lg md:text-xl font-semibold mb-4">Completed</h2>
-                                        {/* Konten lainnya */}
+                                        <UploadCertificateDialog
+                                            open={isUploadDialogOpen}
+                                            setOpen={setIsUploadDialogOpen}
+                                            participant={selectedParticipant}
+                                            onShowSuccess={() => {
+                                                toast.success("Certificate saved successfully!");
+                                                fetchTabData(tab);
+                                            }}
+                                        />
+                                        {trainingData.completedData ? (
+                                            <ValidationTrainingTable
+                                                data={trainingData.completedData}
+                                                mode="completed"
+                                                onAttendanceChange={handleAttendanceChange}
+                                                onShowUploadDialog={onShowUploadDialog}
+                                                onUploadClick={onShowUploadDialog}
+                                            />
+                                        ) : (
+                                            <p>Loading...</p>
+                                        )}
                                     </TabsContent>
 
-                                    <TabsContent value="canceled">
-                                        <h2 className="text-lg md:text-xl font-semibold mb-4">Cancelled</h2>
-                                        {/* Konten lainnya */}
+                                    {/* Cancelled tab */}
+                                    <TabsContent value="cancelled">
+                                        <AdditionalParticipantDialog
+                                            open={selectedRegistration !== null}
+                                            onClose={() => setSelectedRegistration(null)}
+                                            registration={selectedRegistration}
+                                        />
+                                        {trainingData.cancelledData ? (
+                                            <ValidationTrainingTable
+                                                data={trainingData.cancelledData}
+                                                mode="cancelled"
+                                                onShowDetailRegistration={onShowDetailRegistration}
+                                                onStatusChange={handleStatusChange}
+                                            />
+                                        ) : (
+                                            <p>Loading...</p>
+                                        )}
                                     </TabsContent>
                                 </div>
                             </div>
