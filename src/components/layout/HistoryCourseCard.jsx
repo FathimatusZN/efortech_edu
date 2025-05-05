@@ -2,6 +2,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import UploadPaymentDialog from "./UploadPaymentDialog";
 
 export default function HistoryCourseCard({
   id,
@@ -33,8 +34,31 @@ export default function HistoryCourseCard({
     router.push(path);
   };
 
+  const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
   const handleUploadPayment = () => {
-    router.push(`/training/${id}/upload-payment`);
+    setIsUploadDialogOpen(true);
+  };
+
+  const handleDownloadCertificate = async () => {
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/certificate/${participantId}`,
+        {
+          method: "GET",
+        }
+      );
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `certificate-${title}.pdf`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Gagal download sertifikat:", error);
+      alert("Terjadi kesalahan saat mengunduh sertifikat.");
+    }
   };
 
   const renderButtons = () => {
@@ -77,7 +101,12 @@ export default function HistoryCourseCard({
             >
               Review
             </Button>
-            <Button variant="lightBlue" className="w-full" disabled>
+            <Button
+              variant="lightBlue"
+              className="w-full"
+              disabled
+              onClick={handleDownloadCertificate}
+            >
               Download Certificate
             </Button>
           </div>
@@ -98,6 +127,7 @@ export default function HistoryCourseCard({
               variant="lightBlue"
               className="w-full"
               disabled={!hasReview}
+              onClick={handleDownloadCertificate}
             >
               Download Certificate
             </Button>
@@ -153,6 +183,12 @@ export default function HistoryCourseCard({
 
         {renderButtons()}
       </div>
+
+      <UploadPaymentDialog
+        open={isUploadDialogOpen}
+        onOpenChange={setIsUploadDialogOpen}
+        registrationId={id}
+      />
     </div>
   );
 }
