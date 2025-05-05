@@ -9,8 +9,8 @@ export default function HistoryCourse({ userId }) {
   const [loading, setLoading] = useState(true);
 
   const statusMap = {
-    1: "waiting for payment",
-    2: "pending",
+    1: "pending",
+    2: "waiting for payment",
     3: "validated",
     4: "completed",
   };

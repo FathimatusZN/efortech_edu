@@ -27,7 +27,10 @@ export default function HistoryCourseCard({
   }, [images?.length]);
 
   const handleWriteReview = () => {
-    router.push(`/edit-profile/review/${participantId}`);
+    const path = hasReview
+      ? `/edit-profile/review/${participantId}?readonly=true`
+      : `/edit-profile/review/${participantId}`;
+    router.push(path);
   };
 
   const handleUploadPayment = () => {
@@ -37,13 +40,22 @@ export default function HistoryCourseCard({
   const renderButtons = () => {
     switch (status) {
       case "pending":
+        return (
+          <>
+            <Button variant="orange" className="w-full" disabled>
+              Upload Bukti Pembayaran
+            </Button>
+            <Button variant="outline" className="w-full mt-2">
+              <a href={`/training/${trainingId}`}>See Details</a>
+            </Button>
+          </>
+        );
       case "waiting for payment":
         return (
           <>
             <Button
               variant="orange"
               className="w-full"
-              disabled={status === "pending"} // Disabled hanya kalau "pending"
               onClick={handleUploadPayment}
             >
               Upload Bukti Pembayaran
