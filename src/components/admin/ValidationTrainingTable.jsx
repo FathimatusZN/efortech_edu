@@ -183,10 +183,18 @@ export const ValidationTrainingTable = ({
                 )}
 
                 <TableCell>
-                  {new Date(item.registration_date).toLocaleDateString()}
+                  {new Date(item.registration_date).toLocaleDateString("id-ID", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                  })}
                 </TableCell>
                 <TableCell>
-                  {new Date(item.training_date).toLocaleDateString()}
+                  {new Date(item.training_date).toLocaleDateString("id-ID", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                  })}
                 </TableCell>
                 <TableCell>{item.training_name}</TableCell>
 
