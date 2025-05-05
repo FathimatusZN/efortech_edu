@@ -18,6 +18,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from '@/components/ui/checkbox';
+import { FaFilter } from "react-icons/fa";
 
 const ValidationTrainingPage = () => {
     const [tab, setTab] = useState("needprocess");
@@ -30,6 +31,7 @@ const ValidationTrainingPage = () => {
     const [loading, setLoading] = useState(true);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const filterRef = useRef(null);
+    const sortRef = useRef(null);
     const [attendanceStatus, setAttendanceStatus] = useState({});
 
     const [searchQuery, setSearchQuery] = useState("");
@@ -175,6 +177,17 @@ const ValidationTrainingPage = () => {
         if (!config) return;
 
         let defaultFilter = { ...config.filters };
+        let defaultSortBy = "";
+        let defaultSortOrder = "DESC";
+
+        if (tab === "needprocess" || tab === "cancelled") {
+            defaultSortBy = "registration_date";
+        } else if (tab === "onprogress" || tab === "completed") {
+            defaultSortBy = "completed_date";
+        }
+
+        setSortBy(defaultSortBy);
+        setSortOrder(defaultSortOrder);
 
         if (tab === "needprocess") {
             defaultFilter.status = ["1", "2", "3"];
@@ -269,10 +282,19 @@ const ValidationTrainingPage = () => {
     // Function to handle click outside the filter dropdown
     useEffect(() => {
         const handleClickOutside = (event) => {
-            if (filterRef.current && !filterRef.current.contains(event.target)) {
+            if (
+                filterRef.current && !filterRef.current.contains(event.target)
+            ) {
                 setIsFilterOpen(false);
             }
+
+            if (
+                sortRef.current && !sortRef.current.contains(event.target)
+            ) {
+                setSortOpen(false);
+            }
         };
+
         document.addEventListener("mousedown", handleClickOutside);
         return () => {
             document.removeEventListener("mousedown", handleClickOutside);
@@ -305,7 +327,7 @@ const ValidationTrainingPage = () => {
                                 <div className="relative w-full sm:w-[250px]">
                                     <input
                                         type="text"
-                                        placeholder={`Search ID, Name, or Training...`}
+                                        placeholder={`Type search keyword...`}
                                         value={searchInput}
                                         onChange={(e) => setSearchInput(e.target.value)}
                                         onKeyDown={(e) => {
@@ -377,11 +399,12 @@ const ValidationTrainingPage = () => {
                                 </div>
 
                                 {/* Sort Dropdown */}
-                                <div className="relative">
+                                <div className="relative" ref={sortRef}>
                                     <button
                                         onClick={() => setSortOpen(!sortOpen)}
-                                        className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                                        className="px-3 py-2 border border-gray-300 rounded-md text-sm flex items-center gap-2"
                                     >
+                                        <FaFilter className="text-base" />
                                         Sort
                                     </button>
 
@@ -415,9 +438,14 @@ const ValidationTrainingPage = () => {
                                                     <button
                                                         key={field}
                                                         onClick={() => setTempSortField(field)}
-                                                        className={`w-full text-left px-2 py-1 rounded hover:bg-gray-100 text-sm ${tempSortField === field ? "bg-blue-100 font-semibold" : ""}`}
+                                                        className={`w-full text-left px-2 py-1 rounded hover:bg-gray-100 text-sm ${tempSortField === field ? "bg-blue-100 font-semibold" : ""
+                                                            }`}
                                                     >
-                                                        {field.replaceAll("_", " ")}
+                                                        {field
+                                                            .replaceAll("_", " ")
+                                                            .split(" ")
+                                                            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                                                            .join(" ")}
                                                     </button>
                                                 ))}
                                             </div>
