@@ -33,17 +33,24 @@ const ValidationTrainingPage = () => {
     const [attendanceStatus, setAttendanceStatus] = useState({});
 
     const [searchQuery, setSearchQuery] = useState("");
-    const [selectedFilter, setSelectedFilter] = useState({});
     const [sortBy, setSortBy] = useState("");
     const [sortOrder, setSortOrder] = useState("ASC");
     const [sortOpen, setSortOpen] = useState(false);
     const [tempSortField, setTempSortField] = useState(sortBy);
     const [tempSortOrder, setTempSortOrder] = useState(sortOrder);
+    const [searchInput, setSearchInput] = useState("");
+
+    const [selectedFilters, setSelectedFilters] = useState({
+        needprocess: { status: ["1", "2", "3"] },
+        onprogress: { attendance_status: ["null", "true", "false"] },
+        completed: { attendance_status: ["true", "false"] },
+        cancelled: { status: ["5"] },
+    });
 
     // Tab configuration for fetching data
     const tabConfig = {
         needprocess: {
-            url: "/api/registration/search?status=1,2,3",
+            url: "/api/registration/search?status=1&status=2&status=3",
             key: "needProcessData",
             searchFields: ["registration_id", "registration_date", "registrant_name", "training_name"],
             filters: {
@@ -84,9 +91,16 @@ const ValidationTrainingPage = () => {
         const config = tabConfig[tab];
         const params = new URLSearchParams();
 
+        const urlObj = new URL(`${process.env.NEXT_PUBLIC_API_BASE_URL}${config.url}`, "http://localhost");
+        const baseURL = urlObj.pathname;
+
+        urlObj.searchParams.forEach((value, key) => {
+            params.append(key, value);
+        });
+
         if (searchQuery) params.append("keyword", searchQuery);
 
-        const rawStatus = selectedFilter.status || [];
+        const rawStatus = selectedFilters[tab].status || [];
         const uniqueStatus = [...new Set(rawStatus)];
         uniqueStatus.forEach((statusCode) => {
             if (statusCode) params.append("status", statusCode);
@@ -95,7 +109,7 @@ const ValidationTrainingPage = () => {
         if (sortBy) params.append("sort_by", sortBy);
         if (sortOrder) params.append("sort_order", sortOrder);
 
-        Object.entries(selectedFilter).forEach(([key, value]) => {
+        Object.entries(selectedFilters[tab]).forEach(([key, value]) => {
             if (key !== "status") {
                 if (Array.isArray(value)) {
                     [...new Set(value)].forEach((val) => params.append(key, val));
@@ -105,7 +119,6 @@ const ValidationTrainingPage = () => {
             }
         });
 
-        const baseURL = config.url.split("?")[0];
         return `${baseURL}?${params.toString()}`;
     };
 
@@ -117,7 +130,7 @@ const ValidationTrainingPage = () => {
         setLoading(true);
         try {
             const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}${buildQueryParams()}`;
-            console.log(url);  // Debugging URL yang dibangun
+            console.log(`fetch tab : ${url}`);
             const response = await fetch(url);
             if (!response.ok) throw new Error();
 
@@ -152,9 +165,12 @@ const ValidationTrainingPage = () => {
 
     useEffect(() => {
         fetchTabData();  // Fetch data after filter or sort changes for the active tab
-    }, [searchQuery, selectedFilter, sortBy, sortOrder, tab]);
+    }, [searchQuery, selectedFilters[tab], sortBy, sortOrder, tab]);
 
     useEffect(() => {
+        setSearchInput("");
+        setSearchQuery("");
+
         const config = tabConfig[tab];
         if (!config) return;
 
@@ -165,7 +181,7 @@ const ValidationTrainingPage = () => {
         } else if (tab === "onprogress") {
             defaultFilter.attendance_status = ["null", "true", "false"];
         } else if (tab === "completed") {
-            defaultFilter.has_certificate = ["true", "false"];
+            defaultFilter.attendance_status = ["true", "false"];
         } else if (tab === "cancelled") {
             defaultFilter.status = ["5"];
         }
@@ -175,7 +191,10 @@ const ValidationTrainingPage = () => {
             defaultFilter.status = [];
         }
 
-        setSelectedFilter(defaultFilter);
+        setSelectedFilters((prev) => ({
+            ...prev,
+            [tab]: defaultFilter,
+        }));
     }, [tab]);
 
     // Function to handle showing participants in a dialog
@@ -285,11 +304,14 @@ const ValidationTrainingPage = () => {
                                 {/* Search Input */}
                                 <div className="relative w-full sm:w-[250px]">
                                     <input
+                                        type="text"
                                         placeholder={`Search ID, Name, or Training...`}
-                                        value={searchQuery}
-                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        value={searchInput}
+                                        onChange={(e) => setSearchInput(e.target.value)}
                                         onKeyDown={(e) => {
-                                            if (e.key === "Enter") fetchTabData(); // trigger search
+                                            if (e.key === "Enter") {
+                                                setSearchQuery(searchInput);
+                                            } // trigger search
                                         }}
                                         className="text-sm w-full pl-6 pr-10 py-2 rounded-md border border-mainBlue focus:ring-0 focus:outline-none"
                                     />
@@ -312,9 +334,9 @@ const ValidationTrainingPage = () => {
                                                 <div key={statusCode} className="flex items-center gap-2">
                                                     <Checkbox
                                                         id={`status-${statusCode}`}
-                                                        checked={selectedFilter.status?.includes(statusCode) || false}
+                                                        checked={selectedFilters[tab].status?.includes(statusCode) || false}
                                                         onCheckedChange={(checked) => {
-                                                            setSelectedFilter((prev) => {
+                                                            setSelectedFilters((prev) => {
                                                                 const prevStatus = prev.status || [];
                                                                 return {
                                                                     ...prev,
@@ -334,9 +356,9 @@ const ValidationTrainingPage = () => {
                                                 <div key={attendanceStatus} className="flex items-center gap-2">
                                                     <Checkbox
                                                         id={`attendance-status-${attendanceStatus}`}
-                                                        checked={selectedFilter.attendance_status?.includes(attendanceStatus) || false}
+                                                        checked={selectedFilters[tab].attendance_status?.includes(attendanceStatus) || false}
                                                         onCheckedChange={(checked) => {
-                                                            setSelectedFilter((prev) => {
+                                                            setSelectedFilters((prev) => {
                                                                 const prevAttendance = prev.attendance_status || [];
                                                                 return {
                                                                     ...prev,
