@@ -35,6 +35,13 @@ const DashboardAdmin = () => {
         );
     };
 
+    const [todoCounts, setTodoCounts] = useState({
+        pendingRegistration: 0,
+        completedTraining: 0,
+        certificateUpload: 0,
+        certificateValidation: 0,
+    });
+
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -109,6 +116,21 @@ const DashboardAdmin = () => {
                     .slice(0, 10);
 
                 setCertificateData(certificateChartData);
+
+                // Fetch To-Do Counts
+                const [pendingRes, completedRes, uploadRes] = await Promise.all([
+                    axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/registration/search?status=1`),
+                    axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/enrollment/participants?attendance_status=null`),
+                    axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/enrollment/participants?attendance_status=true&has_certificate=false`)
+                ]);
+
+                setTodoCounts({
+                    pendingRegistration: pendingRes.data.data.length,
+                    completedTraining: completedRes.data.data.length,
+                    certificateUpload: uploadRes.data.data.length,
+                    certificateValidation: 0,
+                });
+
             } catch (err) {
                 console.error("Error fetching dashboard data:", err);
             }
@@ -153,25 +175,25 @@ const DashboardAdmin = () => {
                         {[
                             {
                                 title: "Pending Registration",
-                                value: 14,
+                                value: todoCounts.pendingRegistration,
                                 description: "data need to be validated",
                                 href: "/validation/training?tab=needprocess",
                             },
                             {
                                 title: "Completed Training",
-                                value: 20,
-                                description: "data need to be validated",
+                                value: todoCounts.completedTraining,
+                                description: "status need to be reviewed",
                                 href: "/validation/training?tab=onprogress",
                             },
                             {
-                                title: "Certificate",
-                                value: 20,
-                                description: "data need to be upload",
+                                title: "Certificate Upload",
+                                value: todoCounts.certificateUpload,
+                                description: "data need to be uploaded",
                                 href: "/validation/training?tab=onprogress",
                             },
                             {
-                                title: "Certificate",
-                                value: 20,
+                                title: "Certificate Validation",
+                                value: todoCounts.certificateValidation,
                                 description: "data need to be validated",
                                 href: "/validate/certificate",
                             },
@@ -179,9 +201,9 @@ const DashboardAdmin = () => {
                             <Link key={idx} href={card.href}>
                                 <div className="cursor-pointer h-[200px] bg-white bg-opacity-10 backdrop-blur-md rounded-xl shadow-lg flex flex-col items-center justify-center p-4 shadow-[inset_4px_2px_15px_rgba(255,255,255,0.4)]
       transition-transform duration-300 ease-in-out transform hover:scale-[1.05] hover:shadow-[0_10px_25px_rgba(255,255,255,0.2)] hover:backdrop-blur-xl">
-                                    <h2 className="text-lg sm:text-xl font-semibold text-white">{card.title}</h2>
-                                    <p className="text-gray-200 text-5xl sm:text-6xl font-bold drop-shadow-md">{card.value}</p>
-                                    <p className="text-gray-200 text-sm sm:text-base">{card.description}</p>
+                                    <h2 className="text-lg sm:text-xl font-semibold text-white text-center">{card.title}</h2>
+                                    <p className="text-gray-200 text-5xl sm:text-6xl font-bold drop-shadow-md text-center">{card.value}</p>
+                                    <p className="text-gray-200 text-sm sm:text-base text-center">{card.description}</p>
                                 </div>
                             </Link>
                         ))
