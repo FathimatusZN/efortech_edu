@@ -4,6 +4,7 @@ import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import React, { useEffect, useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import axios from "axios";
+import Link from "next/link";
 
 const DashboardAdmin = () => {
     const [registrantData, setRegistrantData] = useState([]);
@@ -140,25 +141,51 @@ const DashboardAdmin = () => {
                 <h1 className="text-2xl sm:text-3xl font-bold text-center mb-6">Admin Dashboard</h1>
 
                 {/* To Do's Section */}
-                <div className="w-full max-w-4xl mx-auto bg-cover bg-center rounded-xl relative flex flex-wrap justify-center items-center gap-4 p-4"
-                    style={{ backgroundImage: "url('/assets/dashboard-bg.png')" }}>
-                    <h1 className="w-full text-center text-white font-bold text-xl sm:text-2xl">
+                <div
+                    className="w-full max-w-6xl mx-auto bg-cover bg-center rounded-xl relative p-4"
+                    style={{ backgroundImage: "url('/assets/dashboard-bg.png')" }}
+                >
+                    <h2 className="w-full text-center text-white font-bold text-xl sm:text-2xl mb-4">
                         To Do's
-                    </h1>
-
-                    <div className="w-full sm:w-[45%] h-[200px] bg-white bg-opacity-10 backdrop-blur-md rounded-xl shadow-lg flex flex-col items-center justify-center p-4 shadow-[inset_4px_2px_15px_rgba(255,255,255,0.4)]">
-                        <h2 className="text-lg sm:text-xl font-semibold text-white">Training Registrations</h2>
-                        <p className="text-gray-200 text-5xl sm:text-6xl font-bold drop-shadow-md">
-                            14
-                        </p>
-                        <p className="text-gray-200 text-sm sm:text-base">data need to be validated</p>
-                    </div>
-                    <div className="w-full sm:w-[45%] h-[200px] bg-white bg-opacity-10 backdrop-blur-md rounded-xl shadow-lg flex flex-col items-center justify-center p-4 shadow-[inset_4px_2px_15px_rgba(255,255,255,0.4)]">
-                        <h2 className="text-lg sm:text-xl font-semibold text-white">Training Certificate</h2>
-                        <p className="text-gray-200 text-5xl sm:text-6xl font-bold drop-shadow-md">
-                            20
-                        </p>
-                        <p className="text-gray-200 text-sm sm:text-base">data need to be validated</p>
+                    </h2>
+                    {/* To Do's Cards */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        {[
+                            {
+                                title: "Pending Registration",
+                                value: 14,
+                                description: "data need to be validated",
+                                href: "/validation/training?tab=needprocess",
+                            },
+                            {
+                                title: "Completed Training",
+                                value: 20,
+                                description: "data need to be validated",
+                                href: "/validation/training?tab=onprogress",
+                            },
+                            {
+                                title: "Certificate",
+                                value: 20,
+                                description: "data need to be upload",
+                                href: "/validation/training?tab=onprogress",
+                            },
+                            {
+                                title: "Certificate",
+                                value: 20,
+                                description: "data need to be validated",
+                                href: "/validate/certificate",
+                            },
+                        ].map((card, idx) => (
+                            <Link key={idx} href={card.href}>
+                                <div className="cursor-pointer h-[200px] bg-white bg-opacity-10 backdrop-blur-md rounded-xl shadow-lg flex flex-col items-center justify-center p-4 shadow-[inset_4px_2px_15px_rgba(255,255,255,0.4)]
+      transition-transform duration-300 ease-in-out transform hover:scale-[1.05] hover:shadow-[0_10px_25px_rgba(255,255,255,0.2)] hover:backdrop-blur-xl">
+                                    <h2 className="text-lg sm:text-xl font-semibold text-white">{card.title}</h2>
+                                    <p className="text-gray-200 text-5xl sm:text-6xl font-bold drop-shadow-md">{card.value}</p>
+                                    <p className="text-gray-200 text-sm sm:text-base">{card.description}</p>
+                                </div>
+                            </Link>
+                        ))
+                        }
                     </div>
                 </div>
 
