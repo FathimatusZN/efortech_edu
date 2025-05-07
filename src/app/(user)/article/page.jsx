@@ -40,7 +40,7 @@ export default function ArticlePage() {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(1);
-  const itemsPerPage = 9; // 9 artikel per halaman
+  const itemsPerPage = 9;
 
   useEffect(() => {
     fetchArticles();
@@ -48,7 +48,9 @@ export default function ArticlePage() {
 
   const fetchArticles = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/articles`);
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/articles`
+      );
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
 
@@ -67,13 +69,15 @@ export default function ArticlePage() {
     }
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/articles/search?query=${encodeURIComponent(searchQuery)}`
+        `${
+          process.env.NEXT_PUBLIC_API_BASE_URL
+        }/api/articles/search?query=${encodeURIComponent(searchQuery)}`
       );
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
 
       setArticles(data.data);
-      setPage(1); // reset ke halaman 1 setelah search
+      setPage(1);
     } catch (error) {
       console.error("Search error:", error);
       setArticles([]);
@@ -86,10 +90,14 @@ export default function ArticlePage() {
     return plain.length > 200 ? plain.slice(0, 200) + "..." : plain;
   };
 
-  const selectedCategoryId = categoryOptions.find((cat) => cat.label === selectedCategory)?.id;
+  const selectedCategoryId = categoryOptions.find(
+    (cat) => cat.label === selectedCategory
+  )?.id;
 
   const filteredArticles = articles.filter((article) => {
-    return selectedCategory === "All" || article.category === selectedCategoryId;
+    return (
+      selectedCategory === "All" || article.category === selectedCategoryId
+    );
   });
 
   const totalPages = Math.ceil(filteredArticles.length / itemsPerPage);
@@ -106,7 +114,7 @@ export default function ArticlePage() {
         pagination={{ el: ".custom-pagination", clickable: true }}
         autoplay={{ delay: 5000 }}
         loop
-        className="w-full h-[50vh] md:h-[40vh] lg:h-[35vh] overflow-hidden shadow-lg"
+        className="w-full h-[500px] aspect-[4/3] md:aspect-[16/9] overflow-hidden shadow-lg"
       >
         {mostViewedArticles.map((article) => (
           <SwiperSlide
@@ -117,7 +125,7 @@ export default function ArticlePage() {
             <img
               src={article.images?.[0] || "/assets/Gambar2.jpg"}
               alt={article.title}
-              className="w-full h-full object-cover"
+              className="absolute inset-0 w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-black/50 flex items-end text-white text-center p-6">
               <h1 className="text-lg md:text-xl lg:text-2xl font-bold">
@@ -181,7 +189,9 @@ export default function ArticlePage() {
         {paginatedArticles.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
             {paginatedArticles.map((article) => {
-              const categoryObj = categoryOptions.find((cat) => cat.id === article.category);
+              const categoryObj = categoryOptions.find(
+                (cat) => cat.id === article.category
+              );
               return (
                 <ArticleCard
                   key={article.article_id}
@@ -250,12 +260,16 @@ export default function ArticlePage() {
 
       {/* Showing info */}
       <p className="text-sm text-muted-foreground mt-2 flex justify-center items-center">
-        Showing {filteredArticles.length > 0
-          ? `${(page - 1) * itemsPerPage + 1} - ${Math.min(page * itemsPerPage, filteredArticles.length)}`
-          : 0
-        } of {filteredArticles.length} article{filteredArticles.length !== 1 && "s"}
+        Showing{" "}
+        {filteredArticles.length > 0
+          ? `${(page - 1) * itemsPerPage + 1} - ${Math.min(
+              page * itemsPerPage,
+              filteredArticles.length
+            )}`
+          : 0}{" "}
+        of {filteredArticles.length} article
+        {filteredArticles.length !== 1 && "s"}
       </p>
-
     </div>
   );
 }

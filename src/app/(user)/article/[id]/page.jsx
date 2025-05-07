@@ -1,9 +1,9 @@
 "use client";
 import { use, useEffect, useState } from "react";
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Pagination, Autoplay } from 'swiper/modules';
-import 'swiper/css';
-import 'swiper/css/pagination';
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Pagination, Autoplay } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/pagination";
 import { NotFound } from "../../../../components/ui/ErrorPage";
 
 export default function ArticleDetail({ params }) {
@@ -14,13 +14,15 @@ export default function ArticleDetail({ params }) {
   const [notFound, setNotFound] = useState(false);
 
   const truncateText = (text, maxLength) => {
-    return text.length > maxLength ? text.slice(0, maxLength) + '...' : text;
+    return text.length > maxLength ? text.slice(0, maxLength) + "..." : text;
   };
 
   useEffect(() => {
     const fetchArticle = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/articles/${id}`);
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/articles/${id}`
+        );
         const json = await res.json();
         if (json.status === "success" && json.data) {
           setArticle(json.data);
@@ -39,7 +41,13 @@ export default function ArticleDetail({ params }) {
   }, [id]);
 
   if (loading) return <p className="text-center mt-10">Loading...</p>;
-  if (notFound || !article) return <NotFound message={"Article Not Found"} buttons={[{ text: "Back to Articles Page", href: "/article" }]} />;
+  if (notFound || !article)
+    return (
+      <NotFound
+        message={"Article Not Found"}
+        buttons={[{ text: "Back to Articles Page", href: "/article" }]}
+      />
+    );
 
   return (
     <div className="max-w-screen w-full relative">
@@ -53,15 +61,15 @@ export default function ArticleDetail({ params }) {
             pagination={{ clickable: true }}
             autoplay={{ delay: 5000 }}
             loop={true}
-            className="w-full h-[534px]"
+            className="w-full h-[800px]"
           >
             {article.images.map((img, index) => (
               <SwiperSlide key={index}>
-                <div className="relative w-full h-full">
+                <div className="relative w-full h-full aspect-[16/9]">
                   <img
                     src={img}
                     alt={`Image ${index}`}
-                    className="w-full h-full object-cover"
+                    className="absolute inset-0 w-full h-full object-cover"
                   />
                   <div className="absolute bottom-[-10px] left-1/2 transform -translate-x-1/2 w-[100%] h-5 bg-mainBlue blur-xl opacity-100"></div>
                 </div>
@@ -79,11 +87,13 @@ export default function ArticleDetail({ params }) {
       {/* Penulis & Tanggal Terbit */}
       <div className="flex justify-between text-mainGrey text-sm px-8">
         <span>Written by : {article.author}</span>
-        <span>{new Date(article.create_date).toLocaleDateString("id-ID", {
-          year: "numeric",
-          month: "long",
-          day: "numeric"
-        })}</span>
+        <span>
+          {new Date(article.create_date).toLocaleDateString("id-ID", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          })}
+        </span>
       </div>
 
       {/* Deskripsi Artikel */}
@@ -100,12 +110,18 @@ export default function ArticleDetail({ params }) {
             {article.sources.map((source, index) => (
               <span
                 key={index}
-                className={`text-sm font-semibold px-4 py-1 rounded-full ${index % 2 === 0
-                  ? "bg-mainBlue text-white"
-                  : "bg-mainOrange text-white"
-                  }`}
+                className={`text-sm font-semibold px-4 py-1 rounded-full ${
+                  index % 2 === 0
+                    ? "bg-mainBlue text-white"
+                    : "bg-mainOrange text-white"
+                }`}
               >
-                <a href={source.source_link} target="_blank" rel="noopener noreferrer" className="underline">
+                <a
+                  href={source.source_link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline"
+                >
                   {truncateText(source.preview_text, 50)}
                 </a>
               </span>
@@ -121,10 +137,11 @@ export default function ArticleDetail({ params }) {
           {article.tags.map((tag, index) => (
             <span
               key={index}
-              className={`border text-sm font-semibold px-3 py-1 rounded-full ${index % 2 === 0
-                ? "border-mainBlue text-mainBlue"
-                : "border-mainOrange text-mainOrange"
-                }`}
+              className={`border text-sm font-semibold px-3 py-1 rounded-full ${
+                index % 2 === 0
+                  ? "border-mainBlue text-mainBlue"
+                  : "border-mainOrange text-mainOrange"
+              }`}
             >
               {tag}
             </span>
