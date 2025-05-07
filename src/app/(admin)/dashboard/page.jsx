@@ -25,6 +25,7 @@ const DashboardAdmin = () => {
     const [topTrainings, setTopTrainings] = useState([]);
     const [monthlyRegistrations, setMonthlyRegistrations] = useState([]);
     const [globalStats, setGlobalStats] = useState({});
+    const [trainingOverview, setTrainingOverview] = useState([]);
     const [showGlobalStats, setShowGlobalStats] = useState(false);
 
     const CustomXAxisTick = ({ x, y, payload }) => {
@@ -39,7 +40,7 @@ const DashboardAdmin = () => {
         }
 
         return (
-            <g transform={`translate(${x},${y}) rotate(-40)`}>
+            <g transform={`translate(${x},${y + 10}) rotate(-40)`}>
                 <title>{fullText}</title>
                 <text textAnchor="end" fontSize={10} fill="#333">
                     {lines.map((line, index) => (
@@ -82,7 +83,27 @@ const DashboardAdmin = () => {
                 );
 
                 // ========== PART 4 : Grouped & Stacked Bar ==========
+                const resTrainingOverview = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/dashboard/training-overview`);
+                const rawData = resTrainingOverview.data.data;
 
+                const transformedData = rawData.map(item => ({
+                    name: item.training_name,
+                    completed: item.registration.completed,
+                    onprogress: item.registration.onprogress,
+                    cancelled: item.registration.cancelled,
+                    reg_total: item.registration.total_participants,
+
+                    valid: item.certificate.valid,
+                    expired: item.certificate.expired,
+                    cert_total: item.certificate.total_issued,
+
+                    additionalData: {
+                        reg_total: item.registration.total_participants,
+                        cert_total: item.certificate.total_issued,
+                    }
+                }));
+
+                setTrainingOverview(transformedData);
 
                 // ========== PART 5 : Global Stat ==========
                 const resGlobalStats = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/dashboard/summary`);
@@ -227,8 +248,8 @@ const DashboardAdmin = () => {
                     {/* Monthly Registrations Area Chart */}
                     <div className="bg-white shadow-md p-4 rounded-lg border border-[#01458E]">
                         <h2 className="text-lg font-semibold text-center mb-2">Monthly Registrations</h2>
-                        <ResponsiveContainer width="100%" height={300}>
-                            <AreaChart data={monthlyRegistrations} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                        <ResponsiveContainer width="100%" height={300} >
+                            <AreaChart data={monthlyRegistrations} margin={{ top: 0, right: 30, left: 0, bottom: 30 }}>
                                 <defs>
                                     <linearGradient id="colorParticipants" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset="5%" stopColor="#157AB2" stopOpacity={0.8} />
@@ -260,6 +281,40 @@ const DashboardAdmin = () => {
                             </AreaChart>
                         </ResponsiveContainer>
                     </div>
+                </div>
+
+                {/* Training Overview */}
+                <div className="w-full max-w-6xl mx-auto mt-6 bg-white border border-lightBlue rounded-lg shadow-md cursor-pointer p-4 mx-auto max-w-[1200px]" >
+                    <h2 className="text-lg sm:text-xl font-semibold mb-4">Training Overview</h2>
+                    <ResponsiveContainer width="100%" height={400}>
+                        <BarChart data={trainingOverview} margin={{ top: 20, right: 30, left: 0, bottom: 80 }}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="name" tick={<CustomXAxisTick />} interval={0} />
+                            <YAxis />
+                            <Tooltip
+                                content={
+                                    <CustomTooltip
+                                        dataMap={trainingOverview}
+                                        colorMap={{
+                                            completed: "#01458E",
+                                            onprogress: "#03649F",
+                                            cancelled: "#157AB2",
+                                            valid: "#ED7117",
+                                            expired: "#FCAE1E",
+                                        }}
+                                    />
+                                }
+                            />
+                            {/* Group 1: Registration */}
+                            <Bar stackId="reg" dataKey="completed" fill="#01458E" name="Completed" />
+                            <Bar stackId="reg" dataKey="onprogress" fill="#03649F" name="On Progress" />
+                            <Bar stackId="reg" dataKey="cancelled" fill="#157AB2" name="Cancelled" />
+
+                            {/* Group 2: Certificate */}
+                            <Bar stackId="cert" dataKey="valid" fill="#ED7117" name="Valid" />
+                            <Bar stackId="cert" dataKey="expired" fill="#FCAE1E" name="Expired" />
+                        </BarChart>
+                    </ResponsiveContainer>
                 </div>
 
                 {/* Quick Global Review */}
@@ -302,7 +357,7 @@ const DashboardAdmin = () => {
                     )}
                 </div>
             </div>
-        </ProtectedRoute>
+        </ProtectedRoute >
     );
 };
 
