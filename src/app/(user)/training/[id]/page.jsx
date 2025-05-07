@@ -153,15 +153,14 @@ const TrainingDetail = () => {
     <div className="mx-auto p-8">
       <div className="flex flex-col md:flex-row gap-10">
         {/* Image Slider */}
-        <div className="relative w-full md:w-[800px] h-[300px] md:h-[580px] overflow-hidden rounded-lg shadow-md">
+        <div className="relative w-full max-w-[800px] aspect-[4/3] md:aspect-[16/9] overflow-hidden rounded-lg shadow-md">
           {trainingData.images.map((img, index) => (
             <Image
               key={index}
               src={img}
               alt={`Slide ${index + 1}`}
-              width={800}
-              height={500}
-              className={`absolute transition-opacity duration-1000 w-full h-full object-cover ${
+              fill
+              className={`object-cover transition-opacity duration-1000 ${
                 currentSlide === index ? "opacity-100" : "opacity-0"
               }`}
             />
