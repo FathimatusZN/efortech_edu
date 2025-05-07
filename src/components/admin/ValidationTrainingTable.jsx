@@ -60,7 +60,19 @@ export const ValidationTrainingTable = ({
     const isAbsent = status === false;
     const isNull = status === null || status === undefined;
 
-    const attendanceLocked = item.has_certificate && status === true;
+    const attendanceLocked = item.has_certificate && isPresent;
+
+    // Badge design if attendance is locked
+    if (attendanceLocked) {
+      return (
+        <div className="flex items-center justify-center">
+          <div className="flex items-center gap-1 border border-green-400 text-green-600 bg-white rounded-full px-3 py-1 text-sm font-medium">
+            <BsCheckCircleFill className="w-4 h-4" />
+            Present
+          </div>
+        </div>
+      );
+    }
 
     const renderButton = (label, icon, active, onClick, disabled, tooltip) => {
       const isPresentButton = label === "Present";
@@ -98,16 +110,16 @@ export const ValidationTrainingTable = ({
           <BsCheckCircleFill className="w-7 h-7" />,
           isPresent || isNull,
           () => onAttendanceChange(id, true),
-          attendanceLocked,
-          "Attendance cannot be changed after certificate is issued"
+          false,
+          ""
         )}
         {renderButton(
           "Absent",
           <BsFillXCircleFill className="w-7 h-7" />,
           isAbsent || isNull,
           () => onAttendanceChange(id, false),
-          attendanceLocked,
-          "Attendance cannot be changed after certificate is issued"
+          false,
+          ""
         )}
       </div>
     );

@@ -19,9 +19,21 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from '@/components/ui/checkbox';
 import { FaFilter } from "react-icons/fa";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const ValidationTrainingPage = () => {
-    const [tab, setTab] = useState("needprocess");
+    const searchParams = useSearchParams();
+    const router = useRouter();
+    const initialTab = searchParams.get("tab") || "needprocess";
+    const [tab, setTab] = useState(initialTab);
+
+    const handleTabChange = (newTab) => {
+        setTab(newTab);
+        const params = new URLSearchParams(window.location.search);
+        params.set("tab", newTab);
+        router.push(`/validation/training?${params.toString()}`);
+    };
+
     const [trainingData, setTrainingData] = useState({
         needProcessData: null,
         onProgressData: null,
@@ -309,7 +321,7 @@ const ValidationTrainingPage = () => {
                 </h1>
 
                 {/* Tabs */}
-                <Tabs value={tab} onValueChange={setTab} className="w-full">
+                <Tabs value={tab} onValueChange={handleTabChange} className="w-full">
                     <div className="bg-white overflow-hidden">
                         {/* Tabs Header and Filter */}
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-4">
