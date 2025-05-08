@@ -168,7 +168,7 @@ const ArticleAdminPage = () => {
                             title={article.title}
                             content_body={article.content_body}
                             category={article.category}
-                            views={article.views || Math.floor(Math.random() * 1000)}
+                            views={article.views || 0}
                             imageUrl={article.images?.[0] || "/assets/Gambar2.jpg"}
                             onDelete={handleDeleteArticle}
                         />
