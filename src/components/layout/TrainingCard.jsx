@@ -23,7 +23,7 @@ export default function TrainingCard({ training }) {
 
     return (
         <div
-            className="relative group overflow-hidden rounded-lg shadow-lg w-full max-w-[400px] aspect-[4/3] md:aspect-[16/9] mx-auto transition-all duration-500 ease-in-out cursor-pointer"
+            className="relative group overflow-hidden rounded-lg shadow-lg w-full max-w-[400px] aspect-[4/3] mx-auto transition-all duration-500 ease-in-out cursor-pointer"
             onClick={() => router.push(`/training/${training.training_id}`)}
             onMouseEnter={() => setHovered(true)}
             onMouseLeave={() => setHovered(false)}

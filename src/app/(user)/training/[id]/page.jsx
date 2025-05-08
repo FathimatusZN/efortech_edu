@@ -151,9 +151,9 @@ const TrainingDetail = () => {
 
   return (
     <div className="mx-auto p-8">
-      <div className="flex flex-col md:flex-row gap-10">
+      <div className="flex flex-col lg:flex-row gap-8">
         {/* Image Slider */}
-        <div className="relative w-full max-w-[800px] aspect-[4/3] md:aspect-[16/9] overflow-hidden rounded-lg shadow-md">
+        <div className="relative w-full lg:max-w-[800px] aspect-[4/3] flex-shrink-0 overflow-hidden rounded-lg shadow-md">
           {trainingData.images.map((img, index) => (
             <Image
               key={index}
@@ -187,7 +187,7 @@ const TrainingDetail = () => {
         </div>
 
         {/* Training Info */}
-        <div>
+        <div className="flex-1">
           <h1 className="text-3xl font-bold text-blue-900">
             {trainingData.training_name}
           </h1>
@@ -380,7 +380,7 @@ const TrainingDetail = () => {
                 width={50}
                 height={50}
                 className="rounded-full object-cover"
-                style={{ aspectRatio: "1 / 1" }} 
+                style={{ aspectRatio: "1 / 1" }}
               />
               <div>
                 <p className="text-black text-lg font-semibold">
@@ -395,10 +395,10 @@ const TrainingDetail = () => {
                 {/* Tampilkan tanggal review */}
                 <p className="text-sm text-gray-500 pt-2">
                   {new Date(review.review_date).toLocaleDateString("en-US", {
-                    weekday: "short", 
-                    year: "numeric", 
-                    month: "short", 
-                    day: "numeric", 
+                    weekday: "short",
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
                   })}
                 </p>
               </div>
