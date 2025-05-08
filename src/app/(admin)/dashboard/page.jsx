@@ -2,17 +2,35 @@
 
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import React, { useEffect, useState } from "react";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Area, AreaChart, CartesianGrid } from "recharts";
 import axios from "axios";
 import Link from "next/link";
+import {
+    FaUser,
+    FaChalkboardTeacher,
+    FaClipboardList,
+    FaCheckCircle,
+    FaUsers,
+    FaGraduationCap,
+    FaCertificate,
+    FaStar,
+    FaMoneyBillWave,
+    FaNewspaper,
+    FaEye,
+    FaUserShield
+} from "react-icons/fa";
 
 const DashboardAdmin = () => {
-    const [registrantData, setRegistrantData] = useState([]);
-    const [certificateData, setCertificateData] = useState([]);
+    const [todoCounts, setTodoCounts] = useState([]);
+    const [topTrainings, setTopTrainings] = useState([]);
+    const [monthlyRegistrations, setMonthlyRegistrations] = useState([]);
+    const [globalStats, setGlobalStats] = useState({});
+    const [trainingOverview, setTrainingOverview] = useState([]);
+    const [showGlobalStats, setShowGlobalStats] = useState(false);
 
     const CustomXAxisTick = ({ x, y, payload }) => {
         const maxCharsPerLine = 12;
-        const maxTotalChars = 21;
+        const maxTotalChars = 9;
         const fullText = payload.value;
         const text = fullText.length > maxTotalChars ? fullText.slice(0, maxTotalChars) + "..." : fullText;
 
@@ -35,117 +53,81 @@ const DashboardAdmin = () => {
         );
     };
 
-    const [todoCounts, setTodoCounts] = useState({
-        pendingRegistration: 0,
-        completedTraining: 0,
-        certificateUpload: 0,
-        certificateValidation: 0,
-    });
-
     useEffect(() => {
-        const fetchData = async () => {
+        const fetchTodoCounts = async () => {
             try {
-                // Fetch registrant data
-                const regRes = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/registration/search?sort_by=participant_count&sort_order=DESC`);
-                const registrations = regRes.data.data;
-
-                // Grouping by training_name with status breakdown
-                const grouped = {};
-                for (const reg of registrations) {
-                    const name = reg.training_name;
-                    const status = reg.status;
-
-                    if (!grouped[name]) {
-                        grouped[name] = {
-                            name,
-                            progressCount: 0,
-                            completedCount: 0,
-                            cancelledCount: 0,
-                        };
-                    }
-
-                    const count = reg.participant_count || 1;
-
-                    if ([1, 2, 3].includes(status)) grouped[name].progressCount += count;
-                    else if (status === 4) grouped[name].completedCount += count;
-                    else if (status === 5) grouped[name].cancelledCount += count;
-
-                    grouped[name].total = (grouped[name].total || 0) + count;
-                }
-
-                const registrantChartData = Object.values(grouped)
-                    .sort((a, b) => b.total - a.total)
-                    .slice(0, 10);
-
-                setRegistrantData(registrantChartData);
-
-                // Fetch certificate data
-                const certRes = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/certificate`);
-                const certificateGrouped = {};
-
-                // Group by training_name and status certificate
-                certRes.data.data.forEach(cert => {
-                    const trainingName = cert.training_name;
-                    const status = cert.status_certificate;
-
-                    if (!certificateGrouped[trainingName]) {
-                        certificateGrouped[trainingName] = {
-                            name: trainingName,
-                            validCount: 0,
-                            expiredCount: 0,
-                            total: 0,
-                        };
-                    }
-
-                    certificateGrouped[trainingName].total += 1;
-                    if (status === "Valid") {
-                        certificateGrouped[trainingName].validCount += 1;
-                    } else if (status === "Expired") {
-                        certificateGrouped[trainingName].expiredCount += 1;
-                    }
-                });
-
-                const certificateChartData = Object.values(certificateGrouped)
-                    .map(item => ({
-                        name: item.name,
-                        validCount: item.validCount,
-                        expiredCount: item.expiredCount,
-                        total: item.total,
-                    }))
-                    .sort((a, b) => b.total - a.total)
-                    .slice(0, 10);
-
-                setCertificateData(certificateChartData);
-
-                // Fetch To-Do Counts
-                const [pendingRes, completedRes, uploadRes] = await Promise.all([
-                    axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/registration/search?status=1`),
-                    axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/enrollment/participants?attendance_status=null`),
-                    axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/enrollment/participants?attendance_status=true&has_certificate=false`)
-                ]);
+                // ========== PART 1 : Todo ==========
+                const res = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/dashboard/todo`);
+                const data = res.data.data;
 
                 setTodoCounts({
-                    pendingRegistration: pendingRes.data.data.length,
-                    completedTraining: completedRes.data.data.length,
-                    certificateUpload: uploadRes.data.data.length,
-                    certificateValidation: 0,
+                    pendingRegistration: parseInt(data.pending_registrations) || 0,
+                    completedTraining: parseInt(data.unmarked_attendance) || 0,
+                    certificateUpload: parseInt(data.pending_certificates) || 0,
+                    certificateValidation: 0, // Placeholder since no data yet
                 });
 
+                // ========== PART 2 : Top Training ==========
+                const resTrainings = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/dashboard/top-trainings`);
+                setTopTrainings(resTrainings.data.data);
+
+                // ========== PART 3 : Monthly Registration ==========
+                const resMonthly = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/dashboard/monthly-registrations`);
+                setMonthlyRegistrations(
+                    resMonthly.data.data.map(item => ({
+                        ...item,
+                        month: item.month,
+                        total_participants: parseInt(item.total_participants),
+                        total_registrations: parseInt(item.total_registrations),
+                    }))
+                );
+
+                // ========== PART 4 : Grouped & Stacked Bar ==========
+                const resTrainingOverview = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/dashboard/training-overview`);
+                const rawData = resTrainingOverview.data.data;
+
+                const transformedData = rawData.map(item => ({
+                    name: item.training_name,
+                    completed: item.registration.completed,
+                    onprogress: item.registration.onprogress,
+                    cancelled: item.registration.cancelled,
+                    reg_total: item.registration.total_participants,
+
+                    valid: item.certificate.valid,
+                    expired: item.certificate.expired,
+                    cert_total: item.certificate.total_issued,
+
+                    additionalData: {
+                        reg_total: item.registration.total_participants,
+                        cert_total: item.certificate.total_issued,
+                    }
+                }));
+
+                setTrainingOverview(transformedData);
+
+                // ========== PART 5 : Global Stat ==========
+                const resGlobalStats = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/dashboard/summary`);
+                setGlobalStats(resGlobalStats.data.data);
+
             } catch (err) {
-                console.error("Error fetching dashboard data:", err);
+                console.error("Error fetching Dashboard Data:", err);
             }
         };
 
-        fetchData();
+        fetchTodoCounts();
     }, []);
 
     const CustomTooltip = ({ active, payload, label, dataMap, colorMap }) => {
-        if (active && payload && payload.length) {
+        if (active && payload?.length) {
             const data = dataMap.find(item => item.name === label);
             return (
                 <div className="bg-white p-2 border rounded shadow text-sm">
-                    <p className="font-semibold">{label}</p>
-                    <p className="font-medium">Total: {data?.total || 0}</p>
+                    <p className="font-bold text-mainOrange">{label}</p>
+                    {data?.additionalData && Object.entries(data.additionalData).map(([key, value]) => (
+                        <p key={key} className="font-semibold">
+                            {key.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())}: {value}
+                        </p>
+                    ))}
                     {payload.map((entry, index) => (
                         <p key={index} className="font-medium" style={{ color: colorMap[entry.dataKey] || "#000" }}>
                             {entry.name}: {entry.value}
@@ -155,6 +137,21 @@ const DashboardAdmin = () => {
             );
         }
         return null;
+    };
+
+    const iconMap = {
+        registered_users: <FaUser className="text-2xl text-blue-500" />,
+        active_admin: <FaUserShield className="text-2xl text-mainBlue" />,
+        active_trainings: <FaChalkboardTeacher className="text-2xl text-green-500" />,
+        training_registrations: <FaClipboardList className="text-2xl text-orange-500" />,
+        completed_registrations: <FaCheckCircle className="text-2xl text-emerald-500" />,
+        training_participants: <FaUsers className="text-2xl text-purple-500" />,
+        training_graduates: <FaGraduationCap className="text-2xl text-indigo-500" />,
+        issued_certificates: <FaCertificate className="text-2xl text-teal-500" />,
+        training_reviews: <FaStar className="text-2xl text-yellow-500" />,
+        training_payments: <FaMoneyBillWave className="text-2xl text-lime-500" />,
+        published_articles: <FaNewspaper className="text-2xl text-pink-500" />,
+        article_views: <FaEye className="text-2xl text-blue-500" />,
     };
 
     return (
@@ -213,65 +210,154 @@ const DashboardAdmin = () => {
 
                 {/* Charts Section */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 mx-auto max-w-[1200px]">
-                    {/* Registrant Overview */}
+                    {/* Top Trainings by Rating */}
                     <div className="bg-white shadow-md p-4 rounded-lg border border-[#01458E]">
-                        <h2 className="text-lg font-semibold mb-2 text-center">Registrant Overview</h2>
-                        <p className="text-sm text-center text-gray-500 mb-2">
-                            Total: {registrantData.reduce((acc, item) => acc + item.progressCount + item.completedCount + item.cancelledCount, 0)} registrants
-                        </p>
+                        <h2 className="text-lg font-semibold text-center mb-2">Top Trainings by Rating</h2>
                         <ResponsiveContainer width="100%" height={300}>
-                            <BarChart data={registrantData} margin={{ bottom: 30 }}>
-                                <XAxis dataKey="name" tick={<CustomXAxisTick />} interval={0} />
+                            <BarChart data={topTrainings} margin={{ bottom: 30 }}>
+                                <XAxis dataKey="training_name" tick={<CustomXAxisTick />} interval={0} />
                                 <YAxis />
                                 <Tooltip
                                     content={
                                         <CustomTooltip
-                                            dataMap={registrantData}
+                                            dataMap={topTrainings.map(item => ({
+                                                name: item.training_name,
+                                                additionalData: {
+                                                    average_rating: item.average_rating
+                                                }
+                                            }))}
                                             colorMap={{
-                                                completedCount: "#01458E",
-                                                progressCount: "#157AB2",
-                                                cancelledCount: "#D9D9D9",
+                                                score_5: "#01458E",
+                                                score_4: "#157AB2",
+                                                score_3: "#3BAFDA",
+                                                score_2: "#7FCFE6",
+                                                score_1: "#BDE6F2",
                                             }}
                                         />
                                     }
                                 />
-
-                                <Bar dataKey="completedCount" name="Completed" stackId="a" fill="#01458E" />
-                                <Bar dataKey="progressCount" name="On Progress" stackId="a" fill="#157AB2" />
-                                <Bar dataKey="cancelledCount" name="Cancelled" stackId="a" fill="#D9D9D9" />
+                                <Bar dataKey="score_5" stackId="a" fill="#01458E" name="Score 5" />
+                                <Bar dataKey="score_4" stackId="a" fill="#157AB2" name="Score 4" />
+                                <Bar dataKey="score_3" stackId="a" fill="#3BAFDA" name="Score 3" />
+                                <Bar dataKey="score_2" stackId="a" fill="#7FCFE6" name="Score 2" />
+                                <Bar dataKey="score_1" stackId="a" fill="#BDE6F2" name="Score 1" />
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
 
-                    {/* Certificate Issued */}
+                    {/* Monthly Registrations Area Chart */}
                     <div className="bg-white shadow-md p-4 rounded-lg border border-[#01458E]">
-                        <h2 className="text-lg font-semibold text-center mb-2">Certificate Issued</h2>
-                        <p className="text-sm text-center text-gray-500 mb-2">
-                            Total: {certificateData.reduce((acc, item) => acc + item.total, 0)} certificates
-                        </p>
-                        <ResponsiveContainer width="100%" height={300}>
-                            <BarChart data={certificateData} margin={{ bottom: 30 }}>
-                                <XAxis dataKey="name" tick={<CustomXAxisTick />} interval={0} />
+                        <h2 className="text-lg font-semibold text-center mb-2">Monthly Registrations</h2>
+                        <ResponsiveContainer width="100%" height={300} >
+                            <AreaChart data={monthlyRegistrations} margin={{ top: 0, right: 30, left: 0, bottom: 30 }}>
+                                <defs>
+                                    <linearGradient id="colorParticipants" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#157AB2" stopOpacity={0.8} />
+                                        <stop offset="95%" stopColor="#157AB2" stopOpacity={0} />
+                                    </linearGradient>
+                                    <linearGradient id="colorRegistrations" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#01458E" stopOpacity={0.8} />
+                                        <stop offset="95%" stopColor="#01458E" stopOpacity={0} />
+                                    </linearGradient>
+                                </defs>
+                                <XAxis dataKey="month" tick={<CustomXAxisTick />} interval={0} />
                                 <YAxis />
+                                <CartesianGrid strokeDasharray="3 3" />
                                 <Tooltip
                                     content={
                                         <CustomTooltip
-                                            dataMap={certificateData}
+                                            dataMap={monthlyRegistrations.map(item => ({
+                                                name: item.month,
+                                            }))}
                                             colorMap={{
-                                                validCount: "#01458E",
-                                                expiredCount: "#157AB2",
+                                                total_participants: "#157AB2",
+                                                total_registrations: "#01458E",
                                             }}
                                         />
                                     }
                                 />
-                                <Bar dataKey="validCount" name="Valid" stackId="a" fill="#01458E" />
-                                <Bar dataKey="expiredCount" name="Expired" stackId="a" fill="#157AB2" />
-                            </BarChart>
+                                <Area type="monotone" dataKey="total_participants" stroke="#157AB2" fillOpacity={1} fill="url(#colorParticipants)" name="Participants" />
+                                <Area type="monotone" dataKey="total_registrations" stroke="#01458E" fillOpacity={1} fill="url(#colorRegistrations)" name="Registrations" />
+                            </AreaChart>
                         </ResponsiveContainer>
                     </div>
                 </div>
+
+                {/* Training Overview */}
+                <div className="w-full max-w-6xl mx-auto mt-6 bg-white border border-lightBlue rounded-lg shadow-md cursor-pointer p-4 mx-auto max-w-[1200px]" >
+                    <h2 className="text-lg sm:text-xl font-semibold mb-4">Training Overview</h2>
+                    <ResponsiveContainer width="100%" height={400}>
+                        <BarChart data={trainingOverview} margin={{ top: 20, right: 30, left: 0, bottom: 80 }}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="name" tick={<CustomXAxisTick />} interval={0} />
+                            <YAxis />
+                            <Tooltip
+                                content={
+                                    <CustomTooltip
+                                        dataMap={trainingOverview}
+                                        colorMap={{
+                                            completed: "#01458E",
+                                            onprogress: "#03649F",
+                                            cancelled: "#157AB2",
+                                            valid: "#ED7117",
+                                            expired: "#FCAE1E",
+                                        }}
+                                    />
+                                }
+                            />
+                            {/* Group 1: Registration */}
+                            <Bar stackId="reg" dataKey="completed" fill="#01458E" name="Completed" />
+                            <Bar stackId="reg" dataKey="onprogress" fill="#03649F" name="On Progress" />
+                            <Bar stackId="reg" dataKey="cancelled" fill="#157AB2" name="Cancelled" />
+
+                            {/* Group 2: Certificate */}
+                            <Bar stackId="cert" dataKey="valid" fill="#ED7117" name="Valid" />
+                            <Bar stackId="cert" dataKey="expired" fill="#FCAE1E" name="Expired" />
+                        </BarChart>
+                    </ResponsiveContainer>
+                </div>
+
+                {/* Quick Global Review */}
+                <div
+                    className="w-full max-w-6xl mx-auto mt-6 bg-white border rounded-lg shadow-md cursor-pointer p-4 mx-auto max-w-[1200px]"
+                    onClick={() => setShowGlobalStats(!showGlobalStats)}
+                    onMouseEnter={() => setShowGlobalStats(true)}
+                    onMouseLeave={() => setShowGlobalStats(false)}
+                >
+                    <h2 className="text-lg font-semibold text-center text-gray-800">
+                        Quick Global Review
+                    </h2>
+
+                    {showGlobalStats && (
+                        <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-4 mt-4">
+                            {Object.entries(globalStats).map(([key, value]) => (
+                                <div
+                                    key={key}
+                                    className="bg-white rounded-xl shadow-sm p-4 text-gray-800 flex flex-col justify-center border hover:shadow-md transition-shadow h-28"
+                                >
+                                    <div className="flex items-center justify-center mt-1">
+                                        <p
+                                            className="text-2xl font-semibold text-gray-900 truncate"
+                                            title={value}
+                                        >
+                                            {value}
+                                        </p>
+                                    </div>
+                                    <div className="flex items-center justify-center mt-1">
+                                        <span className="text-gray-400 text-6xl mr-2">
+                                            {iconMap[key] || <FaClipboardList />}
+                                        </span>
+                                        <p className="text-xs text-gray-500 tracking-wide font-medium">
+                                            {key.replace(/_/g, " ").toUpperCase()}
+                                        </p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
             </div>
-        </ProtectedRoute>
+        </ProtectedRoute >
     );
 };
 

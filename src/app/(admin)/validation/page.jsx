@@ -1,63 +1,42 @@
 "use client";
 
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
-import { useEffect, useRef, useState } from "react";
-import { BsFillFilterSquareFill } from "react-icons/bs";
+import { useEffect, useState } from "react";
+import { toast } from "react-hot-toast";
 import { ValidationTrainingTable } from "@/components/admin/ValidationTrainingTable";
 import { ValidationCertificateTable } from "@/components/admin/ValidationCertificateTable";
-import { toast } from "react-hot-toast";
+import { AdditionalParticipantDialog } from "@/components/admin/AdditionalParticipantDialog";
 
 const ValidationPage = () => {
   const [trainingData, setTrainingData] = useState([]);
   const [certificateData, setCertificateData] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const filterRef = useRef(null);
+  const [loading, setLoading] = useState(true);
 
-  // Fetch training data for needprocess (same as /validation/training)
   const fetchTrainingData = async () => {
-    setIsLoading(true);
+    setLoading(true);
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/registration/search?status=1,2,3`
-      );
+      const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/registration/search?status=1&status=2&status=3`;
+      const res = await fetch(url);
       if (!res.ok) throw new Error("Failed to fetch training data");
-
       const result = await res.json();
-      setTrainingData(result.data || []);
+      setTrainingData(result?.data || []);
     } catch (err) {
       console.error(err);
       toast.error("Failed to load training data");
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
-  // Dummy: fetch certificate data (tetap seperti sebelumnya)
   const fetchCertificateData = async () => {
-    // Gantilah dengan API jika sudah tersedia
-    setCertificateData([]); // Kosongkan default-nya
+    // placeholder: replace with actual API if needed
+    setCertificateData([]);
   };
 
   useEffect(() => {
     fetchTrainingData();
     fetchCertificateData();
   }, []);
-
-  const handleClickOutside = (event) => {
-    if (filterRef.current && !filterRef.current.contains(event.target)) {
-      setIsFilterOpen(false);
-    }
-  };
-
-  useEffect(() => {
-    if (isFilterOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [isFilterOpen]);
 
   const handleStatusChange = async (registrationId, newStatus) => {
     try {
@@ -72,14 +51,24 @@ const ValidationPage = () => {
 
       if (!res.ok) throw new Error("Failed to update status");
       toast.success("Status updated successfully");
-      fetchTrainingData(); // Refresh
+      fetchTrainingData();
     } catch (err) {
       console.error(err);
       toast.error("Error updating status");
     }
   };
 
-  const handleValidation = (type, id) => {
+  // Function to handle showing participants in a dialog
+  const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
+  const [selectedRegistration, setSelectedRegistration] = useState(null);
+
+  const onShowDetailRegistration = (registration) => {
+    setSelectedRegistration(registration);
+    setIsDetailDialogOpen(true);
+  };
+
+
+  const handleCertificateValidation = (type, id) => {
     if (type === "certificate") {
       setCertificateData((prev) => prev.filter((item) => item.id !== id));
     }
@@ -92,46 +81,25 @@ const ValidationPage = () => {
           Validation
         </h1>
 
-        {/* Training Validation */}
-        <div className="bg-white outline outline-2 md:outline-3 outline-mainBlue rounded-2xl p-4 sm:p-6 mb-6 shadow-[4px_4px_0px_0px_#157ab2] sm:shadow-[8px_8px_0px_0px_#157ab2]">
-          <div className="relative">
-            <div className="flex flex-wrap items-center justify-between mb-4 w-full">
-              <h2 className="text-lg md:text-xl font-semibold">
-                Training Registration Validation
-              </h2>
-              <div className="relative ml-auto mt-2 sm:mt-0" ref={filterRef}>
-                {!isFilterOpen && (
-                  <BsFillFilterSquareFill
-                    className="w-10 h-10 text-secondOrange cursor-pointer"
-                    onClick={() => setIsFilterOpen(true)}
-                  />
-                )}
-                {isFilterOpen && (
-                  <div className="absolute top-full z-50 mt-2 right-0 bg-white border border-gray-300 rounded-xl shadow-md w-40">
-                    <p className="text-secondBlue font-bold p-2">Sort by</p>
-                    <div className="border-t border-gray-300">
-                      <p className="cursor-pointer hover:bg-gray-200 text-secondBlue p-2">
-                        Name (A-Z)
-                      </p>
-                      <p className="cursor-pointer hover:bg-gray-200 text-secondBlue p-2">
-                        Registration Date
-                      </p>
-                      <p className="cursor-pointer hover:bg-gray-200 text-secondBlue p-2">
-                        Payment Status
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
+        {/* Training Registration Validation */}
+        <div className="bg-white outline outline-3 outline-mainBlue rounded-2xl p-4 sm:p-6 shadow-[8px_8px_0px_0px_#157ab2]">
+          <h2 className="text-lg md:text-xl font-semibold mb-4">
+            Training Registration Validation
+          </h2>
 
-          {isLoading ? (
+          <AdditionalParticipantDialog
+            open={selectedRegistration !== null}
+            onClose={() => setSelectedRegistration(null)}
+            registration={selectedRegistration}
+          />
+          {loading ? (
             <p>Loading...</p>
           ) : (
             <ValidationTrainingTable
               data={trainingData.slice(0, 5)}
               mode="needprocess"
+
+              onShowDetailRegistration={onShowDetailRegistration}
               onStatusChange={handleStatusChange}
               disablePagination={true}
             />
@@ -148,43 +116,15 @@ const ValidationPage = () => {
         </div>
 
         {/* Certificate Validation */}
-        <div className="bg-white outline outline-2 md:outline-3 outline-mainBlue rounded-2xl p-4 sm:p-6 shadow-[4px_4px_0px_0px_#157ab2] sm:shadow-[8px_8px_0px_0px_#157ab2]">
-          <div className="relative">
-            <div className="flex flex-wrap items-center justify-between mb-4 w-full">
-              <h2 className="text-lg md:text-xl font-semibold">
-                Certificate Validation
-              </h2>
-              <div className="relative ml-auto mt-2 sm:mt-0" ref={filterRef}>
-                {!isFilterOpen && (
-                  <BsFillFilterSquareFill
-                    className="text-secondOrange cursor-pointer w-10 h-10"
-                    onClick={() => setIsFilterOpen(true)}
-                  />
-                )}
-                {isFilterOpen && (
-                  <div className="absolute top-full z-50 mt-2 right-0 bg-white border border-gray-300 rounded-xl shadow-md w-40">
-                    <p className="text-secondBlue font-bold p-2">Sort by</p>
-                    <div className="border-t border-gray-300">
-                      <p className="cursor-pointer hover:bg-gray-200 text-secondBlue p-2">
-                        Name
-                      </p>
-                      <p className="cursor-pointer hover:bg-gray-200 text-secondBlue p-2">
-                        ID
-                      </p>
-                      <p className="cursor-pointer hover:bg-gray-200 text-secondBlue p-2">
-                        Issued Date
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
+        <div className="bg-white outline outline-3 outline-mainBlue rounded-2xl p-4 sm:p-6 shadow-[8px_8px_0px_0px_#157ab2]">
+          <h2 className="text-lg md:text-xl font-semibold mb-4">
+            Certificate Validation
+          </h2>
 
           <ValidationCertificateTable
             data={certificateData.slice(0, 5)}
-            onAccept={(id) => handleValidation("certificate", id)}
-            onReject={(id) => handleValidation("certificate", id)}
+            onAccept={(id) => handleCertificateValidation("certificate", id)}
+            onReject={(id) => handleCertificateValidation("certificate", id)}
           />
 
           <div className="flex justify-end mt-4">

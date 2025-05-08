@@ -46,6 +46,20 @@ const ValidationTrainingPage = () => {
     const sortRef = useRef(null);
     const [attendanceStatus, setAttendanceStatus] = useState({});
 
+    const STATUS_LABELS = {
+        "1": "Pending",
+        "2": "Waiting for Payment",
+        "3": "Validated",
+        "4": "Completed",
+        "5": "Cancelled",
+    };
+
+    const ATTENDANCE_LABELS = {
+        "true": "Present",
+        "false": "Absent",
+        "null": "Not Marked",
+    };
+
     const [searchQuery, setSearchQuery] = useState("");
     const [sortBy, setSortBy] = useState("");
     const [sortOrder, setSortOrder] = useState("ASC");
@@ -64,7 +78,7 @@ const ValidationTrainingPage = () => {
     // Tab configuration for fetching data
     const tabConfig = {
         needprocess: {
-            url: "/api/registration/search?status=1&status=2&status=3",
+            url: "/api/registration/search",
             key: "needProcessData",
             searchFields: ["registration_id", "registration_date", "registrant_name", "training_name"],
             filters: {
@@ -371,17 +385,25 @@ const ValidationTrainingPage = () => {
                                                         checked={selectedFilters[tab].status?.includes(statusCode) || false}
                                                         onCheckedChange={(checked) => {
                                                             setSelectedFilters((prev) => {
-                                                                const prevStatus = prev.status || [];
+                                                                const prevTabFilters = prev[tab] || {};
+                                                                const prevStatus = prevTabFilters.status || [];
+
                                                                 return {
                                                                     ...prev,
-                                                                    status: checked
-                                                                        ? [...prevStatus, statusCode]
-                                                                        : prevStatus.filter((s) => s !== statusCode),
+                                                                    [tab]: {
+                                                                        ...prevTabFilters,
+                                                                        status: checked
+                                                                            ? [...prevStatus, statusCode]
+                                                                            : prevStatus.filter((s) => s !== statusCode),
+                                                                    },
                                                                 };
                                                             });
+
                                                         }}
                                                     />
-                                                    <label htmlFor={`status-${statusCode}`}>Status {statusCode}</label>
+                                                    <label htmlFor={`status-${statusCode}`}>
+                                                        {STATUS_LABELS[statusCode] || `${statusCode}`}
+                                                    </label>
                                                 </div>
                                             ))}
 
@@ -393,17 +415,24 @@ const ValidationTrainingPage = () => {
                                                         checked={selectedFilters[tab].attendance_status?.includes(attendanceStatus) || false}
                                                         onCheckedChange={(checked) => {
                                                             setSelectedFilters((prev) => {
-                                                                const prevAttendance = prev.attendance_status || [];
+                                                                const prevAttendanceFilter = prev[tab] || {};
+                                                                const prevAttendance = prevAttendanceFilter.attendance_status || [];
+
                                                                 return {
                                                                     ...prev,
-                                                                    attendance_status: checked
-                                                                        ? [...prevAttendance, attendanceStatus]
-                                                                        : prevAttendance.filter((s) => s !== attendanceStatus),
+                                                                    [tab]: {
+                                                                        ...prevAttendanceFilter,
+                                                                        attendance_status: checked
+                                                                            ? [...prevAttendance, attendanceStatus]
+                                                                            : prevAttendance.filter((s) => s !== attendanceStatus),
+                                                                    },
                                                                 };
                                                             });
                                                         }}
                                                     />
-                                                    <label htmlFor={`attendance-status-${attendanceStatus}`}>Attendance : {attendanceStatus}</label>
+                                                    <label htmlFor={`attendance-status-${attendanceStatus}`}>
+                                                        {ATTENDANCE_LABELS[attendanceStatus] || `${attendanceStatus}`}
+                                                    </label>
                                                 </div>
                                             ))}
                                         </div>
