@@ -3,16 +3,21 @@
 import { useAuth } from "@/app/context/AuthContext";
 import DefaultFooter from "@/components/layout/footer";
 import AdminFooter from "@/components/admin/footer";
+import UserFooter from "@/components/user/footer";
 
 const FooterWrapper = () => {
     const { user } = useAuth();
     console.log("User di Footer:", user);
 
+    if (!user) {
+        return <DefaultFooter />;
+    }
+
     if (user?.role === "superadmin" || user?.role === "admin") {
         return <AdminFooter />;
     }
 
-    return <DefaultFooter />;
+    return <UserFooter />;
 };
 
 export default FooterWrapper;
