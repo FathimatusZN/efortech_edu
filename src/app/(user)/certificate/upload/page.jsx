@@ -38,7 +38,7 @@ export default function UploadCertificatePage() {
         Upload Certificate
       </h1>
 
-      <UploadCertificateForm onSubmit={handleUserSubmit} variant="user" />
+      <UploadCertificateForm onSubmit={handleUserSubmit} mode="user" />
 
       <SuccessDialog
         open={showDialog}
