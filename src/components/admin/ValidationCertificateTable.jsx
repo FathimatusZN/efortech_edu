@@ -18,6 +18,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { UserCertificateDetailDialog } from "./UserCertificateDetailDialog";
+import { ConfirmCertificateDialog } from "./ConfirmCertificateDialog";
 
 const PAGE_SIZE = 10;
 
@@ -129,7 +130,7 @@ export const ValidationCertificateTable = ({
           "Accept",
           <BsCheckCircleFill className="w-7 h-7" />,
           isAccepted || isNull,
-          () => handleOpenConfirm(id, 2),
+          () => handleOpenConfirm(item, 2),
           false,
           ""
         )}
@@ -137,7 +138,7 @@ export const ValidationCertificateTable = ({
           "Reject",
           <BsFillXCircleFill className="w-7 h-7" />,
           isRejected || isNull,
-          () => handleOpenConfirm(id, 3),
+          () => handleOpenConfirm(item, 3),
           false,
           ""
         )}
@@ -150,10 +151,14 @@ export const ValidationCertificateTable = ({
     setDialogOpen(true);
   };
 
-  const handleOpenConfirm = (id, status) => {
-    setSelectedCertificateId(id);
+  const handleOpenConfirm = (item, status) => {
+    setSelectedItem(item);
     setSelectedStatus(status);
     setConfirmDialogOpen(true);
+  };
+
+  const handleConfirm = (certificateId, status, notes) => {
+    onStatusChange(certificateId, status, notes);
   };
 
   return (
@@ -257,41 +262,16 @@ export const ValidationCertificateTable = ({
         mode={mode}
       />
 
-      {confirmDialogOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-md shadow-md w-full max-w-md">
-            <h2 className="text-lg font-semibold mb-4">Confirm Status Update</h2>
-
-            <p className="mb-2">
-              <strong>Selected Status:</strong> {selectedStatus === 2 ? "Accepted" : "Rejected"}
-            </p>
-
-            <label className="block text-sm font-medium text-gray-700 mb-1">Notes (optional)</label>
-            <textarea
-              className="w-full border border-gray-300 rounded-md p-2 mb-4"
-              rows={3}
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-            />
-
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setConfirmDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button
-                className={selectedStatus === 2 ? "bg-green-600 hover:bg-green-700" : "bg-red-600 hover:bg-red-700"}
-                onClick={() => {
-                  onStatusChange(selectedCertificateId, selectedStatus, notes);
-                  setConfirmDialogOpen(false);
-                  setNotes("");
-                }}
-              >
-                Confirm
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmCertificateDialog
+        open={confirmDialogOpen}
+        onClose={() => setConfirmDialogOpen(false)}
+        certificateId={selectedItem?.user_certificate_id}
+        fullname={selectedItem?.fullname}
+        userId={selectedItem?.user_id}
+        certName={selectedItem?.cert_type}
+        status={selectedStatus}
+        onConfirm={handleConfirm}
+      />
 
     </div>
   );
