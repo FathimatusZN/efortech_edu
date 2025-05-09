@@ -158,6 +158,17 @@ const RegistrationPage = () => {
       return false;
     }
 
+    // Validasi tanggal tidak boleh sebelum hari ini
+    if (formData.date) {
+      const selectedDate = new Date(formData.date);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0); // reset jam agar perbandingan lebih akurat
+
+      if (selectedDate < today) {
+        newErrors.date = "Tanggal tidak boleh sebelum hari ini";
+      }
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -217,7 +228,10 @@ const RegistrationPage = () => {
       if (response.ok) {
         setShowDialog(true);
       } else {
-        console.error("Registration failed:", result.message || "Unknown error");
+        console.error(
+          "Registration failed:",
+          result.message || "Unknown error"
+        );
         alert("Failed to submit registration. Please try again.");
       }
     } catch (error) {
@@ -356,8 +370,7 @@ const RegistrationPage = () => {
     )
   );
 
-  if (loading || redirecting)
-    return <LoadingSpinner text="Loading..." />;
+  if (loading || redirecting) return <LoadingSpinner text="Loading..." />;
 
   if (showLoginModal) {
     return (
@@ -416,6 +429,7 @@ const RegistrationPage = () => {
               setFormData((prev) => ({ ...prev, date: e.target.value }))
             }
             error={errors.date}
+            min={new Date().toISOString().split("T")[0]} // Disable past dates
           />
 
           <FormGroup
