@@ -52,7 +52,7 @@ export default function EditProfile() {
           phone: u.phone_number || "",
           institution: u.institution || "",
           gender: u.gender === 1 ? "Male" : u.gender === 2 ? "Female" : "Default",
-          birthDate: u.birthdate ? u.birthdate.split("T")[0] : "",
+          birthDate: u.birthdate ? new Date(u.birthdate).toLocaleDateString("en-CA") : "",
           profileImage: u.user_photo || "/assets/user1.png",
         });
 
