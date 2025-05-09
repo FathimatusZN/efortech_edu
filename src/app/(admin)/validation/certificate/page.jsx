@@ -491,7 +491,7 @@ const ValidationCertificatePage = () => {
                   {/* Upload Certificate tab */}
                   <TabsContent value="upload">
                     <div className="mb-20">
-                      <UploadCertificateForm onSubmit={handleAdminSubmit} variant="admin" />
+                      <UploadCertificateForm onSubmit={handleAdminSubmit} mode="admin" />
 
                       <SuccessDialog
                         open={showDialog}
