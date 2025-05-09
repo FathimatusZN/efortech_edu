@@ -28,11 +28,37 @@ const STATUS_LABELS = {
   3: "Rejected",
 };
 
+const formatDate = (isoString) => {
+  const date = new Date(isoString);
+  const options = {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
+  };
+
+  return date.toLocaleString("en-US", options).replace(",", "");
+};
+
+const formatDate2 = (isoString) => {
+  const date = new Date(isoString);
+  const options = {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  };
+
+  return date.toLocaleString("en-US", options).replace(",", "");
+};
+
 export const ValidationCertificateTable = ({
   data,
   mode,
+  adminId,
   onStatusChange,
-  onShowDetailCertificate,
   disablePagination = false,
 }) => {
 
@@ -41,6 +67,10 @@ export const ValidationCertificateTable = ({
   const paginatedData = data.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
   const [selectedItem, setSelectedItem] = useState(null);
   const [isDialogOpen, setDialogOpen] = useState(false);
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState(null);
+  const [selectedCertificateId, setSelectedCertificateId] = useState(null);
+  const [notes, setNotes] = useState("");
 
   // Render status buttons or badge
   const renderStatusColumn = (item) => {
@@ -99,7 +129,7 @@ export const ValidationCertificateTable = ({
           "Accept",
           <BsCheckCircleFill className="w-7 h-7" />,
           isAccepted || isNull,
-          () => onStatusChange(id, "2"),
+          () => handleOpenConfirm(id, 2),
           false,
           ""
         )}
@@ -107,7 +137,7 @@ export const ValidationCertificateTable = ({
           "Reject",
           <BsFillXCircleFill className="w-7 h-7" />,
           isRejected || isNull,
-          () => onStatusChange(id, "3"),
+          () => handleOpenConfirm(id, 3),
           false,
           ""
         )}
@@ -118,6 +148,12 @@ export const ValidationCertificateTable = ({
   const handleShowDetail = (item) => {
     setSelectedItem(item);
     setDialogOpen(true);
+  };
+
+  const handleOpenConfirm = (id, status) => {
+    setSelectedCertificateId(id);
+    setSelectedStatus(status);
+    setConfirmDialogOpen(true);
   };
 
   return (
@@ -147,8 +183,8 @@ export const ValidationCertificateTable = ({
                 <TableCell>{item.fullname}</TableCell>
                 <TableCell>{item.cert_type}</TableCell>
                 <TableCell>{item.issuer}</TableCell>
-                <TableCell>{item.issued_date}</TableCell>
-                <TableCell>{item.expired_date}</TableCell>
+                <TableCell>{formatDate2(item.issued_date)}</TableCell>
+                <TableCell>{formatDate2(item.expired_date)}</TableCell>
                 <TableCell>
                   <Button
                     onClick={() => handleShowDetail(item)}
@@ -157,7 +193,7 @@ export const ValidationCertificateTable = ({
                     Detail
                   </Button>
                 </TableCell>
-                <TableCell>{item.created_at}</TableCell>
+                <TableCell>{formatDate(item.created_at)}</TableCell>
                 <TableCell>{renderStatusColumn(item)}</TableCell>
               </TableRow>
             ))}
@@ -213,12 +249,50 @@ export const ValidationCertificateTable = ({
           {Math.min(page * PAGE_SIZE, data.length)} of {data.length} data
         </div>
       )}
+
       <UserCertificateDetailDialog
         open={isDialogOpen}
         onClose={() => setDialogOpen(false)}
         item={selectedItem}
         mode={mode}
       />
+
+      {confirmDialogOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-md shadow-md w-full max-w-md">
+            <h2 className="text-lg font-semibold mb-4">Confirm Status Update</h2>
+
+            <p className="mb-2">
+              <strong>Selected Status:</strong> {selectedStatus === 2 ? "Accepted" : "Rejected"}
+            </p>
+
+            <label className="block text-sm font-medium text-gray-700 mb-1">Notes (optional)</label>
+            <textarea
+              className="w-full border border-gray-300 rounded-md p-2 mb-4"
+              rows={3}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+            />
+
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setConfirmDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                className={selectedStatus === 2 ? "bg-green-600 hover:bg-green-700" : "bg-red-600 hover:bg-red-700"}
+                onClick={() => {
+                  onStatusChange(selectedCertificateId, selectedStatus, notes);
+                  setConfirmDialogOpen(false);
+                  setNotes("");
+                }}
+              >
+                Confirm
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
