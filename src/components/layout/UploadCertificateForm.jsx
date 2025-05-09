@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { AiOutlineFilePdf, AiOutlineFileUnknown } from "react-icons/ai";
 import { FaCloudUploadAlt, FaTrash } from "react-icons/fa";
 
-export default function UploadUCertificateForm({ onSubmit, variant = "user" }) {
+export default function UploadUCertificateForm({ onSubmit, variant = "user", mode = "user" }) {
     const inputRef = useRef(null);
     const [formData, setFormData] = useState({
         fullname: "",
@@ -104,8 +104,8 @@ export default function UploadUCertificateForm({ onSubmit, variant = "user" }) {
             return;
         }
 
+        // Base payload
         const payload = {
-            user_id: user.user_id,
             fullname: formData.fullname,
             cert_type: formData.cert_type,
             issuer: formData.issuer,
@@ -115,9 +115,14 @@ export default function UploadUCertificateForm({ onSubmit, variant = "user" }) {
             cert_file: certPreviewUrl,
         };
 
-        if (user.role === "admin") {
+        if (mode === "admin") {
             payload.user_id = null;
             payload.admin_id = user.user_id;
+            payload.verified_by = user.user_id;
+            payload.status = 2;
+            payload.verification_date = new Date().toISOString();
+        } else {
+            payload.user_id = user.user_id;
         }
 
         await onSubmit?.(payload);
@@ -138,7 +143,7 @@ export default function UploadUCertificateForm({ onSubmit, variant = "user" }) {
         });
 
         if (inputRef.current) {
-            inputRef.current.value = ""; // reset file input value
+            inputRef.current.value = "";
         }
     };
 
