@@ -158,6 +158,17 @@ const RegistrationPage = () => {
       return false;
     }
 
+    // Validasi tanggal tidak boleh sebelum hari ini
+    if (formData.date) {
+      const selectedDate = new Date(formData.date);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0); // reset jam agar perbandingan lebih akurat
+
+      if (selectedDate < today) {
+        newErrors.date = "Tanggal tidak boleh sebelum hari ini";
+      }
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -165,6 +176,23 @@ const RegistrationPage = () => {
   const handleRegistrationSubmit = async () => {
     try {
       setLoading(true);
+
+      const allAdditionalEmails = additionalEmails.map((e) =>
+        e.email.trim().toLowerCase()
+      );
+
+      // Tambahkan email utama (user.email) juga untuk dicek
+      const allEmails = [
+        user.email.trim().toLowerCase(),
+        ...allAdditionalEmails,
+      ];
+      const uniqueEmails = new Set(allEmails);
+
+      if (uniqueEmails.size !== allEmails.length) {
+        alert("Setiap peserta harus menggunakan email yang berbeda.");
+        setLoading(false);
+        return;
+      }
 
       const token = await user?.getIdToken?.();
 
@@ -217,7 +245,10 @@ const RegistrationPage = () => {
       if (response.ok) {
         setShowDialog(true);
       } else {
-        console.error("Registration failed:", result.message || "Unknown error");
+        console.error(
+          "Registration failed:",
+          result.message || "Unknown error"
+        );
         alert("Failed to submit registration. Please try again.");
       }
     } catch (error) {
@@ -281,9 +312,29 @@ const RegistrationPage = () => {
   }, []);
 
   const validateEmailExists = async (email, id, idx) => {
+    const trimmedEmail = email.trim().toLowerCase();
+
+    // Cek duplikat antar additional email
+    const duplicate = additionalEmails.some(
+      (entry, i) =>
+        i !== idx && entry.email.trim().toLowerCase() === trimmedEmail
+    );
+
+    if (duplicate || trimmedEmail === user.email.trim().toLowerCase()) {
+      setEmailValidation((prev) => ({
+        ...prev,
+        [id]: false,
+      }));
+      setErrors((prev) => ({
+        ...prev,
+        [id]: `Email peserta ke-${idx + 2} sudah digunakan`,
+      }));
+      return;
+    }
+
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user/search?email=${email}`
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user/search?email=${trimmedEmail}`
       );
       const data = await res.json();
 
@@ -356,8 +407,7 @@ const RegistrationPage = () => {
     )
   );
 
-  if (loading || redirecting)
-    return <LoadingSpinner text="Loading..." />;
+  if (loading || redirecting) return <LoadingSpinner text="Loading..." />;
 
   if (showLoginModal) {
     return (
@@ -416,6 +466,7 @@ const RegistrationPage = () => {
               setFormData((prev) => ({ ...prev, date: e.target.value }))
             }
             error={errors.date}
+            min={new Date().toISOString().split("T")[0]} // Disable past dates
           />
 
           <FormGroup
@@ -526,8 +577,7 @@ const RegistrationPage = () => {
               htmlFor="terms"
               className="ml-1 text-gray-800 text-sm leading-snug"
             >
-              Saya menyatakan Lorem ipsum dolor sit amet, consectetur adipiscing
-              elit.
+              Saya bertanggung jawab atas data peserta yang saya daftarkan dan menyetujui seluruh syarat dan ketentuan pelatihan.
             </label>
           </div>
 
