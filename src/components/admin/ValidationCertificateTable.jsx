@@ -175,7 +175,7 @@ export const ValidationCertificateTable = ({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Certificate ID</TableHead>
+              <TableHead>Certificate Number</TableHead>
               <TableHead>Full Name</TableHead>
               <TableHead>Certificate Type</TableHead>
               <TableHead>Issued by</TableHead>
@@ -190,7 +190,7 @@ export const ValidationCertificateTable = ({
           <TableBody>
             {paginatedData.map((item) => (
               <TableRow key={item.user_certificate_id}>
-                <TableCell>{item.user_certificate_id}</TableCell>
+                <TableCell>{item.certificate_number}</TableCell>
                 <TableCell>{item.fullname}</TableCell>
                 <TableCell>{item.cert_type}</TableCell>
                 <TableCell>{item.issuer}</TableCell>
