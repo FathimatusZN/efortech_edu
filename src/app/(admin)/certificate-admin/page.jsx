@@ -3,32 +3,13 @@
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { useState, useRef, useEffect, useMemo } from "react";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { FaSearch } from "react-icons/fa";
-
 import { NotFound } from "@/components/ui/ErrorPage";
+import { UserCertificateDetailDialog } from "@/components/admin/UserCertificateDetailDialog";
+import { Button } from "@/components/ui/button";
 
 const PAGE_SIZE = 10;
 const formatDate = (isoString) => {
@@ -50,6 +31,8 @@ const Certificate = () => {
   const [page, setPage] = useState(1); // Current page
   const [statusFilter, setStatusFilter] = useState("All Statuses"); // Selected filter
   const debounceRef = useRef(null);
+  const [isDialogOpen, setDialogOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
 
   useEffect(() => {
     const fetchInitialCertificates = async () => {
@@ -76,6 +59,11 @@ const Certificate = () => {
       setSearchTerm(inputValue.trim());
       setPage(1);
     }
+  };
+
+  const handleShowDetail = (item) => {
+    setSelectedItem(item);
+    setDialogOpen(true);
   };
 
   // Auto-search with debounce delay (1.5s)
@@ -179,6 +167,7 @@ const Certificate = () => {
                     <TableHead>Issued Date</TableHead>
                     <TableHead>Expired Date</TableHead>
                     <TableHead>Certificate Title</TableHead>
+                    <TableHead>Certificate Preview</TableHead>
                     <TableHead>Status</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -190,6 +179,14 @@ const Certificate = () => {
                       <TableCell>{formatDate(item.issued_date)}</TableCell>
                       <TableCell>{formatDate(item.expired_date)}</TableCell>
                       <TableCell>{item.certificate_title}</TableCell>
+                      <TableCell>
+                        <Button
+                          onClick={() => handleShowDetail(item)}
+                          className="bg-white text-black hover:bg-lightBlue hover:text-white transition duration-300 ease-in-out py-2 px-4 rounded-md"
+                        >
+                          See Preview
+                        </Button>
+                      </TableCell>
                       <TableCell
                         className={`font-semibold ${item.validity_status === "Valid"
                           ? "text-green-600"
@@ -254,6 +251,13 @@ const Certificate = () => {
             />
           </div>
         )}
+
+        <UserCertificateDetailDialog
+          open={isDialogOpen}
+          onClose={() => setDialogOpen(false)}
+          item={selectedItem}
+          mode="needprocess"
+        />
       </div>
     </ProtectedRoute>
   );
