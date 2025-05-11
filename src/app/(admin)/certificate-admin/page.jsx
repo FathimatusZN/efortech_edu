@@ -31,6 +31,16 @@ import { FaSearch } from "react-icons/fa";
 import { NotFound } from "@/components/ui/ErrorPage";
 
 const PAGE_SIZE = 10;
+const formatDate = (isoString) => {
+  const date = new Date(isoString);
+  const options = {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  };
+
+  return date.toLocaleString("en-US", options).replace(",", "");
+};
 
 const Certificate = () => {
   const [inputValue, setInputValue] = useState(""); // Input field value
@@ -165,10 +175,10 @@ const Certificate = () => {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Certificate Number</TableHead>
-                    <TableHead>Name</TableHead>
+                    <TableHead>Full Name</TableHead>
                     <TableHead>Issued Date</TableHead>
-                    <TableHead>Certificate Title</TableHead>
                     <TableHead>Expired Date</TableHead>
+                    <TableHead>Certificate Title</TableHead>
                     <TableHead>Status</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -177,9 +187,9 @@ const Certificate = () => {
                     <TableRow key={item.certificate_id}>
                       <TableCell>{item.certificate_number}</TableCell>
                       <TableCell>{item.fullname}</TableCell>
-                      <TableCell>{new Date(item.issued_date).toLocaleDateString()}</TableCell>
+                      <TableCell>{formatDate(item.issued_date)}</TableCell>
+                      <TableCell>{formatDate(item.expired_date)}</TableCell>
                       <TableCell>{item.certificate_title}</TableCell>
-                      <TableCell>{new Date(item.expired_date).toLocaleDateString()}</TableCell>
                       <TableCell
                         className={`font-semibold ${item.validity_status === "Valid"
                           ? "text-green-600"
