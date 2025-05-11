@@ -120,6 +120,7 @@ const ValidationPage = () => {
       if (!res.ok) throw new Error("Failed to update status");
 
       toast.success("Status updated successfully");
+      fetchCertificateData();
     } catch (err) {
       console.error(err);
       toast.error("Error updating status");
