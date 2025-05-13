@@ -192,8 +192,8 @@ const ValidationTrainingPage = () => {
     }, [tab]);
 
     useEffect(() => {
-        fetchTabData();  // Fetch data after filter or sort changes for the active tab
-    }, [searchQuery, selectedFilters[tab], sortBy, sortOrder, tab]);
+        fetchTabData();
+    }, [searchQuery, JSON.stringify(selectedFilters[tab]), sortBy, sortOrder, tab]);
 
     useEffect(() => {
         setSearchInput("");
