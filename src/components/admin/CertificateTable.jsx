@@ -9,10 +9,9 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { UserCertificateDetailDialog } from "@/components/admin/UserCertificateDetailDialog";
-import { NotFound } from "@/components/ui/ErrorPage";
 
 const PAGE_SIZE = 10;
 
@@ -23,139 +22,127 @@ const formatDate = (dateStr) => new Date(dateStr).toLocaleDateString("en-US", {
 });
 
 const CertificateTable = ({
-    searchTerm,
-    statusFilter,
-    sortBy,
-    sortOrder,
-    setSortBy,
-    setSortOrder,
+    data,
+    mode,
+    mode2,
+    disablePagination = false,
 }) => {
-    const [data, setData] = useState([]);
     const [page, setPage] = useState(1);
-    const [loading, setLoading] = useState(false);
-    const [selected, setSelected] = useState(null);
-    const [openDialog, setOpenDialog] = useState(false);
-
-    const fetchData = async () => {
-        setLoading(true);
-        try {
-            const params = new URLSearchParams();
-            if (searchTerm) params.append("q", searchTerm);
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/certificates/search?${params}`);
-            const result = await res.json();
-            setData(result?.status === "success" ? result.data : []);
-        } catch (err) {
-            console.error(err);
-            setData([]);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        fetchData();
-    }, [searchTerm]);
-
-    const filtered = useMemo(() => {
-        return data.filter(item => {
-            if (statusFilter === "All Statuses") return true;
-            return item.validity_status === statusFilter;
-        });
-    }, [data, statusFilter]);
-
-    const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-    const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+    const totalPages = Math.ceil(data.length / PAGE_SIZE);
+    const paginatedData = data.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+    const [selectedItem, setSelectedItem] = useState(null);
+    const [isDialogOpen, setDialogOpen] = useState(false);
 
     return (
-        <>
-            {loading && <p>Loading...</p>}
-            {!loading && filtered.length === 0 && (
-                <NotFound message="No certificates found." buttons={[]} />
-            )}
-
-            {!loading && filtered.length > 0 && (
-                <>
-                    <div className="overflow-x-auto rounded-md shadow">
-                        <Table className="min-w-[800px]">
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Certificate Number</TableHead>
-                                    <TableHead>Full Name</TableHead>
-                                    <TableHead>Issued Date</TableHead>
-                                    <TableHead>Expired Date</TableHead>
-                                    <TableHead>Title</TableHead>
-                                    <TableHead>Preview</TableHead>
-                                    <TableHead>Status</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {paginated.map(item => (
-                                    <TableRow key={item.certificate_id}>
-                                        <TableCell>{item.certificate_number}</TableCell>
-                                        <TableCell>{item.fullname}</TableCell>
-                                        <TableCell>{formatDate(item.issued_date)}</TableCell>
-                                        <TableCell>{formatDate(item.expired_date)}</TableCell>
-                                        <TableCell>{item.certificate_title}</TableCell>
+        <div>
+            {paginatedData.length === 0 ? (
+                <p>No Data Available</p>
+            ) : (
+                <div className="overflow-x-auto rounded-md shadow">
+                    <Table className="min-w-[800px]">
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Certificate Number</TableHead>
+                                <TableHead>Full Name</TableHead>
+                                <TableHead>Title</TableHead>
+                                <TableHead>Issued by</TableHead>
+                                <TableHead>Issued Date</TableHead>
+                                <TableHead>Expired Date</TableHead>
+                                <TableHead>Preview</TableHead>
+                                <TableHead>Status</TableHead>
+                                {mode2 === "all" && <TableHead>Type</TableHead>}
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {paginatedData.map(item => (
+                                <TableRow key={item.certificate_id}>
+                                    <TableCell>{item.certificate_number}</TableCell>
+                                    <TableCell>{item.fullname}</TableCell>
+                                    <TableCell>{item.certificate_title}</TableCell>
+                                    <TableCell>{item.issued_by}</TableCell>
+                                    <TableCell>{formatDate(item.issued_date)}</TableCell>
+                                    <TableCell>{formatDate(item.expired_date)}</TableCell>
+                                    <TableCell>
+                                        <Button
+                                            className="bg-white text-black hover:bg-lightBlue hover:text-white transition duration-300 ease-in-out py-2 px-4 rounded-md"
+                                            onClick={() => {
+                                                setSelectedItem(item);
+                                                setDialogOpen(true);
+                                            }}>
+                                            See Preview
+                                        </Button>
+                                    </TableCell>
+                                    <TableCell className={`font-semibold ${item.validity_status === "Valid" ? "text-green-600" : "text-red-600"}`}>
+                                        {item.validity_status}
+                                    </TableCell>
+                                    {mode2 === "all" && (
                                         <TableCell>
-                                            <Button
-                                                className="bg-white text-black hover:bg-lightBlue hover:text-white transition duration-300 ease-in-out py-2 px-4 rounded-md"
-                                                onClick={() => {
-                                                    setSelected(item);
-                                                    setOpenDialog(true);
-                                                }}>
-                                                See Preview
-                                            </Button>
+                                            {item.type === 1 ? "Training Registration" : item.type === 2 ? "User Upload" : "Unknown"}
                                         </TableCell>
-                                        <TableCell className={`font-semibold ${item.validity_status === "Valid" ? "text-green-600" : "text-red-600"}`}>
-                                            {item.validity_status}
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </div>
-
-                    <div className="flex justify-center mt-6">
-                        <Pagination>
-                            <PaginationContent>
-                                <PaginationItem>
-                                    <PaginationPrevious
+                                    )}
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </div>
+            )}
+            {/* Pagination */}
+            {!disablePagination && (
+                <div className="flex justify-center mt-8">
+                    <Pagination>
+                        <PaginationContent className="gap-2">
+                            <PaginationItem>
+                                <PaginationPrevious
+                                    href="#"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        setPage((prev) => Math.max(prev - 1, 1));
+                                    }}
+                                    className={page === 1 ? "pointer-events-none opacity-50" : ""}
+                                />
+                            </PaginationItem>
+                            {Array.from({ length: totalPages }, (_, i) => (
+                                <PaginationItem key={i}>
+                                    <PaginationLink
                                         href="#"
-                                        onClick={() => setPage(p => Math.max(1, p - 1))}
-                                        className={page === 1 ? "pointer-events-none opacity-50" : ""}
-                                    />
+                                        isActive={page === i + 1}
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            setPage(i + 1);
+                                        }}
+                                    >
+                                        {i + 1}
+                                    </PaginationLink>
                                 </PaginationItem>
-                                {[...Array(totalPages)].map((_, i) => (
-                                    <PaginationItem key={i}>
-                                        <PaginationLink
-                                            href="#"
-                                            isActive={page === i + 1}
-                                            onClick={() => setPage(i + 1)}
-                                        >
-                                            {i + 1}
-                                        </PaginationLink>
-                                    </PaginationItem>
-                                ))}
-                                <PaginationItem>
-                                    <PaginationNext
-                                        href="#"
-                                        onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                                        className={page === totalPages ? "pointer-events-none opacity-50" : ""}
-                                    />
-                                </PaginationItem>
-                            </PaginationContent>
-                        </Pagination>
-                    </div>
-                </>
+                            ))}
+                            <PaginationItem>
+                                <PaginationNext
+                                    href="#"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        setPage((prev) => Math.min(prev + 1, totalPages));
+                                    }}
+                                    className={page === totalPages ? "pointer-events-none opacity-50" : ""}
+                                />
+                            </PaginationItem>
+                        </PaginationContent>
+                    </Pagination>
+                </div>
+            )}
+            {!disablePagination && (
+                <div className="text-xs text-gray-600 text-center mt-2">
+                    Showing {(page - 1) * PAGE_SIZE + 1} to{" "}
+                    {Math.min(page * PAGE_SIZE, data.length)} of {data.length} data
+                </div>
             )}
 
             <UserCertificateDetailDialog
-                open={openDialog}
-                onClose={() => setOpenDialog(false)}
-                item={selected}
-                mode="needprocess"
+                open={isDialogOpen}
+                onClose={() => setDialogOpen(false)}
+                item={selectedItem}
+                mode={mode}
             />
-        </>
+        </div>
     );
 };
 
