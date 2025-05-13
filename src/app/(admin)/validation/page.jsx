@@ -29,8 +29,19 @@ const ValidationPage = () => {
   };
 
   const fetchCertificateData = async () => {
-    // placeholder: replace with actual API if needed
-    setCertificateData([]);
+    setLoading(true);
+    try {
+      const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/ucertificate/search?status=1`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Failed to fetch certificate data");
+      const result = await res.json();
+      setCertificateData(result?.data || []);
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to load certificate data");
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -38,7 +49,7 @@ const ValidationPage = () => {
     fetchCertificateData();
   }, []);
 
-  const handleStatusChange = async (registrationId, newStatus) => {
+  const handleRegistrationStatusChange = async (registrationId, newStatus) => {
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/registration/update/${registrationId}`,
@@ -67,10 +78,52 @@ const ValidationPage = () => {
     setIsDetailDialogOpen(true);
   };
 
+  // Function to handle showing preview in a dialog
+  const [isDetailCertificateDialogOpen, setIsDetailCertificateDialogOpen] = useState(false);
+  const [selectedCertificate, setSelectedCertificate] = useState(null);
 
-  const handleCertificateValidation = (type, id) => {
-    if (type === "certificate") {
-      setCertificateData((prev) => prev.filter((item) => item.id !== id));
+  const onShowDetailCertificate = (certificate) => {
+    setSelectedCertificate(certificate);
+    setIsDetailCertificateDialogOpen(true);
+  };
+
+  const [adminId, setAdminId] = useState("");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedUser = localStorage.getItem("user");
+      if (storedUser) {
+        const parsedUser = JSON.parse(storedUser);
+        if (parsedUser.user_id) {
+          setAdminId(parsedUser.user_id);
+        }
+      }
+    }
+  }, []);
+
+  const handleCertificateStatusChange = async (user_certificate_id, status, notes = "") => {
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/ucertificate/update-status`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            user_certificate_id,
+            status,
+            notes,
+            admin_id: adminId,
+          }),
+        }
+      );
+
+      if (!res.ok) throw new Error("Failed to update status");
+
+      toast.success("Status updated successfully");
+      fetchCertificateData();
+    } catch (err) {
+      console.error(err);
+      toast.error("Error updating status");
     }
   };
 
@@ -100,7 +153,7 @@ const ValidationPage = () => {
               mode="needprocess"
 
               onShowDetailRegistration={onShowDetailRegistration}
-              onStatusChange={handleStatusChange}
+              onStatusChange={handleRegistrationStatusChange}
               disablePagination={true}
             />
           )}
@@ -121,11 +174,18 @@ const ValidationPage = () => {
             Certificate Validation
           </h2>
 
-          <ValidationCertificateTable
-            data={certificateData.slice(0, 5)}
-            onAccept={(id) => handleCertificateValidation("certificate", id)}
-            onReject={(id) => handleCertificateValidation("certificate", id)}
-          />
+          {loading ? (
+            <p>Loading...</p>
+          ) : (
+            <ValidationCertificateTable
+              data={certificateData.slice(0, 5)}
+              mode="needprocess"
+              adminId={adminId}
+              onShowDetailCertificate={onShowDetailCertificate}
+              onStatusChange={handleCertificateStatusChange}
+              disablePagination={true}
+            />
+          )}
 
           <div className="flex justify-end mt-4">
             <a

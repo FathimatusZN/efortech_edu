@@ -81,15 +81,23 @@ export const ValidationCertificateTable = ({
     const isRejected = status === 3;
     const isNull = status === 1 || status === undefined;
 
-    const statusLocked = isAccepted;
-
-    // Badge design if status is locked
-    if (statusLocked) {
+    if (isAccepted) {
       return (
         <div className="flex items-center justify-center">
           <div className="flex items-center gap-1 border border-green-400 text-green-600 bg-white rounded-full px-3 py-1 text-sm font-medium">
             <BsCheckCircleFill className="w-4 h-4" />
             Accepted
+          </div>
+        </div>
+      );
+    }
+
+    if (isRejected) {
+      return (
+        <div className="flex items-center justify-center">
+          <div className="flex items-center gap-1 border border-red-400 text-red-600 bg-white rounded-full px-3 py-1 text-sm font-medium">
+            <BsFillXCircleFill className="w-4 h-4" />
+            Rejected
           </div>
         </div>
       );
@@ -103,18 +111,16 @@ export const ValidationCertificateTable = ({
       return (
         <div className={`relative group`}>
           <div
-            className={`
-                  flex flex-col items-center justify-center gap-1 p-2 px-4 h-auto w-auto rounded-md transition
-                  ${active ? "opacity-100" : "opacity-30"}
-                  ${textColor} ${hoverColor}
-                  ${disabled ? "cursor-not-allowed pointer-events-none" : "cursor-pointer"}
-                `}
+            className={`flex flex-col items-center justify-center gap-1 p-2 px-4 h-auto w-auto rounded-md transition
+              ${active ? "opacity-100" : "opacity-30"}
+              ${textColor} ${hoverColor}
+              ${disabled ? "cursor-not-allowed pointer-events-none" : "cursor-pointer"}
+            `}
             onClick={!disabled ? onClick : undefined}
           >
             {icon}
             <span className="text-xs">{label}</span>
           </div>
-
           {disabled && (
             <div className="absolute bottom-full mb-1 w-max max-w-[150px] bg-neutral1 text-mainOrange text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
               {tooltip}
@@ -129,7 +135,7 @@ export const ValidationCertificateTable = ({
         {renderButton(
           "Accept",
           <BsCheckCircleFill className="w-7 h-7" />,
-          isAccepted || isNull,
+          isNull,
           () => handleOpenConfirm(item, 2),
           false,
           ""
@@ -137,7 +143,7 @@ export const ValidationCertificateTable = ({
         {renderButton(
           "Reject",
           <BsFillXCircleFill className="w-7 h-7" />,
-          isRejected || isNull,
+          isNull,
           () => handleOpenConfirm(item, 3),
           false,
           ""
@@ -169,7 +175,7 @@ export const ValidationCertificateTable = ({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Certificate ID</TableHead>
+              <TableHead>Certificate Number</TableHead>
               <TableHead>Full Name</TableHead>
               <TableHead>Certificate Type</TableHead>
               <TableHead>Issued by</TableHead>
@@ -184,7 +190,7 @@ export const ValidationCertificateTable = ({
           <TableBody>
             {paginatedData.map((item) => (
               <TableRow key={item.user_certificate_id}>
-                <TableCell>{item.user_certificate_id}</TableCell>
+                <TableCell>{item.certificate_number}</TableCell>
                 <TableCell>{item.fullname}</TableCell>
                 <TableCell>{item.cert_type}</TableCell>
                 <TableCell>{item.issuer}</TableCell>
