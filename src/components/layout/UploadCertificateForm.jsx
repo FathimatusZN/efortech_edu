@@ -15,7 +15,8 @@ export default function UploadUCertificateForm({ onSubmit, variant = "user", mod
         issuer: "",
         issued_date: "",
         expired_date: "",
-        certificate_number: ""
+        certificate_number: "",
+        user_id: ""
     });
 
     const [certFile, setCertFile] = useState(null);
@@ -28,14 +29,16 @@ export default function UploadUCertificateForm({ onSubmit, variant = "user", mod
         : {};
 
     useEffect(() => {
-        const storedUser = localStorage.getItem("user");
-        if (storedUser) {
-            const parsedUser = JSON.parse(storedUser);
-            if (parsedUser.fullname) {
-                setFormData((prev) => ({ ...prev, fullname: parsedUser.fullname }));
+        if (mode !== "admin") {
+            const storedUser = localStorage.getItem("user");
+            if (storedUser) {
+                const parsedUser = JSON.parse(storedUser);
+                if (parsedUser.fullname) {
+                    setFormData((prev) => ({ ...prev, fullname: parsedUser.fullname }));
+                }
             }
         }
-    }, []);
+    }, [mode]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -116,7 +119,7 @@ export default function UploadUCertificateForm({ onSubmit, variant = "user", mod
         };
 
         if (mode === "admin") {
-            payload.user_id = null;
+            payload.user_id = formData.user_id?.trim() || null;
             payload.admin_id = user.user_id;
             payload.verified_by = user.user_id;
             payload.status = 2;
@@ -212,6 +215,19 @@ export default function UploadUCertificateForm({ onSubmit, variant = "user", mod
 
             {/* Right: Form Fields */}
             <div className="space-y-4">
+                {/* User ID */}
+                {mode === "admin" && (
+                    <div>
+                        <Label>User ID (optional)</Label>
+                        <Input
+                            name="user_id"
+                            value={formData.user_id}
+                            onChange={handleChange}
+                            placeholder="Fill if submitting for another user"
+                        />
+                    </div>
+                )}
+
                 {/* Fullname */}
                 <div>
                     <Label>Fullname (According to the Certificate)</Label>
@@ -219,7 +235,7 @@ export default function UploadUCertificateForm({ onSubmit, variant = "user", mod
                         name="fullname"
                         value={formData.fullname}
                         onChange={handleChange}
-                        placeholder="Type your Fullname here"
+                        placeholder="Type Fullname here"
                     />
                     {errors.fullname && (
                         <p className="text-sm text-red-500">{errors.fullname}</p>
