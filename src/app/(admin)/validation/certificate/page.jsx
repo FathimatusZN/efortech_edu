@@ -50,8 +50,6 @@ const ValidationCertificatePage = () => {
   const [tempSortField, setTempSortField] = useState(sortBy);
   const [tempSortOrder, setTempSortOrder] = useState(sortOrder);
   const [searchInput, setSearchInput] = useState("");
-  const filterRefProcessed = useRef(null);
-  const [isSearchVisibleMobile, setIsSearchVisibleMobile] = useState(false);
 
   const [selectedFilters, setSelectedFilters] = useState({
     needprocess: { status: ["1"] },
@@ -155,8 +153,8 @@ const ValidationCertificatePage = () => {
   }, [tab]);
 
   useEffect(() => {
-    fetchTabData();  // Fetch data after filter or sort changes for the active tab
-  }, [searchQuery, selectedFilters[tab], sortBy, sortOrder, tab]);
+    fetchTabData();
+  }, [searchQuery, JSON.stringify(selectedFilters[tab]), sortBy, sortOrder, tab]);
 
   useEffect(() => {
     setSearchInput("");
