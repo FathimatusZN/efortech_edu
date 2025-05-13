@@ -64,7 +64,7 @@ const DashboardAdmin = () => {
                     pendingRegistration: parseInt(data.pending_registrations) || 0,
                     completedTraining: parseInt(data.unmarked_attendance) || 0,
                     certificateUpload: parseInt(data.pending_certificates) || 0,
-                    certificateValidation: 0, // Placeholder since no data yet
+                    certificateValidation: parseInt(data.pending_user_certificates) || 0,
                 });
 
                 // ========== PART 2 : Top Training ==========
@@ -192,7 +192,7 @@ const DashboardAdmin = () => {
                                 title: "Certificate Validation",
                                 value: todoCounts.certificateValidation,
                                 description: "data need to be validated",
-                                href: "/validate/certificate",
+                                href: "/validation/certificate?tab=needprocess",
                             },
                         ].map((card, idx) => (
                             <Link key={idx} href={card.href}>
