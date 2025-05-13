@@ -6,7 +6,6 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import { EffectCards, Autoplay } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/effect-cards";
-import { institutions, colleges } from "./partner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FaAngleRight } from "react-icons/fa";
@@ -93,8 +92,30 @@ const Home = () => {
   };
 
   const [selectedCategory, setSelectedCategory] = useState("College");
-  const partners = selectedCategory === "Institution" ? institutions : colleges;
+  const [partnersData, setPartnersData] = useState({ Institution: [], College: [] });
   const scrollRef = useRef(null);
+
+  useEffect(() => {
+    const fetchPartners = async () => {
+      try {
+        const res = await fetch("/api/partners/active");
+    
+        if (!res.ok) {
+          throw new Error(`Error fetching active partners: ${res.statusText}`);
+        }
+    
+        const json = await res.json();
+        const institutions = json.data.filter((p) => p.category === 1); 
+        const colleges = json.data.filter((p) => p.category === 2);    
+    
+        setPartnersData({ Institution: institutions, College: colleges });
+      } catch (error) {
+        console.error("Failed to fetch partners:", error);
+      }
+    };    
+  
+    fetchPartners();
+  }, []);
 
   useEffect(() => {
     const scrollEl = scrollRef.current;
@@ -114,7 +135,7 @@ const Home = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const repeatedPartners = [...partners, ...partners];
+  const repeatedPartners = [...partnersData[selectedCategory], ...partnersData[selectedCategory]];
 
   const formatCurrency = (amount) =>
     new Intl.NumberFormat("id-ID", {
@@ -152,8 +173,8 @@ const Home = () => {
 
   return (
     <div className="bg-white">
-      <div className="relative w-full h-[600px] flex items-center justify-center mt-[-50px]">
-        <div className="w-full max-w-[1200px] h-[400px] md:h-[450px] relative overflow-hidden rounded-lg">
+      <div className="relative w-full h-[600px] flex items-center justify-center">
+        <div className="w-full aspect-[4/3] sm:aspect-[16/9] lg:aspect-[21/9] relative overflow-hidden mb-10">
           <div
             className="flex transition-transform duration-500 ease-in-out"
             style={{ transform: `translateX(-${currentSlide * 100}%)` }}
@@ -163,7 +184,7 @@ const Home = () => {
                 {slide.type === "video" ? (
                   <iframe
                     key={currentSlide}
-                    className="absolute top-0 left-0 w-full h-full scale-[1.5] pointer-events-none"
+                    className="absolute top-0 left-0 w-full h-full pointer-events-none"
                     src={`${slide.src}?enablejsapi=1&modestbranding=1&rel=0&autoplay=1`}
                     title="IIoT Training Video"
                     frameBorder="0"
@@ -312,7 +333,7 @@ const Home = () => {
                                   font-semibold py-0.5 sm:py-1 px-2 
                                   rounded-md text-center break-words w-fit max-w-none 
                                   shadow-md line-clamp-3">
-                    {partner.name}
+                    {partner.partner_name}
                   </div>
                 </div>
 
@@ -325,8 +346,8 @@ const Home = () => {
                 {/* Layer logo */}
                 <div className="relative z-20 w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 bg-white rounded-md shadow-md flex items-center justify-center">
                   <img
-                    src={partner.logo}
-                    alt={partner.name}
+                    src={partner.partner_logo || "/default-logo.png"}
+                    alt={partner.partner_name}
                     className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 object-contain"
                   />
                 </div>
