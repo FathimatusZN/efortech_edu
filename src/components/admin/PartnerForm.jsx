@@ -1,4 +1,3 @@
-// src/components/admin/PartnerForm.jsx
 "use client";
 
 import { InputField, ImageUploader } from "@/components/layout/InputField";
@@ -18,12 +17,11 @@ export default function PartnerForm({
     
   return (
     <div className="outline outline-3 outline-mainBlue p-6 bg-white shadow-md rounded-lg border w-full">
-      {/* Input Fields */}
       <div className="flex flex-wrap md:flex-nowrap gap-8 justify-between">
         <div className="w-full md:w-[75%] flex flex-col space-y-4">
           <InputField
             label="Partner Name"
-            placeholder="Type partner name here.."
+            placeholder="Type partner name here"
             required
             className="mt-2"
             value={partner_name}
@@ -31,7 +29,7 @@ export default function PartnerForm({
           />
         </div>
         <div className="w-full sm:w-40">
-          <label className="text-lg font-semibold block mb-2">Partner Status</label>
+          <label className="text-xl font-semibold block mb-2">Partner Status</label>
           <div className="flex items-center justify-start gap-x-4 mb-1">
             <span className="text-md text-gray-600 min-w-[70px] text-left">
               {status === 1 ? 'Active' : 'Archived'}
@@ -45,15 +43,14 @@ export default function PartnerForm({
         </div>
       </div>
 
-      {/* Category */}
-      <div className="w-full mt-6">
+      <div className="mt-6 w-full">
         <label className="block text-md font-semibold w-full mb-2">
           Partner Category<span className="text-red-500"> *</span>
         </label>
         <div className="mt-1 flex gap-12 flex-wrap">
           {[
-            { label: 'Institution', value: 'institution' },
-            { label: 'College', value: 'college' },
+            { label: 'Institution', value: 1 },
+            { label: 'College', value: 2 },
           ].map((item) => (
             <label key={item.value} className="flex items-center gap-2 cursor-pointer">
               <div className="relative">
@@ -75,8 +72,7 @@ export default function PartnerForm({
         </div>
       </div>
 
-      {/* Logo Upload */}
-      <div className="mt-6">
+      <div className="mt-6 w-full md:w-[60%]">
         <ImageUploader
           maxImages={1}
           images={logo}
