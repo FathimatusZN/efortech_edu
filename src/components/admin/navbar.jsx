@@ -4,9 +4,10 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/app/context/AuthContext";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
 const AdminNavbar = () => {
-    const { user, logout } = useAuth();
+    const { user, logout, loading } = useAuth();
     const router = useRouter();
 
     const [menuState, setMenuState] = useState({
@@ -78,7 +79,13 @@ const AdminNavbar = () => {
     };
 
     const displayName = getDisplayName(user?.fullname);
-    const profilePhoto = user?.user_photo || "/assets/admin1.png";
+
+    const isValidPhoto = user?.user_photo && user.user_photo.trim() !== "";
+    const profilePhoto = isValidPhoto ? user.user_photo : "/assets/admin1.png";
+
+    if (loading) {
+        return <LoadingSpinner text="Loading profile..." />;
+    }
 
     if (!user || (user.role !== "admin" && user.role !== "superadmin")) {
         return null;
