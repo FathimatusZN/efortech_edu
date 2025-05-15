@@ -11,6 +11,8 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        let unsubscribe = () => { };
+
         const checkStoredAuth = async () => {
             setLoading(true);
             const storedUser = localStorage.getItem("user");
@@ -18,35 +20,34 @@ export const AuthProvider = ({ children }) => {
 
             if (storedUser && storedToken) {
                 setUser(JSON.parse(storedUser));
-                setLoading(false);
-            } else {
-                // Jalankan Firebase Auth Listener
-                const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-                    if (currentUser) {
-                        const idToken = await currentUser.getIdToken(true);
+            }
 
-                        try {
-                            const res = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user/me`, {
-                                headers: { Authorization: `Bearer ${idToken}` }
-                            });
-                            setUser(res.data.data);
-                            localStorage.setItem("user", JSON.stringify(res.data.data));
-                            localStorage.setItem("token", idToken);
-                        } catch (error) {
-                            console.error("Error fetching user data", error);
-                            logout();
-                        }
-                    } else {
+            unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+                if (currentUser) {
+                    try {
+                        const idToken = await currentUser.getIdToken(true);
+                        const res = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user/me`, {
+                            headers: { Authorization: `Bearer ${idToken}` }
+                        });
+                        setUser(res.data.data);
+                        localStorage.setItem("user", JSON.stringify(res.data.data));
+                        localStorage.setItem("token", idToken);
+                    } catch (err) {
+                        console.error("Error fetching user data", err);
                         logout();
                     }
-                    setLoading(false);
-                });
-
-                return () => unsubscribe();
-            }
+                } else {
+                    logout();
+                }
+                setLoading(false);
+            });
         };
 
         checkStoredAuth();
+
+        return () => {
+            if (unsubscribe) unsubscribe();
+        };
     }, []);
 
     const login = async (email, password) => {
