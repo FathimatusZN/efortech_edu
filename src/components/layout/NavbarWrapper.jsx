@@ -6,18 +6,19 @@ import UserNavbar from "@/components/user/navbar.jsx";
 import AdminNavbar from "@/components/admin/navbar.jsx";
 
 const NavbarWrapper = () => {
-    const { user } = useAuth();
-    console.log("User di Navbar:", user);
+    const { user, loading } = useAuth();
 
-    if (!user) {
-        return <DefaultNavbar />;
-    }
-
-    if (user.role === "superadmin" || user.role === "admin") {
-        return <AdminNavbar />;
-    }
-
-    return <UserNavbar />;
+    return (
+        <>
+            {!user ? (
+                <DefaultNavbar />
+            ) : user.role === "admin" || user.role === "superadmin" ? (
+                <AdminNavbar />
+            ) : (
+                <UserNavbar />
+            )}
+        </>
+    );
 };
 
 export default NavbarWrapper;
