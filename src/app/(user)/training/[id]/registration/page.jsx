@@ -8,6 +8,7 @@ import { getIdToken } from "firebase/auth";
 import { Check, Trash2 } from "lucide-react";
 import { SuccessDialog } from "@/components/ui/SuccessDialog";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import { onAuthStateChanged } from "firebase/auth";
 
 // Training Header, display training banner with slideshow effect
 const TrainingHeader = React.memo(({ training }) => {
@@ -63,7 +64,7 @@ const RegistrationPage = () => {
   const [redirecting, setRedirecting] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
 
-  // Fetch training data
+  // Fetch training and user data
   useEffect(() => {
     const fetchTraining = async () => {
       try {
@@ -76,19 +77,18 @@ const RegistrationPage = () => {
         }
       } catch (err) {
         console.error("Failed to fetch training:", err);
-      } finally {
-        setLoading(false);
       }
     };
 
-    const fetchUser = async () => {
-      const currentUser = auth.currentUser;
+    fetchTraining();
+
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (!currentUser) {
         setShowLoginModal(true);
         return;
       }
 
-      const token = await getIdToken(currentUser);
+      const token = await currentUser.getIdToken();
       setUser(currentUser);
 
       try {
@@ -100,7 +100,6 @@ const RegistrationPage = () => {
         );
 
         const data = await res.json();
-
         if (res.ok && data.data) {
           const userData = data.data;
           setFormData((prev) => ({
@@ -109,16 +108,15 @@ const RegistrationPage = () => {
             email: userData.email || currentUser.email || "",
             institution: userData.institution || "",
           }));
-        } else {
-          console.error("User data not found in backend");
         }
       } catch (err) {
         console.error("Failed to fetch user data:", err);
+      } finally {
+        setLoading(false);
       }
-    };
+    });
 
-    fetchTraining();
-    fetchUser();
+    return () => unsubscribe();
   }, [id]);
 
   // Ref for debouncing email validation
