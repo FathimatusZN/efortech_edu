@@ -1,5 +1,3 @@
-// efortech_edu/src/components/admin/UploadCertificateDialog.jsx
-
 import React, { useState, useEffect } from "react";
 import {
     Dialog,
@@ -25,8 +23,10 @@ export function UploadCertificateDialog({
     const [certPreviewUrl, setCertPreviewUrl] = useState("");
     const [errors, setErrors] = useState({});
     const [saving, setSaving] = useState(false);
+    const [emailPreviewHtml, setEmailPreviewHtml] = useState("");
+    const [emailPreviewLoading, setEmailPreviewLoading] = useState(false);
+    const [emailPreviewFetched, setEmailPreviewFetched] = useState(false);
 
-    // Reset form state when dialog is closed
     const resetForm = () => {
         setCertificateNumber("");
         setIssuedDate("");
@@ -34,14 +34,14 @@ export function UploadCertificateDialog({
         setCertFile(null);
         setCertPreviewUrl("");
         setErrors({});
+        setEmailPreviewHtml("");
+        setEmailPreviewFetched(false);
     };
 
-    // Reset form when dialog is closed
     useEffect(() => {
         if (!open) resetForm();
     }, [open]);
 
-    // Handle file upload and preview
     const handleFileChange = async (e) => {
         const file = e.target.files[0];
         if (file) {
@@ -61,37 +61,6 @@ export function UploadCertificateDialog({
         }
     };
 
-    // Handle submit and save certificate data
-    const handleSubmit = async () => {
-        setSaving(true);
-        setErrors({});
-
-        if (!certificateNumber || !issuedDate || !expiredDate || !certPreviewUrl) {
-            setErrors({
-                certificateNumber: !certificateNumber && "Certificate number is required",
-                issuedDate: !issuedDate && "Issued date is required",
-                expiredDate: !expiredDate && "Expired date is required",
-                certFile: !certPreviewUrl && "Certificate file is required",
-            });
-            setSaving(false);
-            return;
-        }
-
-        try {
-            await saveCertificate();
-            onShowSuccess?.();
-            setOpen(false);
-        } catch (err) {
-            setErrors((prev) => ({
-                ...prev,
-                general: err.message || "Failed to save certificate",
-            }));
-        } finally {
-            setSaving(false);
-        }
-    };
-
-    // Upload certificate file to backend
     const uploadFile = async (file) => {
         const allowedTypes = [
             "image/jpeg", "image/png", "image/webp", "image/jpg", "image/heic", "application/pdf",
@@ -121,36 +90,107 @@ export function UploadCertificateDialog({
         return data.data.fileUrl;
     };
 
-    // Save certificate metadata to backend
-    const saveCertificate = async () => {
-        const body = {
-            issued_date: issuedDate,
-            expired_date: expiredDate,
-            certificate_number: certificateNumber,
-            cert_file: certPreviewUrl,
-            registration_participant_id: participant.registration_participant_id,
-        };
+    const isFormValid =
+        issuedDate.trim() &&
+        expiredDate.trim() &&
+        certPreviewUrl;
 
-        console.log("Saving certificate...", body);
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/certificate/`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(body),
-        });
+    // Tombol preview cuma aktif kalau data lengkap dan ga loading preview
+    const canPreviewEmail = isFormValid && !emailPreviewLoading;
 
-        if (!response.ok) {
-            const errData = await response.json();
-            throw new Error(errData.message || "API error");
+    // Tombol save aktif kalau sudah valid dan preview email sudah didapat
+    const canSave = isFormValid && emailPreviewFetched && !saving;
+
+    const fetchEmailPreview = async () => {
+        if (!canPreviewEmail) return;
+
+        setEmailPreviewLoading(true);
+        setErrors((prev) => ({ ...prev, preview: null }));
+        try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/email/preview-training-certificate`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    registration_participant_id: participant.registration_participant_id,
+                    issued_date: issuedDate,
+                    expired_date: expiredDate,
+                    certificate_number: participant.certificate_number,
+                }),
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) throw new Error(data.message);
+
+            setEmailPreviewHtml(data.data.html);
+            setEmailPreviewFetched(true);
+        } catch (err) {
+            setErrors((prev) => ({ ...prev, preview: err.message }));
+            setEmailPreviewHtml("");
+            setEmailPreviewFetched(false);
+        } finally {
+            setEmailPreviewLoading(false);
         }
     };
 
-    // Check if form is valid
-    const isFormValid =
-        certificateNumber && issuedDate && expiredDate && certPreviewUrl;
+    const handleSubmit = async () => {
+        setSaving(true);
+        setErrors({});
 
-    // Render file icon based on file type
+        if (!canSave) {
+            setErrors({
+                general: "Please fill all data and preview email before saving.",
+            });
+            setSaving(false);
+            return;
+        }
+
+        try {
+            const body = {
+                issued_date: issuedDate,
+                expired_date: expiredDate,
+                certificate_number: participant.certificate_number,
+                cert_file: certPreviewUrl,
+                registration_participant_id: participant.registration_participant_id,
+            };
+
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/certificate/`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(body),
+            });
+
+            if (!response.ok) {
+                const errData = await response.json();
+                throw new Error(errData.message || "API error");
+            }
+
+            // Setelah save, kirim email
+            const emailResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/email/send-training-certificate`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    certificate_number: participant.certificate_number
+                }),
+            });
+
+            const emailData = await emailResponse.json();
+            if (!emailResponse.ok) throw new Error(emailData.message);
+
+            onShowSuccess?.();
+            setOpen(false);
+        } catch (err) {
+            setErrors((prev) => ({
+                ...prev,
+                general: err.message || "Failed to save certificate",
+            }));
+        } finally {
+            setSaving(false);
+        }
+    };
+
     const renderFileIcon = () => {
         if (!certFile) return <AiOutlineFileUnknown className="text-gray-500 w-5 h-5" />;
         if (certFile.type === "application/pdf")
@@ -162,34 +202,39 @@ export function UploadCertificateDialog({
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
-            <DialogContent className="max-w-4xl px-4 py-6 rounded-lg">
+            <DialogContent className="max-w-6xl px-4 py-6 rounded-lg">
                 <DialogHeader>
                     <DialogTitle>Upload Certificate</DialogTitle>
                 </DialogHeader>
 
-                <div className="grid md:grid-cols-2 gap-6 mt-4 max-h-[80vh] overflow-auto px-1">
-                    {/* Left - Certificate metadata form */}
-                    <div className="space-y-4">
-                        <div>
-                            <Label>Participant ID</Label>
-                            <Input value={participant?.registration_participant_id || ""} disabled />
-                        </div>
-                        <div>
-                            <Label>Full Name</Label>
-                            <Input value={participant?.fullname || ""} disabled />
-                        </div>
-                        <div>
-                            <Label>Certificate Number</Label>
-                            <Input
-                                value={certificateNumber}
-                                onChange={(e) => setCertificateNumber(e.target.value)}
-                                placeholder="CERT-2025-XXXX"
-                            />
-                            {errors.certificateNumber && (
-                                <p className="text-red-500 text-sm">{errors.certificateNumber}</p>
-                            )}
+                <div className="grid md:grid-cols-2 gap-12 max-h-[80vh] overflow-auto px-1">
+                    {/* Left - Form input */}
+                    <div className="space-y-2">
+                        <div className="flex gap-4">
+                            <div className="flex-1">
+                                <Label>Participant ID</Label>
+                                <Input value={participant?.registration_participant_id || ""} disabled />
+                            </div>
+
+                            <div className="flex-1">
+                                <Label>Certificate Number</Label>
+                                <Input value={participant?.certificate_number || ""} disabled />
+                                {errors.certificateNumber && (
+                                    <p className="text-red-500 text-sm">{errors.certificateNumber}</p>
+                                )}
+                            </div>
                         </div>
 
+                        <div className="flex gap-4">
+                            <div className="flex-1">
+                                <Label>Full Name</Label>
+                                <Input value={participant?.fullname || ""} disabled />
+                            </div>
+                            <div className="flex-1">
+                                <Label>Email</Label>
+                                <Input value={participant?.email || ""} disabled />
+                            </div>
+                        </div>
                         <div className="flex gap-4">
                             <div className="flex-1">
                                 <Label>Issued Date</Label>
@@ -214,10 +259,7 @@ export function UploadCertificateDialog({
                                 )}
                             </div>
                         </div>
-                    </div>
 
-                    {/* Right - File upload and preview */}
-                    <div className="space-y-4">
                         <div>
                             <Label>Certificate File</Label>
                             <Input type="file" onChange={handleFileChange} />
@@ -259,17 +301,43 @@ export function UploadCertificateDialog({
                                 )}
                             </div>
                         )}
+                    </div>
 
-                        {errors.submit && (
-                            <p className="text-red-500 text-sm">{errors.submit}</p>
+                    {/* Right - Email Preview & Actions */}
+                    <div className="space-y-4">
+                        <Button
+                            onClick={fetchEmailPreview}
+                            disabled={!canPreviewEmail}
+                            className="w-full bg-lightBlue text-white hover:bg-mainBlue"
+                        >
+                            {emailPreviewLoading ? "Loading Preview..." : "Preview Email"}
+                        </Button>
+
+                        {errors.preview && (
+                            <p className="text-red-500 text-sm">{errors.preview}</p>
+                        )}
+
+                        {emailPreviewHtml ? (
+                            <div
+                                className="mt-4 p-4 border rounded bg-gray-50 overflow-auto max-h-[60vh] text-sm"
+                                dangerouslySetInnerHTML={{ __html: emailPreviewHtml }}
+                            />
+                        ) : (
+                            <p className="text-gray-500 mt-4 italic text-sm">
+                                Email preview will show here after you click Preview Email.
+                            </p>
+                        )}
+
+                        {errors.general && (
+                            <p className="text-red-500 text-sm mt-2">{errors.general}</p>
                         )}
 
                         <Button
-                            className="w-full mt-4 bg-mainBlue text-white hover:bg-lightBlue"
                             onClick={handleSubmit}
-                            disabled={!isFormValid || saving}
+                            disabled={!canSave}
+                            className="w-full bg-mainBlue text-white hover:bg-lightBlue 700 mt-4"
                         >
-                            {saving ? "Saving..." : "Save Certificate"}
+                            {saving ? "Saving..." : "Save & Send Email"}
                         </Button>
                     </div>
                 </div>
