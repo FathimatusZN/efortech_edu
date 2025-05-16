@@ -5,6 +5,7 @@ import { useParams, useSearchParams } from "next/navigation";
 import { Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SuccessDialog } from "@/components/ui/SuccessDialog";
+import { useRouter } from "next/navigation";
 
 const StarRating = ({ rating, onRate, readonly = false }) => (
   <div className="flex items-center justify-center gap-2 mb-6">
@@ -37,6 +38,8 @@ export default function FeedbackForm() {
 
   const searchParams = useSearchParams();
   const readonlyParam = searchParams.get("readonly");
+
+  const router = useRouter();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -87,9 +90,9 @@ export default function FeedbackForm() {
           const result = await res.json();
 
           if (res.ok) {
-            setReviewData(result.data); 
-            setRating(result.data.score); 
-            setReview(result.data.review_description); 
+            setReviewData(result.data);
+            setRating(result.data.score);
+            setReview(result.data.review_description);
             console.log("Review data:", result.data);
           } else {
             alert("Gagal mengambil review: " + result.message);
@@ -137,7 +140,12 @@ export default function FeedbackForm() {
 
       <SuccessDialog
         open={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
+        onOpenChange={(open) => {
+          setIsDialogOpen(open);
+          if (!open) {
+            router.push("/edit-profile");
+          }
+        }}
         title="Thank You!"
         messages={["Your review has been submitted.", "Have a great day!"]}
         buttonText="Okay"
