@@ -4,12 +4,12 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import UploadPaymentDialog from "./UploadPaymentDialog";
 
-export default function HistoryCourseCard({
-  id,
+export default function TrainingHistoryCard({
+  registrationId,
   trainingId,
-  participantId,
+  registrationParticipantId,
   images,
-  title,
+  trainingName,
   status,
   hasReview = false,
   hasCertificate = false,
@@ -29,8 +29,8 @@ export default function HistoryCourseCard({
 
   const handleWriteReview = () => {
     const path = hasReview
-      ? `/edit-profile/review/${participantId}?readonly=true`
-      : `/edit-profile/review/${participantId}`;
+      ? `/edit-profile/review/${registrationParticipantId}?readonly=true`
+      : `/edit-profile/review/${registrationParticipantId}`;
     router.push(path);
   };
 
@@ -42,7 +42,7 @@ export default function HistoryCourseCard({
   const handleDownloadCertificate = async () => {
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/certificate/${participantId}`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/certificate/${registrationParticipantId}`,
         {
           method: "GET",
         }
@@ -52,7 +52,7 @@ export default function HistoryCourseCard({
 
       const a = document.createElement("a");
       a.href = url;
-      a.download = `certificate-${title}.pdf`;
+      a.download = `certificate-${trainingName}.pdf`;
       a.click();
       window.URL.revokeObjectURL(url);
     } catch (error) {
@@ -67,7 +67,7 @@ export default function HistoryCourseCard({
         return (
           <>
             <Button variant="orange" className="w-full" disabled>
-              Upload Bukti Pembayaran
+              Upload Payment Proof
             </Button>
             <Button variant="outline" className="w-full mt-2">
               <a href={`/training/${trainingId}`}>See Details</a>
@@ -82,7 +82,7 @@ export default function HistoryCourseCard({
               className="w-full"
               onClick={handleUploadPayment}
             >
-              Upload Bukti Pembayaran
+              Upload Payment Proof
             </Button>
             <Button variant="outline" className="w-full mt-2">
               <a href={`/training/${trainingId}`}>See Details</a>
@@ -152,9 +152,8 @@ export default function HistoryCourseCard({
             key={index}
             src={img}
             alt={`Slide ${index + 1}`}
-            className={`absolute transition-opacity duration-1000 w-full h-full object-cover ${
-              currentSlide === index ? "opacity-100" : "opacity-0"
-            }`}
+            className={`absolute transition-opacity duration-1000 w-full h-full object-cover ${currentSlide === index ? "opacity-100" : "opacity-0"
+              }`}
           />
         ))}
 
@@ -164,14 +163,12 @@ export default function HistoryCourseCard({
             <button
               key={index}
               onClick={() => setCurrentSlide(index)}
-              className={`w-3 h-3 rounded-full border-2 flex justify-center items-center transition-all ${
-                currentSlide === index ? "border-mainOrange" : "border-gray-400"
-              }`}
+              className={`w-3 h-3 rounded-full border-2 flex justify-center items-center transition-all ${currentSlide === index ? "border-mainOrange" : "border-gray-400"
+                }`}
             >
               <div
-                className={`w-1 h-1 rounded-full items-center ${
-                  currentSlide === index ? "bg-mainOrange" : "bg-transparent"
-                }`}
+                className={`w-1 h-1 rounded-full items-center ${currentSlide === index ? "bg-mainOrange" : "bg-transparent"
+                  }`}
               ></div>
             </button>
           ))}
@@ -179,7 +176,7 @@ export default function HistoryCourseCard({
       </div>
 
       <div className="p-4 text-center">
-        <h2 className="text-lg font-semibold text-blue-900 my-3">{title}</h2>
+        <h2 className="text-lg font-semibold text-blue-900 my-3">{trainingName}</h2>
 
         {renderButtons()}
       </div>
@@ -187,7 +184,7 @@ export default function HistoryCourseCard({
       <UploadPaymentDialog
         open={isUploadDialogOpen}
         onOpenChange={setIsUploadDialogOpen}
-        registrationId={id}
+        registrationId={registrationId}
       />
     </div>
   );

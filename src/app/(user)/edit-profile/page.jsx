@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { FaSave, FaEdit } from "react-icons/fa";
 import { Button } from "@/components/ui/button";
-import HistoryCourse from "./HistoryCourse";
+import TrainingHistory from "./TrainingHistory";
 import { auth } from "@/app/firebase/config";
 import { getIdToken } from "firebase/auth";
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -282,9 +282,9 @@ export default function EditProfile() {
         </div>
       </div>
 
-      {/* History Course Section */}
+      {/* History Training Section */}
       <div className="mt-8">
-        <HistoryCourse userId={user?.uid} />
+        <TrainingHistory userId={user?.uid} />
       </div>
     </div>
   );
