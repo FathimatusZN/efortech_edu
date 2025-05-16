@@ -42,22 +42,22 @@ export default function TrainingHistoryCard({
   const handleDownloadCertificate = async () => {
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/certificate/${registrationParticipantId}`,
-        {
-          method: "GET",
-        }
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/certificate/download/${registrationParticipantId}`
       );
+
+      if (!res.ok) throw new Error("Failed to download");
+
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
 
       const a = document.createElement("a");
       a.href = url;
-      a.download = `certificate-${trainingName}.pdf`;
+      a.download = `Certificate - ${trainingName}.pdf`;
       a.click();
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      console.error("Gagal download sertifikat:", error);
-      alert("Terjadi kesalahan saat mengunduh sertifikat.");
+      console.error("Failed to download certificate:", error);
+      alert("An error occurred while downloading the certificate.");
     }
   };
 
