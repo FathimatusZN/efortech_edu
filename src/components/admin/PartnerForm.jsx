@@ -36,7 +36,7 @@ export default function PartnerForm({
             </span>
             <Switch
               checked={status === 1}
-              onCheckedChange={(checked) => setStatus(checked ? 1 : 2)}
+              onCheckedChange={(checked) => setStatus(checked ? 1 : 0)}
               className="data-[state=checked]:bg-mainBlue bg-gray-300"
             />
           </div>

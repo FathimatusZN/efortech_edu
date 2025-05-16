@@ -1,77 +1,87 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { Switch } from '@/components/ui/switch';
+import { useEffect, useState } from "react";
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
+import PartnerTable from '@/components/admin/PartnerTable';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import funfacts from '@/components/data/funfacts';
 
 export default function PartnerAdminPage() {
-  const [partners, setPartners] = useState([]);
+  const [partner, setPartner] = useState([]);
+  const [loadingAdd, setLoadingAdd] = useState(false);
+  const [loadingFetch, setLoadingFetch] = useState(true);
+  const [randomFunfact, setRandomFunfact] = useState(null);
+  const [hasMounted, setHasMounted] = useState(false);
 
-  const fetchPartners = async () => {
-    const res = await fetch('/api/partners');
-    const data = await res.json();
-    setPartners(data.data || []);
+  const router = useRouter();
+
+  const fetchPartner = async () => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/partner`);
+      const data = await res.json();
+      setPartner(data.data || []);
+    } catch (err) {
+      console.error('Gagal mengambil data partner:', err);
+    } finally {
+      setLoadingFetch(false);
+    }
   };
 
   useEffect(() => {
-    fetchPartners();
+    fetchPartner();
   }, []);
 
-  return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Partner Management</h1>
-        <Link href="/partner-admin/form">
-          <Button>Tambah Partner</Button>
-        </Link>
-      </div>
+  useEffect(() => {
+    setHasMounted(true);
+    const index = Math.floor(Math.random() * funfacts.length);
+    setRandomFunfact(funfacts[index]);
+  }, []);
 
-      <div className="overflow-x-auto">
-        <table className="min-w-full border bg-white shadow-md rounded-xl">
-          <thead>
-            <tr className="bg-gray-100 text-left">
-              <th className="p-3">Logo</th>
-              <th className="p-3">Nama</th>
-              <th className="p-3">Kategori</th>
-              <th className="p-3">Status</th>
-              <th className="p-3">Aksi</th>
-            </tr>
-          </thead>
-          <tbody>
-            {partners.map((partner) => (
-              <tr key={partner.partner_id} className="border-t">
-                <td className="p-3">
-                  {partner.partner_logo ? (
-                    <img src={partner.partner_logo} alt="logo" className="h-10 w-10 object-contain" />
-                  ) : (
-                    <span className="text-gray-400 italic">No logo</span>
-                  )}
-                </td>
-                <td className="p-3">{partner.partner_name}</td>
-                <td className="p-3">{partner.category === 1 ? 'College' : 'Institution'}</td>
-                <td className="p-3">
-                  <span className={`px-2 py-1 text-xs rounded ${partner.status ? 'bg-green-100 text-green-800' : 'bg-gray-200 text-gray-700'}`}>
-                    {partner.status ? 'Active' : 'Archived'}
-                  </span>
-                </td>
-                <td className="p-3">
-                  <Link href={`/partner-admin/form?id=${partner.partner_id}`}>
-                    <Button variant="outline" size="sm">Edit</Button>
-                  </Link>
-                </td>
-              </tr>
-            ))}
-            {partners.length === 0 && (
-              <tr>
-                <td colSpan="5" className="p-4 text-center text-gray-500">
-                  Belum ada data partner.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-    </div>
+  const handleAddPartner = () => {
+    setLoadingAdd(true);
+    setTimeout(() => {
+      router.push('/partner-admin/form-partner');
+    }, 1000);
+  };
+
+  const showFullLoading = loadingAdd || loadingFetch;
+
+  return (
+    <>
+      {showFullLoading ? (
+        <div className="min-h-screen w-full flex flex-col items-center justify-center bg-white px-4 py-10 text-center">
+          <LoadingSpinner size={32} text="Loading..." className="mb-4" />
+          {hasMounted && randomFunfact && (
+            <div className="bg-blue-50 rounded-xl px-4 py-3 shadow-md mx-auto">
+              <p className="text-sm sm:text-base text-black italic line-clamp-2">
+                💡 {randomFunfact}
+              </p>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-2xl font-bold">Partner Management</h1>
+            <Button variant="orange" onClick={handleAddPartner}>
+              Add Partner
+            </Button>
+          </div>
+
+          <div className="bg-white outline outline-3 outline-mainBlue rounded-2xl p-4 sm:p-6 shadow-[8px_8px_0px_0px_#157ab2]">
+            <PartnerTable partner={partner} onDeletePartner={fetchPartner} />
+            <div className="flex justify-end mt-4">
+              <a
+                href="/partner-admin"
+                className="text-black underline cursor-pointer text-sm sm:text-base"
+              >
+                See All Partner
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useMemo, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/app/context/AuthContext";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import PartnerForm from "@/components/admin/PartnerForm";
@@ -25,7 +25,7 @@ export default function AddPartner() {
   const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
 
   const isFormValid = partner_name.trim() !== "" && logo.length > 0;
-
+  
   const handleImageUpload = async (file) => {
     if (!file) return;
 
@@ -63,14 +63,19 @@ export default function AddPartner() {
     setLoading(true);
     const formData = {
       partner_name,
-      category,
-      status,
+      category: Number(category),
+      status: Number(status),
       partner_logo: logo[0],
     };
 
+    const method = id ? "PUT" : "POST";
+    const url = id
+      ? `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/partner/edit/${id}`
+      : `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/partner`;
+
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/partner`, {
-        method: "POST",
+      const res = await fetch(url, {
+        method,
         headers: {
           "Content-Type": "application/json",
         },
@@ -78,9 +83,9 @@ export default function AddPartner() {
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Gagal menambahkan partner");
+      if (!res.ok) throw new Error(data.message || "Gagal menyimpan data partner");
 
-      setDialogContent("Partner berhasil ditambahkan");
+      setDialogContent(id ? "Partner berhasil diperbarui" : "Partner berhasil ditambahkan");
       setShowDialog(true);
     } catch (error) {
       setDialogContent(error.message);
@@ -89,6 +94,34 @@ export default function AddPartner() {
       setLoading(false);
     }
   };
+
+  const searchParams = useSearchParams();
+  const id = searchParams.get("id");
+
+  useEffect(() => {
+    if (id) {
+      const fetchPartnerData = async () => {
+        try {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/partner/${id}`);
+          const data = await res.json();
+          if (res.ok) {
+            setPartnerName(data.data.partner_name);
+            setCategory(data.data.category);
+            setStatus(data.data.status);
+            setLogo([data.data.partner_logo]);
+          } else {
+            throw new Error(data.message || "Failed to fetch data");
+          }
+        } catch (error) {
+          console.error("Fetch partner failed:", error.message);
+          setDialogContent("Gagal mengambil data partner");
+          setShowDialog(true);
+        }
+      };
+
+      fetchPartnerData();
+    }
+  }, [id]);
 
   const handleDiscard = () => {
     setOpenConfirmDialog(false);
@@ -112,7 +145,7 @@ export default function AddPartner() {
     <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
       <div className="relative pt-4 px-4 sm:px-6 lg:px-8 max-w-[1440px] mx-auto min-h-screen">
         <div className="flex flex-wrap justify-between items-center w-full mt-6 mb-4 gap-4">
-          <PageTitle title="Add New Partner" />
+          <PageTitle title={id ? "Edit Partner" : "Add New Partner"} />
 
           <div className="flex flex-wrap items-center gap-3 sm:gap-4 w-full sm:w-auto">
             <SaveButton onClick={handleSubmit} disabled={!isFormValid} />
