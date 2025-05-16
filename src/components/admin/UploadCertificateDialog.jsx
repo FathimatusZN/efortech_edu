@@ -147,15 +147,15 @@ export function UploadCertificateDialog({
 
         try {
             const body = {
+                certificate_id: participant.certificate_id,
                 issued_date: issuedDate,
                 expired_date: expiredDate,
-                certificate_number: participant.certificate_number,
                 cert_file: certPreviewUrl,
                 registration_participant_id: participant.registration_participant_id,
             };
 
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/certificate/`, {
-                method: "POST",
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/certificate/update`, {
+                method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
                 },
