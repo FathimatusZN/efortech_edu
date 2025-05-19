@@ -19,6 +19,8 @@ const AdminNavbar = () => {
         profile: useRef(null),
         mobile: useRef(null),
         mobileButton: useRef(null),
+        validation: false,
+        validation: useRef(null),
     };
 
     const toggleMenu = (menuKey) => {
@@ -93,7 +95,14 @@ const AdminNavbar = () => {
     let navLinks = [
         { name: "Dashboard", path: "/dashboard" },
         { name: "Training", path: "/training-admin" },
-        { name: "Validation", path: "/validation" },
+        {
+            name: "Validation",
+            path: "/validation",
+            submenu: [
+                { name: "Training Registration", path: "/validation/training" },
+                { name: "User Certificate", path: "/validation/certificate" },
+            ],
+        },
         { name: "Certificate", path: "/certificate-admin" },
         { name: "Article", path: "/article-admin" },
     ];
@@ -106,15 +115,41 @@ const AdminNavbar = () => {
                 {/* Desktop Nav */}
                 <div className="hidden md:flex items-center space-x-8 text-mainBlue font-medium">
                     {navLinks.map((link, index) => (
-                        <Link
-                            key={index}
-                            href={link.path}
-                            className="hover:text-mainOrange"
-                            onClick={closeAllMenus}
-                        >
-                            {link.name}
-                        </Link>
+                        <div key={index} className="relative group">
+                            <Link
+                                href={link.path}
+                                className="hover:text-mainOrange flex items-center"
+                                onClick={closeAllMenus}
+                            >
+                                {link.name}
+                                {link.submenu && (
+                                    <svg className="ml-1 w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+                                        <path d="M5.5 7l4.5 4.5L14.5 7" />
+                                    </svg>
+                                )}
+                            </Link>
+
+                            {/* Dropdown submenu */}
+                            {link.submenu && (
+                                <div className="absolute z-10 hidden group-hover:block bg-white border rounded shadow-lg mt-2">
+                                    <ul className="py-2 w-60 text-mainBlue font-normal">
+                                        {link.submenu.map((sub, subIndex) => (
+                                            <li key={subIndex}>
+                                                <Link
+                                                    href={sub.path}
+                                                    onClick={closeAllMenus}
+                                                    className="block px-4 py-2 hover:bg-gray-100"
+                                                >
+                                                    {sub.name}
+                                                </Link>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+                        </div>
                     ))}
+
 
                     {/* Profile Dropdown */}
                     <div className="relative" ref={refs.profile}>
@@ -209,17 +244,71 @@ const AdminNavbar = () => {
                                     </li>
                                 )}
 
-                                {navLinks.map((link, index) => (
-                                    <li key={index}>
-                                        <Link
-                                            href={link.path}
-                                            className="block px-2 py-1 hover:bg-gray-100 rounded"
-                                            onClick={closeAllMenus}
+                                {navLinks
+                                    .filter((link) => link.name !== "Validation")
+                                    .map((link, index) => (
+                                        <li key={index}>
+                                            <Link
+                                                href={link.path}
+                                                className="block px-2 py-1 hover:bg-gray-100 rounded"
+                                                onClick={closeAllMenus}
+                                            >
+                                                {link.name}
+                                            </Link>
+                                        </li>
+                                    ))}
+
+                                {/* Mobile Validation dropdown */}
+                                <li className="relative" ref={refs.validation}>
+                                    <button
+                                        onClick={() => toggleMenu("validation")}
+                                        className="flex justify-between w-full items-center px-2 py-1 hover:bg-gray-100 rounded"
+                                    >
+                                        <span>Validation</span>
+                                        <svg
+                                            className={`w-4 h-4 transform transition-transform ${menuState.validation ? "rotate-180" : ""
+                                                }`}
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth="2"
+                                            viewBox="0 0 24 24"
                                         >
-                                            {link.name}
-                                        </Link>
-                                    </li>
-                                ))}
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </button>
+
+                                    {menuState.validation && (
+                                        <ul className="pl-4 mt-1 space-y-1">
+                                            <li>
+                                                <Link
+                                                    href="/validation"
+                                                    className="block py-1 px-2 rounded hover:bg-gray-100"
+                                                    onClick={closeAllMenus}
+                                                >
+                                                    Validation Overview
+                                                </Link>
+                                            </li>
+                                            <li>
+                                                <Link
+                                                    href="/validation/training"
+                                                    className="block py-1 px-2 rounded hover:bg-gray-100"
+                                                    onClick={closeAllMenus}
+                                                >
+                                                    Training Registration
+                                                </Link>
+                                            </li>
+                                            <li>
+                                                <Link
+                                                    href="/validation/certificate"
+                                                    className="block py-1 px-2 rounded hover:bg-gray-100"
+                                                    onClick={closeAllMenus}
+                                                >
+                                                    User Certificate
+                                                </Link>
+                                            </li>
+                                        </ul>
+                                    )}
+                                </li>
 
                                 <li className="border-t pt-2">
                                     <button
