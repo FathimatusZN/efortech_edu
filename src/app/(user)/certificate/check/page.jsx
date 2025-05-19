@@ -19,6 +19,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { NotFound } from "../../../../components/ui/ErrorPage";
+import { Button } from "@/components/ui/button";
 
 const PAGE_SIZE = 10;
 
@@ -58,9 +59,8 @@ export default function CertificateValidation() {
 
       try {
         setLoading(true);
-        const queryParams = new URLSearchParams({ q: searchTerm });
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/certificates/search?${queryParams}`
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/certificates/search?q=${searchTerm}`
         );
         const result = await res.json();
         setCertificates(result?.status === "success" ? result.data : []);
@@ -84,7 +84,9 @@ export default function CertificateValidation() {
 
   return (
     <div className="max-w-screen mx-auto p-8">
-      <h1 className="text-2xl font-bold text-center mb-6">Certificate Validation</h1>
+      <h1 className="text-2xl font-bold text-center mb-6">
+        Certificate Validation
+      </h1>
 
       {/* Search Input */}
       <div className="relative flex items-center mb-4 max-w-md mx-auto">
@@ -100,12 +102,18 @@ export default function CertificateValidation() {
       </div>
 
       {/* Loading state */}
-      {loading && searchTerm !== "" && <div className="text-center mt-10">Loading...</div>}
+      {loading && searchTerm !== "" && (
+        <div className="text-center mt-10">Loading...</div>
+      )}
 
       {/* No search term */}
       {searchTerm === "" && !loading && (
         <div className="text-center mt-10 min-h-screen">
-          <img src="/assets/no-data.png" alt="No Data" className="mx-auto w-64" />
+          <img
+            src="/assets/no-data.png"
+            alt="No Data"
+            className="mx-auto w-64"
+          />
           <p className="text-gray-600 mt-4">
             Please enter your name or certificate number to search.
           </p>
@@ -125,6 +133,7 @@ export default function CertificateValidation() {
                   <TableHead>Certificate Title</TableHead>
                   <TableHead>Expired Date</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -132,14 +141,35 @@ export default function CertificateValidation() {
                   <TableRow key={index}>
                     <TableCell>{item.certificate_number}</TableCell>
                     <TableCell>{item.fullname}</TableCell>
-                    <TableCell>{new Date(item.issued_date).toLocaleDateString()}</TableCell>
+                    <TableCell>
+                      {new Date(item.issued_date).toLocaleDateString()}
+                    </TableCell>
                     <TableCell>{item.certificate_title}</TableCell>
-                    <TableCell>{new Date(item.expired_date).toLocaleDateString()}</TableCell>
+                    <TableCell>
+                      {new Date(item.expired_date).toLocaleDateString()}
+                    </TableCell>
                     <TableCell
-                      className={`font-semibold ${item.validity_status === "Valid" ? "text-green-600" : "text-red-600"
-                        }`}
+                      className={`font-semibold ${
+                        item.validity_status === "Valid"
+                          ? "text-green-600"
+                          : "text-red-600"
+                      }`}
                     >
                       {item.validity_status}
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="outline"
+                        className="w-full border-mainOrange text-mainOrange hover:bg-mainOrange hover:text-white"
+                        onClick={() =>
+                          window.open(
+                            `/certificate/${item.certificate_id}`,
+                            "_blank"
+                          )
+                        }
+                      >
+                        Preview
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -155,7 +185,9 @@ export default function CertificateValidation() {
                   <PaginationPrevious
                     href="#"
                     onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-                    className={page === 1 ? "pointer-events-none opacity-50" : ""}
+                    className={
+                      page === 1 ? "pointer-events-none opacity-50" : ""
+                    }
                   />
                 </PaginationItem>
                 {[...Array(totalPages)].map((_, i) => (
@@ -172,8 +204,14 @@ export default function CertificateValidation() {
                 <PaginationItem>
                   <PaginationNext
                     href="#"
-                    onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-                    className={page === totalPages ? "pointer-events-none opacity-50" : ""}
+                    onClick={() =>
+                      setPage((prev) => Math.min(prev + 1, totalPages))
+                    }
+                    className={
+                      page === totalPages
+                        ? "pointer-events-none opacity-50"
+                        : ""
+                    }
                   />
                 </PaginationItem>
               </PaginationContent>
@@ -183,7 +221,8 @@ export default function CertificateValidation() {
           {/* Pagination info */}
           <div className="text-xs text-gray-600 text-center mt-2">
             Showing {(page - 1) * PAGE_SIZE + 1} to{" "}
-            {Math.min(page * PAGE_SIZE, certificates.length)} of {certificates.length} data
+            {Math.min(page * PAGE_SIZE, certificates.length)} of{" "}
+            {certificates.length} data
           </div>
         </>
       )}
