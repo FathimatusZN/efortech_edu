@@ -72,7 +72,7 @@ export default function PartnerForm({
         </div>
       </div>
 
-      <div className="mt-6 w-full md:w-[60%]">
+      <div className="mt-6 w-full md:w-[40%]">
         <ImageUploader
           maxImages={1}
           images={logo}
