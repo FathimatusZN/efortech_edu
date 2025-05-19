@@ -2,7 +2,6 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/app/context/AuthContext";
-import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
 const UserNavbar = () => {
   const { user, logout, loading } = useAuth();
@@ -87,7 +86,7 @@ const UserNavbar = () => {
   const profilePhoto = isValidPhoto ? user.user_photo : "/assets/user1.png";
 
   if (loading) {
-    return <LoadingSpinner text="Loading profile..." />;
+    return;
   }
 
   if (!user) {

@@ -272,6 +272,7 @@ export const ValidationCertificateTable = ({
         open={confirmDialogOpen}
         onClose={() => setConfirmDialogOpen(false)}
         certificateId={selectedItem?.user_certificate_id}
+        certificate_number={selectedItem?.certificate_number}
         fullname={selectedItem?.fullname}
         userId={selectedItem?.user_id}
         certName={selectedItem?.cert_type}

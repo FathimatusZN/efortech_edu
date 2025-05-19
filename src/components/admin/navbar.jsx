@@ -4,7 +4,6 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/app/context/AuthContext";
-import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
 const AdminNavbar = () => {
     const { user, logout, loading } = useAuth();
@@ -84,7 +83,7 @@ const AdminNavbar = () => {
     const profilePhoto = isValidPhoto ? user.user_photo : "/assets/admin1.png";
 
     if (loading) {
-        return <LoadingSpinner text="Loading profile..." />;
+        return;
     }
 
     if (!user || (user.role !== "admin" && user.role !== "superadmin")) {
