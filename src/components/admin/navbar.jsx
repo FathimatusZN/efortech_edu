@@ -182,6 +182,16 @@ const AdminNavbar = () => {
                                     <li>
                                         <button
                                             onClick={() => {
+                                                router.push("/manage-home");
+                                            }}
+                                            className="block px-4 py-2 text-mainBlue hover:bg-gray-100 w-full text-left"
+                                        >
+                                            Home Management
+                                        </button>
+                                    </li>
+                                    <li>
+                                        <button
+                                            onClick={() => {
                                                 logout();
                                                 router.push("/home");
                                             }}
@@ -229,6 +239,17 @@ const AdminNavbar = () => {
                                             className="w-8 h-8 rounded-full border border-gray-300"
                                         />
                                         <span>{displayName}</span>
+                                    </button>
+                                </li>
+
+                                <li>
+                                    <button
+                                        onClick={() => {
+                                            router.push("/manage-home");
+                                        }}
+                                        className="block px-2 py-1 hover:bg-gray-100 rounded w-full text-left"
+                                    >
+                                        Home Management
                                     </button>
                                 </li>
 
