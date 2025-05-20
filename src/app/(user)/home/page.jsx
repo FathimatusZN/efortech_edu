@@ -1,8 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
-import { Swiper, SwiperSlide } from 'swiper/react';
+import { useState, useEffect, useRef } from "react";
+import { Swiper, SwiperSlide } from "swiper/react";
 import { EffectCards, Autoplay } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/effect-cards";
@@ -10,24 +9,124 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FaAngleRight } from "react-icons/fa";
 import Link from "next/link";
-import {courses, reviews, articles} from "./dummydata"
+import { Navigation, Pagination } from "swiper/modules";
+import "swiper/css/pagination";
+
+// Category options for article filtering/display
+const categoryOptions = [
+  { id: 0, label: "All" },
+  { id: 1, label: "Education" },
+  { id: 2, label: "Event" },
+  { id: 3, label: "Success Story" },
+  { id: 4, label: "Blog" },
+];
 
 const Home = () => {
-  const router = useRouter();
-  const [isVisible, setIsVisible] = useState(false);
+  const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+  // Data states
+  const [slides, setSlides] = useState([]);
+  const [partnersData, setPartnersData] = useState({ Institution: [], College: [] });
+  const [topCourses, setTopCourses] = useState([]);
+  const [highlightArticles, setHighlightArticles] = useState([]);
+  const [reviewCards, setReviewCards] = useState([]);
+
   const [currentSlide, setCurrentSlide] = useState(0);
-  const slides = [
-    { type: "image", src: "/assets/Slide-1.svg" },
-    { type: "video", src: "https://www.youtube.com/embed/1Ddx4gRhPbA?autoplay=1&mute=1&enablejsapi=1&rel=0&modestbranding=1&playsinline=1" },
-    { type: "image", src: "/assets/Slide-2.svg" },
-  ];
+  const [isVisible, setIsVisible] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState("College");
 
   const sectionRef = useRef(null);
+  const scrollRef = useRef(null);
 
+  // Utility: Format number to IDR currency
+  const formatCurrency = (amount) =>
+    new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+    }).format(amount);
+
+  // Utility: Calculate discounted price
+  const getDiscountedPrice = (price, discount) => {
+    if (!discount) return price;
+    return Math.round(price - (price * discount) / 100);
+  };
+
+  // Fetch and prepare all required home data
+  useEffect(() => {
+    const loadAllData = async () => {
+      try {
+        const [slidesRes, instRes, collRes, courseRes, articleRes, reviewRes] = await Promise.all([
+          fetch(`${BASE_URL}/api/home/`),
+          fetch(`${BASE_URL}/api/partner/search?category=1&status=1`),
+          fetch(`${BASE_URL}/api/partner/search?category=2&status=1`),
+          fetch(`${BASE_URL}/api/training?sort_order=desc&sort_by=graduates`),
+          fetch(`${BASE_URL}/api/articles?sort_by=views&sort_order=desc`),
+          fetch(`${BASE_URL}/api/review/search?score=5`),
+        ]);
+
+        const [slidesData, instJson, collJson, courseJson, articleJson, reviewJson] =
+          await Promise.all([
+            slidesRes.json(),
+            instRes.json(),
+            collRes.json(),
+            courseRes.json(),
+            articleRes.json(),
+            reviewRes.json(),
+          ]);
+
+        setSlides(
+          (slidesData.data || []).sort((a, b) =>
+            a.content_id.localeCompare(b.content_id)
+          ).map((item) => ({
+            type: item.content_link.includes("youtube") ? "video" : "image",
+            src: item.content_link,
+          }))
+        );
+
+        setPartnersData({
+          Institution: instJson.data || [],
+          College: collJson.data || [],
+        });
+
+        setTopCourses((courseJson.data || []).slice(0, 3));
+        setHighlightArticles((articleJson.data || []).slice(0, 6));
+
+        const reviews = (reviewJson.data || []).sort(() => Math.random() - 0.5);
+        const cards = reviews.map((rev) => ({
+          user: rev.fullname,
+          avatar: rev.user_photo || "/default-avatar.jpg",
+          courseTitle: rev.training_name,
+          level: rev.level || "Unknown",
+          rating: 5,
+          comment:
+            rev.review_description.length > 150
+              ? rev.review_description.slice(0, 150) + "..."
+              : rev.review_description,
+          id: rev.review_id,
+        }));
+        setReviewCards(cards.slice(0, 10));
+      } catch (err) {
+        console.error("Failed to load home data:", err);
+      }
+    };
+
+    loadAllData();
+  }, []);
+
+  // Convert numeric category to label
+  const getCategoryLabel = (id) => {
+    return categoryOptions.find((c) => c.id === id)?.label || "Unknown";
+  };
+
+  // Slide autoplay & YouTube integration
   useEffect(() => {
     let timer;
     let player;
-  
+
+    const nextSlide = () => {
+      setCurrentSlide((prev) => (prev + 1) % slides.length);
+    };
+
     const checkVideoEnd = () => {
       const iframe = document.querySelector("iframe");
       if (iframe && window.YT) {
@@ -43,6 +142,8 @@ const Home = () => {
       }
     };
 
+    if (!slides[currentSlide]) return;
+
     if (slides[currentSlide].type === "video") {
       if (window.YT) {
         checkVideoEnd();
@@ -53,128 +154,62 @@ const Home = () => {
         document.body.appendChild(tag);
       }
     } else {
-      timer = setTimeout(() => {
-        nextSlide();
-      }, 2000);
+      timer = setTimeout(() => nextSlide(), 2000);
     }
 
     return () => {
       clearTimeout(timer);
-      if (player?.destroy) {
-        player.destroy();
-      }
+      if (player?.destroy) player.destroy();
     };
-  }, [currentSlide]);
+  }, [currentSlide, slides]);
 
+  // Fade-in animation trigger
   useEffect(() => {
     const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-        }
-      },
+      ([entry]) => entry.isIntersecting && setIsVisible(true),
       { threshold: 0.5 }
     );
 
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current);
-    }
+    if (sectionRef.current) observer.observe(sectionRef.current);
 
-    return () => {
-      if (sectionRef.current) {
-        observer.unobserve(sectionRef.current);
-      }
-    };
+    return () => sectionRef.current && observer.unobserve(sectionRef.current);
   }, []);
 
-  const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % slides.length);
-  };
-
-  const [selectedCategory, setSelectedCategory] = useState("College");
-  const [partnersData, setPartnersData] = useState({ Institution: [], College: [] });
-  const scrollRef = useRef(null);
-
-  useEffect(() => {
-    const fetchPartners = async () => {
-      try {
-        const res = await fetch("/api/partners/active");
-    
-        if (!res.ok) {
-          throw new Error(`Error fetching active partners: ${res.statusText}`);
-        }
-    
-        const json = await res.json();
-        const institutions = json.data.filter((p) => p.category === 1); 
-        const colleges = json.data.filter((p) => p.category === 2);    
-    
-        setPartnersData({ Institution: institutions, College: colleges });
-      } catch (error) {
-        console.error("Failed to fetch partners:", error);
-      }
-    };    
-  
-    fetchPartners();
-  }, []);
-
+  // Auto-scroll for partner logos
   useEffect(() => {
     const scrollEl = scrollRef.current;
-    let scrollAmount = 0;
+    if (!scrollEl) return;
 
-    const slide = () => {
-      if (scrollEl) {
-        scrollAmount += 1;
-        if (scrollAmount >= scrollEl.scrollWidth / 2) {
-          scrollAmount = 0;
-        }
-        scrollEl.scrollLeft = scrollAmount;
+    let animationFrameId;
+
+    const scrollStep = () => {
+      scrollEl.scrollLeft += 1;
+
+      // Reset jika sudah setengah dari scrollWidth (karena ada 2x data)
+      if (scrollEl.scrollLeft >= scrollEl.scrollWidth / 2) {
+        scrollEl.scrollLeft = 0;
       }
+
+      animationFrameId = requestAnimationFrame(scrollStep);
     };
 
-    const interval = setInterval(slide, 20);
-    return () => clearInterval(interval);
-  }, []);
+    animationFrameId = requestAnimationFrame(scrollStep);
 
-  const repeatedPartners = [...partnersData[selectedCategory], ...partnersData[selectedCategory]];
+    return () => cancelAnimationFrame(animationFrameId);
+  }, [partnersData, selectedCategory]);
 
-  const formatCurrency = (amount) =>
-    new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
-    }).format(amount);
-  
-  const getDiscountedPrice = (price, discount) => {
-    if (!discount) return price;
-    return Math.round(price - (price * discount) / 100);
-  };
-  
-  const getReviewCount = (courseId) =>
-    reviews.filter((review) => review.courseId === courseId).length;
-
-  const reversedArticles = [...articles].reverse();
-
-  const MAX_CARDS = 10;
-
-  const enrichedReviews = reviews.map((review) => {
-    const course = courses.find((c) => c.id === review.courseId);
-    return {
-      ...review,
-      courseTitle: course?.title || "Unknown Course",
-      avatar: course?.image || "/default-avatar.jpg",
-      level: course?.level || "Unknown",
-    };
-  });
-
-  let displayedCards = enrichedReviews;
-
-  if (enrichedReviews.length > MAX_CARDS) {
-    displayedCards = [...enrichedReviews.slice(1, MAX_CARDS), enrichedReviews[0]];
-  }
+  // Duplicate partners to simulate infinite scroll
+  const repeatedPartners = [
+    ...partnersData[selectedCategory],
+    ...partnersData[selectedCategory],
+  ];
 
   return (
     <div className="bg-white">
       <div className="relative w-full h-[600px] flex items-center justify-center">
         <div className="w-full aspect-[4/3] sm:aspect-[16/9] lg:aspect-[21/9] relative overflow-hidden mb-10">
+
+          {/* Banner Slide */}
           <div
             className="flex transition-transform duration-500 ease-in-out"
             style={{ transform: `translateX(-${currentSlide * 100}%)` }}
@@ -216,7 +251,7 @@ const Home = () => {
                       >
                         {index === 2 ? "See Article" : "Enroll Now"}
                       </Button>
-                )}
+                    )}
                   </div>
                 )}
               </div>
@@ -229,20 +264,19 @@ const Home = () => {
             <button
               key={index}
               onClick={() => setCurrentSlide(index)}
-              className={`w-3 h-3 rounded-full border-2 flex items-center justify-center transition-all ${
-                currentSlide === index ? "border-mainOrange" : "border-gray-400"
-              }`}
+              className={`w-3 h-3 rounded-full border-2 flex items-center justify-center transition-all ${currentSlide === index ? "border-mainOrange" : "border-gray-400"
+                }`}
             >
               <div
-                className={`w-1 h-1 rounded-full ${
-                  currentSlide === index ? "bg-mainOrange" : "bg-transparent"
-                }`}
+                className={`w-1 h-1 rounded-full ${currentSlide === index ? "bg-mainOrange" : "bg-transparent"
+                  }`}
               ></div>
             </button>
           ))}
         </div>
       </div>
 
+      {/* Empowering Tomorrow Section */}
       <div
         ref={sectionRef}
         className={`mx-auto bg-mainBlue p-10 shadow-xl transition-opacity duration-1000 ${isVisible ? "opacity-100" : "opacity-0"}`}
@@ -253,33 +287,35 @@ const Home = () => {
         </h2>
       </div>
 
+      {/* Efortech Solutions */}
       <div className="relative flex flex-col md:flex-row justify-between md:items-start mt-16">
-      <div className="relative flex flex-col md:flex-row justify-center items-center  gap-4 mt-16">
-        <img
-          src="/assets/foto2.png"
-          alt="Image 1"
-          className="w-[400px] md:w-[300px] shadow-lg"
-        />
-        <img
-          src="/assets/gambar1.jpg"
-          alt="Image 2"
-          className="w-[400px] md:w-[300px] shadow-lg md:absolute md:left-[300px] md:top-12"
-        />
-      </div>
-      <div className="bg-orange-600 text-white p-6 w-full md:w-[700px] mt-20">
-        <h2 className="text-3xl font-bold text-right">Efortech Solutions</h2>
-        <p className="text-sm mt-3 text-right pl-6">
-          Offers training and certification programs focused on the implementation of the Industrial
-          Internet of Things (IIoT) through the use of a Smart Integrated IIoT Training Kit.
-        </p>
-      </div>
-    </div>
-
-      <div className="flex flex-col p-8 mt-10">
-          <h2 className="text-xl md:text-3xl font-bold text-black text-right">Why Choose Us?</h2>
-          <p className="text-sm md:text-lg text-mainOrange font-semibold text-right mt-2 mb-8">
-            Using Smart Integrated IIoT Training Kit
+        <div className="relative flex flex-col md:flex-row justify-center items-center  gap-4 mt-16">
+          <img
+            src="/assets/foto2.png"
+            alt="Image 1"
+            className="w-[400px] md:w-[300px] shadow-lg"
+          />
+          <img
+            src="/assets/gambar1.jpg"
+            alt="Image 2"
+            className="w-[400px] md:w-[300px] shadow-lg md:absolute md:left-[300px] md:top-12"
+          />
+        </div>
+        <div className="bg-orange-600 text-white p-6 w-full md:w-[700px] mt-20">
+          <h2 className="text-3xl font-bold text-right">Efortech Solutions</h2>
+          <p className="text-sm mt-3 text-right pl-6">
+            Offers training and certification programs focused on the implementation of the Industrial
+            Internet of Things (IIoT) through the use of a Smart Integrated IIoT Training Kit.
           </p>
+        </div>
+      </div>
+
+      {/* Why Choose Us? */}
+      <div className="flex flex-col p-8 mt-10">
+        <h2 className="text-xl md:text-3xl font-bold text-black text-right">Why Choose Us?</h2>
+        <p className="text-sm md:text-lg text-mainOrange font-semibold text-right mt-2 mb-8">
+          Using Smart Integrated IIoT Training Kit
+        </p>
         <img
           src="/assets/kit.png"
           alt="IIoT Diagram"
@@ -287,11 +323,12 @@ const Home = () => {
         />
       </div>
 
+      {/* What Will You Get? */}
       <div className="flex flex-col p-10 items-center">
-          <h2 className="text-xl md:text-3xl font-bold text-black">What Will You Get?</h2>
-          <p className="text-sm md:text-lg text-mainOrange text-center font-semibold mt-2 mb-8">
-            Enhance Your Skills with Our IIoT Trainer Kit Features
-          </p>
+        <h2 className="text-xl md:text-3xl font-bold text-black">What Will You Get?</h2>
+        <p className="text-sm md:text-lg text-mainOrange text-center font-semibold mt-2 mb-8">
+          Enhance Your Skills with Our IIoT Trainer Kit Features
+        </p>
         <img
           src="/assets/get.svg"
           alt="IIoT Kit"
@@ -299,20 +336,22 @@ const Home = () => {
         />
       </div>
 
-      <div className="text-center p-16">
+      {/* Partner */}
+      <div className="text-center px-16 py-4">
         <h2 className="text-xl md:text-3xl font-bold text-black">Our Partner</h2>
-        <div className="flex justify-center p-4 gap-4 my-4">
-          <button
-            className={`px-4 py-2 min-w-[120px] border rounded-full shadow-lg ${selectedCategory === "Institution" ? "bg-mainBlue text-white" : "border-mainBlue"}`}
-            onClick={() => setSelectedCategory("Institution")}
-          >
-            Institution
-          </button>
+        <div className="flex justify-center gap-4 my-4">
+
           <button
             className={`px-4 py-2 min-w-[120px] border rounded-full shadow-lg ${selectedCategory === "College" ? "bg-mainBlue text-white" : "border-mainBlue"}`}
             onClick={() => setSelectedCategory("College")}
           >
             College
+          </button>
+          <button
+            className={`px-4 py-2 min-w-[120px] border rounded-full shadow-lg ${selectedCategory === "Institution" ? "bg-mainBlue text-white" : "border-mainBlue"}`}
+            onClick={() => setSelectedCategory("Institution")}
+          >
+            Institution
           </button>
         </div>
 
@@ -355,42 +394,38 @@ const Home = () => {
             ))}
           </div>
         </div>
+      </div>
 
-      <div className="px-4 sm:px-6 lg:px-8 py-16 sm:py-20 max-w-screen-xl mx-auto">
-        <div className="flex justify-between items-center mb-6 flex-wrap gap-2">
-          <h2 className="text-xl md:text-3xl font-bold">Top Courses & Certifications</h2>
-          <Link
-            href="/training"
-            className="text-sm text-gray-600 hover:underline flex items-center gap-1"
-          >
-            See All <FaAngleRight className="text-xs" />
-          </Link>
-        </div>
+      <div className="text-center px-16 py-4">
+        {/* Top Training */}
+        <div className="px-4 sm:px-6 lg:px-8 py-4 sm:py-4 max-w-screen-xl mx-auto">
+          <div className="flex justify-between items-center mb-6 flex-wrap gap-2">
+            <h2 className="text-xl md:text-3xl font-bold">Top Training & Certifications</h2>
+            <Link
+              href="/training"
+              className="text-sm text-gray-600 hover:underline flex items-center gap-1"
+            >
+              See All <FaAngleRight className="text-xs" />
+            </Link>
+          </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {courses
-            .map((course) => ({
-              ...course,
-              graduateCount: getReviewCount(course.id),
-            }))
-            .sort((a, b) => b.graduateCount - a.graduateCount)
-            .slice(0, 3)
-            .map((course) => {
-              const discountedPrice = getDiscountedPrice(course.price, course.discount);
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            {topCourses.map((course) => {
+              const discountedPrice = getDiscountedPrice(course.final_price ?? course.training_fees, course.discount);
 
               return (
                 <Card
-                  key={course.id}
+                  key={course.training_id}
                   className="shadow-md rounded-xl overflow-hidden min-h-[400px] transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl"
                 >
                   <div className="relative">
                     <img
-                      src={course.image}
-                      alt={course.title}
+                      src={course.images?.[0] || "/default-image.jpg"}
+                      alt={course.training_name}
                       className="h-48 w-full object-cover"
                     />
                     <span className="absolute top-2 left-2 bg-mainBlue text-white text-xs font-semibold px-3 py-1 rounded-full">
-                      {course.level}
+                      {["Beginner", "Intermediate", "Advanced"][course.level - 1] || "Unknown"}
                     </span>
                     {course.discount && (
                       <div className="absolute top-2 right-2 bg-red-500 text-white text-[11px] font-semibold px-2 py-[2px] rounded-full shadow-md animate-bounce">
@@ -401,37 +436,37 @@ const Home = () => {
 
                   <CardContent className="p-4">
                     <h3 className="font-semibold text-lg mb-4 text-left">
-                      {course.title}
+                      {course.training_name}
                     </h3>
                     <p className="text-sm italic text-gray-500 mb-8 text-left">
-                      Graduates: {course.graduateCount.toLocaleString()} Mentee
-                      {course.graduateCount !== 1 ? "'s" : ""}
+                      Graduates: {course.graduates.toLocaleString()} Mentees
                     </p>
                     <hr className="mb-3" />
                     <div className="flex justify-between items-center">
                       <div className="flex flex-col text-sm font-semibold">
                         {course.discount && (
                           <span className="line-through text-gray-400 text-xs">
-                            {formatCurrency(course.price)}
+                            {formatCurrency(course.training_fees)}
                           </span>
                         )}
                         <span>{formatCurrency(discountedPrice)}</span>
                       </div>
-                      <Link href={`/training/${course.id}`}>
-                      <Button variant="orange" size="sm">
-                        View Details
-                      </Button>
+                      <Link href={`/training/${course.training_id}`}>
+                        <Button variant="orange" size="sm">
+                          View Details
+                        </Button>
                       </Link>
                     </div>
                   </CardContent>
                 </Card>
               );
             })}
+          </div>
         </div>
-      </div>
 
-      <div className="py-10 px-4">
-        <div className="flex justify-between items-center mb-6 flex-wrap gap-2">
+        {/* Educational Article Highlight */}
+        <div className="py-10 px-4">
+          <div className="flex justify-between items-center mb-6 flex-wrap gap-2">
             <h2 className="text-xl md:text-3xl font-bold">Educational Article Highlight</h2>
             <Link
               href="/article"
@@ -440,116 +475,121 @@ const Home = () => {
               See All <FaAngleRight className="text-xs" />
             </Link>
           </div>
-        <Swiper
-          spaceBetween={30}
-          slidesPerView={1}
-          loop={true}
-          autoplay={{
-            delay: 3000,
-            disableOnInteraction: false,
-          }}
-          breakpoints={{
-            768: {
-              slidesPerView: 2,
-            },
-            1024: {
-              slidesPerView: 3,
-            },
-          }}
-          modules={[Autoplay]}
-        >
-          {articles.map((article, idx) => (
-            <SwiperSlide key={idx}>
-            <Link href={`/article/${article.id}`}>
-              <Card className="p-0 bg-transparent shadow-none border-none mt-4">
-                <img
-                  src={article.image}
-                  alt={article.title}
-                  className="h-60 w-full object-cover rounded-tl-2xl cursor-pointer shadow-lg"
-                />
-                <CardContent className="p-4">
-                  <h3 className="font-semibold text-black text-base mb-2 text-left">
-                    {article.title}
-                  </h3>
-                  <p className="text-sm text-muted-foreground mb-4 text-left">
-                    Category: {article.category}
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {article.tags.map((tag, tagIdx) => (
-                      <div
-                        key={tagIdx}
-                        className="border border-mainOrange text-black rounded-lg px-3 py-1 text-xs"
-                      >
-                        {tag}
+
+          <Swiper
+            key={highlightArticles.length}
+            spaceBetween={30}
+            slidesPerView={1}
+            loop={true}
+            autoplay={{
+              delay: 3000,
+              disableOnInteraction: false,
+            }}
+            breakpoints={{
+              768: {
+                slidesPerView: 2,
+              },
+              1024: {
+                slidesPerView: 3,
+              },
+            }}
+            modules={[Autoplay]}
+          >
+            {highlightArticles.map((article) => (
+              <SwiperSlide key={article.article_id}>
+                <Link href={`/article/${article.article_id}`}>
+                  <Card className="p-0 bg-transparent shadow-none border-none mt-4">
+                    <img
+                      src={article.images?.[0] || "/assets/Gambar2.jpg"}
+                      alt={article.title}
+                      className="h-60 w-full object-cover rounded-tl-2xl cursor-pointer shadow-lg"
+                    />
+                    <CardContent className="p-4">
+                      <h3 className="font-semibold text-black text-base mb-2 text-left">
+                        {article.title}
+                      </h3>
+                      <div className="flex justify-between items-center mb-4 text-sm text-muted-foreground">
+                        <p>Category: {getCategoryLabel(article.category)}</p>
+                        <p>Views: {article.views}</p>
                       </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-            </SwiperSlide>
-          ))}
-        </Swiper>
-      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {article.tags?.map((tag, tagIdx) => (
+                          <div
+                            key={tagIdx}
+                            className="border border-mainOrange text-black rounded-lg px-3 py-1 text-xs"
+                          >
+                            {tag}
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        </div>
 
-      <div className="flex flex-col-reverse md:flex-row items-center justify-between gap-10 md:gap-20 mt-20 px-4 md:px-16">
-      <div className="w-full md:w-[50%] flex justify-center">
-        <Swiper
-          effect={"cards"}
-          grabCursor={true}
-          modules={[EffectCards]}
-          className="w-[280px] sm:w-[300px] h-[420px] overflow-visible"
-          cardsEffect={{
-            perSlideRotate: 0,
-            perSlideOffset: 10,
-            slideShadows: false,
-          }}
-        >
-          {displayedCards.map((card, idx) => (
-            <SwiperSlide key={card.id}>
-            <div className="text-white text-center p-6 rounded-[20px] h-full flex flex-col items-center justify-start"
-                style={{ backgroundColor: idx % 2 === 0 ? "#014AAD" : "#F26B1D" }}
-              >
-                <img
-                  src={card.avatar}
-                  alt={card.user}
-                  className="w-36 h-36 rounded-full object-cover"
-                />
-                <div className="flex flex-col items-center mt-2 gap-2">
-                  <h3 className="text-xl font-bold mt-2">{card.user}</h3>
-                  <p className="text-xs text-center text-white/80">{card.courseTitle}</p>
-                  <hr className="w-48 border-t-1 border-white/70" />
-                  <div className="flex space-x-1 text-xl tracking-tight">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <span
-                        key={i}
-                        className={i < card.rating ? "text-yellow-400" : "text-white"}
-                      >
-                        {i < card.rating ? "★" : "☆"}
-                      </span>
-                    ))}
+        {/* Review */}
+        <div className="flex flex-col-reverse md:flex-row items-center justify-between gap-10 md:gap-20 mt-10 px-4 md:px-16">
+          {/* Review Cards */}
+          <div className="w-full md:w-[50%] flex justify-center">
+            <Swiper
+              effect={"cards"}
+              grabCursor={true}
+              modules={[EffectCards]}
+              className="w-[280px] sm:w-[300px] h-[420px] overflow-visible"
+              cardsEffect={{
+                perSlideRotate: 0,
+                perSlideOffset: 10,
+                slideShadows: false,
+              }}
+            >
+              {reviewCards.map((card, idx) => (
+                <SwiperSlide key={card.id}>
+                  <div
+                    className="text-white text-center p-6 rounded-[20px] h-full flex flex-col items-center justify-start"
+                    style={{ backgroundColor: idx % 2 === 0 ? "#014AAD" : "#F26B1D" }}
+                  >
+                    <img
+                      src={card.avatar}
+                      alt={card.user}
+                      className="w-36 h-36 rounded-full object-cover"
+                    />
+                    <div className="flex flex-col items-center mt-2 gap-2">
+                      <h3 className="text-xl font-bold mt-2">{card.user}</h3>
+                      <p className="text-xs text-center text-white/80">{card.courseTitle}</p>
+                      <hr className="w-48 border-t-1 border-white/70" />
+                      <div className="flex space-x-1 text-xl tracking-tight">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                          <span
+                            key={i}
+                            className={i < card.rating ? "text-yellow-400" : "text-white"}
+                          >
+                            {i < card.rating ? "★" : "☆"}
+                          </span>
+                        ))}
+                      </div>
+                      <p className="text-xs bg-white text-black px-4 py-2 rounded-md leading-relaxed text-center w-50">
+                        “{card.comment.length > 120 ? card.comment.slice(0, 120) + "..." : card.comment}”
+                      </p>
+                    </div>
                   </div>
-                  <p className="text-xs bg-white text-black px-4 py-2 rounded-md leading-relaxed text-center w-50 overflow-hidden text-ellipsis line-clamp-5">
-                    “{card.comment}”
-                  </p>
-                </div>
-              </div>
-            </SwiperSlide>
-          ))}
-        </Swiper>
-      </div>
-      <div className="w-full md:w-[50%] text-center md:text-left">
-        <h2 className="text-xl md:text-3xl font-bold text-black">
-          What They Say?
-        </h2>
-        <p className="text-mainOrange text-sm md:text-lg font-semibold md:pl-8 mt-2">
-          About this program
-        </p>
+                </SwiperSlide>
+              ))}
+            </Swiper>
+          </div>
+
+          {/* Review Section Heading */}
+          <div className="w-full md:w-[50%] text-center md:text-left">
+            <h2 className="text-xl md:text-3xl font-bold text-black">What They Say?</h2>
+            <p className="text-mainOrange text-sm md:text-lg font-semibold md:pl-8 mt-2">
+              About this program
+            </p>
+          </div>
+        </div>
       </div>
     </div>
-
-    </div>
-  </div>
   );
 };
 
