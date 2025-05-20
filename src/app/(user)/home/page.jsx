@@ -257,14 +257,12 @@ const Home = () => {
             <button
               key={index}
               onClick={() => setCurrentSlide(index)}
-              className={`w-3 h-3 rounded-full border-2 flex items-center justify-center transition-all ${
-                currentSlide === index ? "border-mainOrange" : "border-gray-400"
-              }`}
+              className={`w-3 h-3 rounded-full border-2 flex items-center justify-center transition-all ${currentSlide === index ? "border-mainOrange" : "border-gray-400"
+                }`}
             >
               <div
-                className={`w-1 h-1 rounded-full ${
-                  currentSlide === index ? "bg-mainOrange" : "bg-transparent"
-                }`}
+                className={`w-1 h-1 rounded-full ${currentSlide === index ? "bg-mainOrange" : "bg-transparent"
+                  }`}
               ></div>
             </button>
           ))}
@@ -274,9 +272,8 @@ const Home = () => {
       {/* Empowering Tomorrow Section */}
       <div
         ref={sectionRef}
-        className={`mx-auto bg-mainBlue p-10 shadow-xl transition-opacity duration-1000 ${
-          isVisible ? "opacity-100" : "opacity-0"
-        }`}
+        className={`mx-auto bg-mainBlue p-10 shadow-xl transition-opacity duration-1000 ${isVisible ? "opacity-100" : "opacity-0"
+          }`}
       >
         <h1 className="text-3xl font-bold text-white">Empowering Tomorrow :</h1>
         <h2 className="text-2xl font-semibold text-white">
@@ -345,21 +342,19 @@ const Home = () => {
         </h2>
         <div className="flex justify-center gap-4 my-4">
           <button
-            className={`px-4 py-2 min-w-[120px] border rounded-full shadow-lg ${
-              selectedCategory === "College"
-                ? "bg-mainBlue text-white"
-                : "border-mainBlue"
-            }`}
+            className={`px-4 py-2 min-w-[120px] border rounded-full shadow-lg ${selectedCategory === "College"
+              ? "bg-mainBlue text-white"
+              : "border-mainBlue"
+              }`}
             onClick={() => setSelectedCategory("College")}
           >
             College
           </button>
           <button
-            className={`px-4 py-2 min-w-[120px] border rounded-full shadow-lg ${
-              selectedCategory === "Institution"
-                ? "bg-mainBlue text-white"
-                : "border-mainBlue"
-            }`}
+            className={`px-4 py-2 min-w-[120px] border rounded-full shadow-lg ${selectedCategory === "Institution"
+              ? "bg-mainBlue text-white"
+              : "border-mainBlue"
+              }`}
             onClick={() => setSelectedCategory("Institution")}
           >
             Institution
@@ -447,9 +442,9 @@ const Home = () => {
                         course.level - 1
                       ] || "Unknown"}
                     </span>
-                    {course.discount && (
+                    {course.discount > 0 && (
                       <div className="absolute top-2 right-2 bg-red-500 text-white text-[11px] font-semibold px-2 py-[2px] rounded-full shadow-md animate-bounce">
-                        🔥 {course.discount}% OFF
+                        🔥 {Math.round(course.discount)}% OFF
                       </div>
                     )}
                   </div>
