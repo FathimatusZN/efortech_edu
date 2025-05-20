@@ -26,7 +26,10 @@ const Home = () => {
 
   // Data states
   const [slides, setSlides] = useState([]);
-  const [partnersData, setPartnersData] = useState({ Institution: [], College: [] });
+  const [partnersData, setPartnersData] = useState({
+    Institution: [],
+    College: [],
+  });
   const [topCourses, setTopCourses] = useState([]);
   const [highlightArticles, setHighlightArticles] = useState([]);
   const [reviewCards, setReviewCards] = useState([]);
@@ -55,32 +58,39 @@ const Home = () => {
   useEffect(() => {
     const loadAllData = async () => {
       try {
-        const [slidesRes, instRes, collRes, courseRes, articleRes, reviewRes] = await Promise.all([
-          fetch(`${BASE_URL}/api/home/`),
-          fetch(`${BASE_URL}/api/partner/search?category=1&status=1`),
-          fetch(`${BASE_URL}/api/partner/search?category=2&status=1`),
-          fetch(`${BASE_URL}/api/training?sort_order=desc&sort_by=graduates`),
-          fetch(`${BASE_URL}/api/articles?sort_by=views&sort_order=desc`),
-          fetch(`${BASE_URL}/api/review/search?score=5`),
-        ]);
-
-        const [slidesData, instJson, collJson, courseJson, articleJson, reviewJson] =
+        const [slidesRes, instRes, collRes, courseRes, articleRes, reviewRes] =
           await Promise.all([
-            slidesRes.json(),
-            instRes.json(),
-            collRes.json(),
-            courseRes.json(),
-            articleRes.json(),
-            reviewRes.json(),
+            fetch(`${BASE_URL}/api/home/`),
+            fetch(`${BASE_URL}/api/partner/search?category=1&status=1`),
+            fetch(`${BASE_URL}/api/partner/search?category=2&status=1`),
+            fetch(`${BASE_URL}/api/training?sort_order=desc&sort_by=graduates`),
+            fetch(`${BASE_URL}/api/articles?sort_by=views&sort_order=desc`),
+            fetch(`${BASE_URL}/api/review/search?score=5`),
           ]);
 
+        const [
+          slidesData,
+          instJson,
+          collJson,
+          courseJson,
+          articleJson,
+          reviewJson,
+        ] = await Promise.all([
+          slidesRes.json(),
+          instRes.json(),
+          collRes.json(),
+          courseRes.json(),
+          articleRes.json(),
+          reviewRes.json(),
+        ]);
+
         setSlides(
-          (slidesData.data || []).sort((a, b) =>
-            a.content_id.localeCompare(b.content_id)
-          ).map((item) => ({
-            type: item.content_link.includes("youtube") ? "video" : "image",
-            src: item.content_link,
-          }))
+          (slidesData.data || [])
+            .sort((a, b) => a.content_id.localeCompare(b.content_id))
+            .map((item) => ({
+              type: item.content_link.includes("youtube") ? "video" : "image",
+              src: item.content_link,
+            }))
         );
 
         setPartnersData({
@@ -206,52 +216,35 @@ const Home = () => {
 
   return (
     <div className="bg-white">
-      <div className="relative w-full h-[600px] flex items-center justify-center">
+      <div className="relative w-full max-h-[500px] flex items-center justify-center">
         <div className="w-full aspect-[4/3] sm:aspect-[16/9] lg:aspect-[21/9] relative overflow-hidden mb-10">
-
           {/* Banner Slide */}
           <div
-            className="flex transition-transform duration-500 ease-in-out"
+            className="flex transition-transform duration-1000 ease-in-out"
             style={{ transform: `translateX(-${currentSlide * 100}%)` }}
           >
             {slides.map((slide, index) => (
               <div key={index} className="w-full flex-shrink-0 relative">
                 {slide.type === "video" ? (
-                  <iframe
-                    key={currentSlide}
-                    className="absolute top-0 left-0 w-full h-full pointer-events-none"
-                    src={`${slide.src}?enablejsapi=1&modestbranding=1&rel=0&autoplay=1`}
-                    title="IIoT Training Video"
-                    frameBorder="0"
-                    allow="autoplay; encrypted-media"
-                    allowFullScreen
-                  ></iframe>
+                  <div className="relative w-full h-full">
+                    <div className="absolute top-0 left-0 w-full h-full">
+                      <iframe
+                        className="w-full h-full"
+                        src={`${slide.src}?enablejsapi=1&modestbranding=1&rel=0&autoplay=1`}
+                        title="IIoT Training Video"
+                        frameBorder="0"
+                        allow="autoplay; encrypted-media"
+                        allowFullScreen
+                      ></iframe>
+                    </div>
+                  </div>
                 ) : (
-                  <div className="relative w-full max-w-[1400px] mx-auto px-[4px] max-h-[450px] rounded-lg mb-4">
+                  <div className="relative w-full h-full">
                     <img
                       src={slide.src}
                       alt="Slide"
-                      className="w-full h-full object-cover rounded-lg"
+                      className="w-full h-full object-cover"
                     />
-                    {(index === 0 || index === 2) && (
-                      <Button
-                        onClick={() => {
-                          if (index === 2) {
-                            window.location.href = "/article";
-                          } else {
-                            window.location.href = "/training";
-                          }
-                        }}
-                        variant="orange"
-                        size="xl"
-                        className={`absolute top-[76%] font-semibold shadow-lg
-                          ${index === 0 ? "left-[8%]" : "left-[66%]"}
-                          w-[110px] h-[32px] sm:w-[130px] sm:h-[36px] md:w-[150px] md:h-[40px]
-                          text-xs sm:text-sm md:text-base`}
-                      >
-                        {index === 2 ? "See Article" : "Enroll Now"}
-                      </Button>
-                    )}
                   </div>
                 )}
               </div>
@@ -264,12 +257,14 @@ const Home = () => {
             <button
               key={index}
               onClick={() => setCurrentSlide(index)}
-              className={`w-3 h-3 rounded-full border-2 flex items-center justify-center transition-all ${currentSlide === index ? "border-mainOrange" : "border-gray-400"
-                }`}
+              className={`w-3 h-3 rounded-full border-2 flex items-center justify-center transition-all ${
+                currentSlide === index ? "border-mainOrange" : "border-gray-400"
+              }`}
             >
               <div
-                className={`w-1 h-1 rounded-full ${currentSlide === index ? "bg-mainOrange" : "bg-transparent"
-                  }`}
+                className={`w-1 h-1 rounded-full ${
+                  currentSlide === index ? "bg-mainOrange" : "bg-transparent"
+                }`}
               ></div>
             </button>
           ))}
@@ -279,7 +274,9 @@ const Home = () => {
       {/* Empowering Tomorrow Section */}
       <div
         ref={sectionRef}
-        className={`mx-auto bg-mainBlue p-10 shadow-xl transition-opacity duration-1000 ${isVisible ? "opacity-100" : "opacity-0"}`}
+        className={`mx-auto bg-mainBlue p-10 shadow-xl transition-opacity duration-1000 ${
+          isVisible ? "opacity-100" : "opacity-0"
+        }`}
       >
         <h1 className="text-3xl font-bold text-white">Empowering Tomorrow :</h1>
         <h2 className="text-2xl font-semibold text-white">
@@ -304,15 +301,18 @@ const Home = () => {
         <div className="bg-orange-600 text-white p-6 w-full md:w-[700px] mt-20">
           <h2 className="text-3xl font-bold text-right">Efortech Solutions</h2>
           <p className="text-sm mt-3 text-right pl-6">
-            Offers training and certification programs focused on the implementation of the Industrial
-            Internet of Things (IIoT) through the use of a Smart Integrated IIoT Training Kit.
+            Offers training and certification programs focused on the
+            implementation of the Industrial Internet of Things (IIoT) through
+            the use of a Smart Integrated IIoT Training Kit.
           </p>
         </div>
       </div>
 
       {/* Why Choose Us? */}
       <div className="flex flex-col p-8 mt-10">
-        <h2 className="text-xl md:text-3xl font-bold text-black text-right">Why Choose Us?</h2>
+        <h2 className="text-xl md:text-3xl font-bold text-black text-right">
+          Why Choose Us?
+        </h2>
         <p className="text-sm md:text-lg text-mainOrange font-semibold text-right mt-2 mb-8">
           Using Smart Integrated IIoT Training Kit
         </p>
@@ -325,7 +325,9 @@ const Home = () => {
 
       {/* What Will You Get? */}
       <div className="flex flex-col p-10 items-center">
-        <h2 className="text-xl md:text-3xl font-bold text-black">What Will You Get?</h2>
+        <h2 className="text-xl md:text-3xl font-bold text-black">
+          What Will You Get?
+        </h2>
         <p className="text-sm md:text-lg text-mainOrange text-center font-semibold mt-2 mb-8">
           Enhance Your Skills with Our IIoT Trainer Kit Features
         </p>
@@ -338,17 +340,26 @@ const Home = () => {
 
       {/* Partner */}
       <div className="text-center px-16 py-4">
-        <h2 className="text-xl md:text-3xl font-bold text-black">Our Partner</h2>
+        <h2 className="text-xl md:text-3xl font-bold text-black">
+          Our Partner
+        </h2>
         <div className="flex justify-center gap-4 my-4">
-
           <button
-            className={`px-4 py-2 min-w-[120px] border rounded-full shadow-lg ${selectedCategory === "College" ? "bg-mainBlue text-white" : "border-mainBlue"}`}
+            className={`px-4 py-2 min-w-[120px] border rounded-full shadow-lg ${
+              selectedCategory === "College"
+                ? "bg-mainBlue text-white"
+                : "border-mainBlue"
+            }`}
             onClick={() => setSelectedCategory("College")}
           >
             College
           </button>
           <button
-            className={`px-4 py-2 min-w-[120px] border rounded-full shadow-lg ${selectedCategory === "Institution" ? "bg-mainBlue text-white" : "border-mainBlue"}`}
+            className={`px-4 py-2 min-w-[120px] border rounded-full shadow-lg ${
+              selectedCategory === "Institution"
+                ? "bg-mainBlue text-white"
+                : "border-mainBlue"
+            }`}
             onClick={() => setSelectedCategory("Institution")}
           >
             Institution
@@ -367,11 +378,13 @@ const Home = () => {
               >
                 {/* Layer nama mitra */}
                 <div className="absolute bottom-[-28px] sm:bottom-[-30px] md:bottom-[-32px] left-1/2 transform -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform duration-300 z-10">
-                  <div className="bg-white border-2 border-mainOrange text-mainOrange 
+                  <div
+                    className="bg-white border-2 border-mainOrange text-mainOrange 
                                   text-xs sm:text-xs md:text-sm 
                                   font-semibold py-0.5 sm:py-1 px-2 
                                   rounded-md text-center break-words w-fit max-w-none 
-                                  shadow-md line-clamp-3">
+                                  shadow-md line-clamp-3"
+                  >
                     {partner.partner_name}
                   </div>
                 </div>
@@ -400,7 +413,9 @@ const Home = () => {
         {/* Top Training */}
         <div className="px-4 sm:px-6 lg:px-8 py-4 sm:py-4 max-w-screen-xl mx-auto">
           <div className="flex justify-between items-center mb-6 flex-wrap gap-2">
-            <h2 className="text-xl md:text-3xl font-bold">Top Training & Certifications</h2>
+            <h2 className="text-xl md:text-3xl font-bold">
+              Top Training & Certifications
+            </h2>
             <Link
               href="/training"
               className="text-sm text-gray-600 hover:underline flex items-center gap-1"
@@ -411,7 +426,10 @@ const Home = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {topCourses.map((course) => {
-              const discountedPrice = getDiscountedPrice(course.final_price ?? course.training_fees, course.discount);
+              const discountedPrice = getDiscountedPrice(
+                course.final_price ?? course.training_fees,
+                course.discount
+              );
 
               return (
                 <Card
@@ -425,7 +443,9 @@ const Home = () => {
                       className="h-48 w-full object-cover"
                     />
                     <span className="absolute top-2 left-2 bg-mainBlue text-white text-xs font-semibold px-3 py-1 rounded-full">
-                      {["Beginner", "Intermediate", "Advanced"][course.level - 1] || "Unknown"}
+                      {["Beginner", "Intermediate", "Advanced"][
+                        course.level - 1
+                      ] || "Unknown"}
                     </span>
                     {course.discount && (
                       <div className="absolute top-2 right-2 bg-red-500 text-white text-[11px] font-semibold px-2 py-[2px] rounded-full shadow-md animate-bounce">
@@ -467,7 +487,9 @@ const Home = () => {
         {/* Educational Article Highlight */}
         <div className="py-10 px-4">
           <div className="flex justify-between items-center mb-6 flex-wrap gap-2">
-            <h2 className="text-xl md:text-3xl font-bold">Educational Article Highlight</h2>
+            <h2 className="text-xl md:text-3xl font-bold">
+              Educational Article Highlight
+            </h2>
             <Link
               href="/article"
               className="text-sm text-gray-600 hover:underline flex items-center gap-1"
@@ -549,7 +571,9 @@ const Home = () => {
                 <SwiperSlide key={card.id}>
                   <div
                     className="text-white text-center p-6 rounded-[20px] h-full flex flex-col items-center justify-start"
-                    style={{ backgroundColor: idx % 2 === 0 ? "#014AAD" : "#F26B1D" }}
+                    style={{
+                      backgroundColor: idx % 2 === 0 ? "#014AAD" : "#F26B1D",
+                    }}
                   >
                     <img
                       src={card.avatar}
@@ -558,20 +582,28 @@ const Home = () => {
                     />
                     <div className="flex flex-col items-center mt-2 gap-2">
                       <h3 className="text-xl font-bold mt-2">{card.user}</h3>
-                      <p className="text-xs text-center text-white/80">{card.courseTitle}</p>
+                      <p className="text-xs text-center text-white/80">
+                        {card.courseTitle}
+                      </p>
                       <hr className="w-48 border-t-1 border-white/70" />
                       <div className="flex space-x-1 text-xl tracking-tight">
                         {Array.from({ length: 5 }).map((_, i) => (
                           <span
                             key={i}
-                            className={i < card.rating ? "text-yellow-400" : "text-white"}
+                            className={
+                              i < card.rating ? "text-yellow-400" : "text-white"
+                            }
                           >
                             {i < card.rating ? "★" : "☆"}
                           </span>
                         ))}
                       </div>
                       <p className="text-xs bg-white text-black px-4 py-2 rounded-md leading-relaxed text-center w-50">
-                        “{card.comment.length > 120 ? card.comment.slice(0, 120) + "..." : card.comment}”
+                        “
+                        {card.comment.length > 120
+                          ? card.comment.slice(0, 120) + "..."
+                          : card.comment}
+                        ”
                       </p>
                     </div>
                   </div>
@@ -582,7 +614,9 @@ const Home = () => {
 
           {/* Review Section Heading */}
           <div className="w-full md:w-[50%] text-center md:text-left">
-            <h2 className="text-xl md:text-3xl font-bold text-black">What They Say?</h2>
+            <h2 className="text-xl md:text-3xl font-bold text-black">
+              What They Say?
+            </h2>
             <p className="text-mainOrange text-sm md:text-lg font-semibold md:pl-8 mt-2">
               About this program
             </p>
