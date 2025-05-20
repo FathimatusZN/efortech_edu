@@ -12,7 +12,7 @@ const PageTitle = ({ title, className }) => {
 };
 
 // Save Button Component
-export const SaveButton = ({ onClick, disabled = false }) => {
+const SaveButton = ({ onClick, disabled = false }) => {
     return (
         <button
             className={`flex items-center gap-2 px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg shadow transition-colors duration-200
