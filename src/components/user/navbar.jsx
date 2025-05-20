@@ -1,11 +1,13 @@
 import { useState, useRef, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/app/context/AuthContext";
+import { ChevronDown } from "lucide-react";
 
 const UserNavbar = () => {
   const { user, logout, loading } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
 
   const [menuState, setMenuState] = useState({
     profile: false,
@@ -113,46 +115,74 @@ const UserNavbar = () => {
         <img src="/assets/logo.png" alt="Logo" className="h-8" />
 
         <div className="hidden md:flex items-center space-x-8 text-mainBlue font-medium">
-          {navLinks.map((link, index) => (
-            <div
-              key={index}
-              className="relative"
-              ref={link.name === "Certificate" ? refs.certificate : null}
-            >
-              {link.subMenu ? (
-                <>
-                  <button
-                    onClick={() => toggleMenu("certificate")}
-                    className="hover:text-mainOrange flex items-center"
+          {navLinks.map((link, index) => {
+            const isActiveLink =
+              pathname === link.path ||
+              (link.subMenu &&
+                link.subMenu.some((sub) => pathname === sub.path));
+            const isMenuOpen = menuState.certificate;
+            return (
+              <div
+                key={index}
+                className="relative"
+                ref={link.name === "Certificate" ? refs.certificate : null}
+              >
+                {link.subMenu ? (
+                  <>
+                    <button
+                      onClick={() => toggleMenu("certificate")}
+                      className={`flex items-center gap-1 ${
+                        isActiveLink || isMenuOpen
+                          ? "text-mainOrange font-semibold"
+                          : "hover:text-mainOrange"
+                      }`}
+                    >
+                      {link.name}
+                      <ChevronDown
+                        size={16}
+                        className={`transition-transform duration-200 ${
+                          isMenuOpen ? "rotate-180" : ""
+                        }`}
+                      />
+                    </button>
+                    {isMenuOpen && (
+                      <div className="absolute top-10 left-0 bg-white border rounded-md shadow-lg w-48 z-10">
+                        {link.subMenu.map((sub, idx) => {
+                          const isSubActive = pathname === sub.path;
+                          return (
+                            <Link
+                              key={idx}
+                              href={sub.path}
+                              className={`block px-4 py-2 hover:bg-gray-100 ${
+                                isSubActive
+                                  ? "text-mainOrange font-semibold"
+                                  : ""
+                              }`}
+                              onClick={closeAllMenus}
+                            >
+                              {sub.name}
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <Link
+                    href={link.path}
+                    className={`hover:text-mainOrange ${
+                      pathname === link.path
+                        ? "text-mainOrange font-semibold"
+                        : ""
+                    }`}
+                    onClick={closeAllMenus}
                   >
                     {link.name}
-                  </button>
-                  {menuState.certificate && (
-                    <div className="absolute top-10 left-0 bg-white border rounded-md shadow-lg w-48">
-                      {link.subMenu.map((sub, idx) => (
-                        <Link
-                          key={idx}
-                          href={sub.path}
-                          className="block px-4 py-2 hover:bg-gray-100"
-                          onClick={closeAllMenus}
-                        >
-                          {sub.name}
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </>
-              ) : (
-                <Link
-                  href={link.path}
-                  className="hover:text-mainOrange"
-                  onClick={closeAllMenus}
-                >
-                  {link.name}
-                </Link>
-              )}
-            </div>
-          ))}
+                  </Link>
+                )}
+              </div>
+            );
+          })}
 
           <div className="relative" ref={refs.profile}>
             <button
@@ -169,10 +199,18 @@ const UserNavbar = () => {
             </button>
             {menuState.profile && (
               <div className="absolute right-0 mt-3 w-52 bg-white border rounded-md shadow-lg">
-                <Link href="/edit-profile" className="block px-4 py-2 hover:bg-gray-100" onClick={closeAllMenus}>
+                <Link
+                  href="/edit-profile"
+                  className="block px-4 py-2 hover:bg-gray-100"
+                  onClick={closeAllMenus}
+                >
                   Edit Profile
                 </Link>
-                <Link href="/auth/change-password" className="block px-4 py-2 hover:bg-gray-100" onClick={closeAllMenus}>
+                <Link
+                  href="/auth/change-password"
+                  className="block px-4 py-2 hover:bg-gray-100"
+                  onClick={closeAllMenus}
+                >
                   Change Password
                 </Link>
                 <button
@@ -194,12 +232,25 @@ const UserNavbar = () => {
             onClick={() => toggleMenu("mobile")}
             className="text-mainBlue focus:outline-none"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M4 6h16M4 12h16M4 18h16"
+              />
             </svg>
           </button>
           {menuState.mobile && (
-            <div className="absolute top-12 right-0 w-64 bg-white border rounded-md shadow-lg p-4" ref={refs.mobile}>
+            <div
+              className="absolute top-12 right-0 w-64 bg-white border rounded-md shadow-lg p-4"
+              ref={refs.mobile}
+            >
               <ul className="space-y-2 text-mainBlue font-medium">
                 <li>
                   <button
@@ -214,10 +265,18 @@ const UserNavbar = () => {
                   </button>
                   {menuState.userSubmenu && (
                     <div className="ml-10 mt-2 space-y-1">
-                      <Link href="/edit-profile" className="block px-2 py-1 hover:bg-gray-100 rounded" onClick={closeAllMenus}>
+                      <Link
+                        href="/edit-profile"
+                        className="block px-2 py-1 hover:bg-gray-100 rounded"
+                        onClick={closeAllMenus}
+                      >
                         Edit Profile
                       </Link>
-                      <Link href="/auth/change-password" className="block px-2 py-1 hover:bg-gray-100 rounded" onClick={closeAllMenus}>
+                      <Link
+                        href="/auth/change-password"
+                        className="block px-2 py-1 hover:bg-gray-100 rounded"
+                        onClick={closeAllMenus}
+                      >
                         Change Password
                       </Link>
                     </div>
@@ -237,7 +296,16 @@ const UserNavbar = () => {
                         {menuState.certificate && (
                           <div className="ml-6 mt-1 space-y-1">
                             {link.subMenu.map((sub, idx) => (
-                              <Link key={idx} href={sub.path} className="block px-2 py-1 hover:bg-gray-100 rounded" onClick={closeAllMenus}>
+                              <Link
+                                key={idx}
+                                href={sub.path}
+                                className={`block px-2 py-1 hover:bg-gray-100 rounded ${
+                                  pathname === sub.path
+                                    ? "text-mainOrange font-semibold"
+                                    : ""
+                                }`}
+                                onClick={closeAllMenus}
+                              >
                                 {sub.name}
                               </Link>
                             ))}
@@ -245,7 +313,15 @@ const UserNavbar = () => {
                         )}
                       </>
                     ) : (
-                      <Link href={link.path} className="block px-2 py-1 hover:bg-gray-100 rounded" onClick={closeAllMenus}>
+                      <Link
+                        href={link.path}
+                        className={`block px-2 py-1 hover:bg-gray-100 rounded ${
+                          pathname === link.path
+                            ? "text-mainOrange font-semibold"
+                            : ""
+                        }`}
+                        onClick={closeAllMenus}
+                      >
                         {link.name}
                       </Link>
                     )}

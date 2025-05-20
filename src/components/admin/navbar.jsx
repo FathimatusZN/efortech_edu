@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/app/context/AuthContext";
-import path from "path";
+import { ChevronDown } from "lucide-react";
 
 const AdminNavbar = () => {
   const { user, logout, loading } = useAuth();
@@ -112,27 +112,31 @@ const AdminNavbar = () => {
 
   return (
     <nav className="sticky top-0 z-50 bg-white py-3 drop-shadow-[0_2px_4px_rgba(237,113,23,0.3)]">
-      <div className="container mx-auto flex justify-between items-center px-6">
-        <img src="/assets/logo.png" alt="Logo" className="h-8" />
+      <div className="flex items-center justify-between gap-4 px-4 sm:px-6 lg:px-8 w-full max-w-screen-xl mx-auto">
+        {/* Logo */}
+        <div className="flex-shrink w-auto">
+          <img
+            src="/assets/logo.png"
+            alt="Logo"
+            className="h-8 w-auto max-w-[120px]"
+          />
+        </div>
 
         {/* Desktop Nav */}
-        <div className="hidden md:flex items-center space-x-8 font-medium">
+        <div className="hidden md:flex items-center lg:space-x-8 md:space-x-4 font-medium">
           {navLinks.map((link, index) => {
             const isActive =
               pathname === link.path ||
               (link.submenu &&
                 link.submenu.some((sub) => pathname === sub.path));
-            console.log(
-              `Menu: ${link.name}, isActive: ${isActive}, currentPath: ${router.pathname}`
-            );
+
+            const isDropdownOpen = activeDropdown === index;
 
             return (
               <div
                 key={index}
                 className="relative group"
-                onClick={() =>
-                  setActiveDropdown(activeDropdown === index ? null : index)
-                }
+                onClick={() => setActiveDropdown(isDropdownOpen ? null : index)}
               >
                 {link.submenu ? (
                   <button
@@ -143,13 +147,12 @@ const AdminNavbar = () => {
                     }`}
                   >
                     {link.name}
-                    <svg
-                      className="ml-1 w-4 h-4"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path d="M5.5 7l4.5 4.5L14.5 7" />
-                    </svg>
+                    <ChevronDown
+                      size={16}
+                      className={`ml-1 transition-transform duration-200 ${
+                        isDropdownOpen ? "rotate-180" : ""
+                      }`}
+                    />
                   </button>
                 ) : (
                   <Link
@@ -169,7 +172,7 @@ const AdminNavbar = () => {
                 {link.submenu && (
                   <div
                     className={`absolute z-10 bg-white border rounded shadow-lg mt-2 transition-all duration-150 ${
-                      activeDropdown === index ? "block" : "hidden"
+                      isDropdownOpen ? "block" : "hidden"
                     }`}
                   >
                     <ul className="py-2 w-60 text-mainBlue font-normal">
