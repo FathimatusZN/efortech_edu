@@ -1,7 +1,6 @@
 'use client';
 
 import Image from 'next/image';
-import Link from 'next/link';
 import { useState } from 'react';
 import { FaTrash } from 'react-icons/fa';
 import {
@@ -32,13 +31,17 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
-
 const PAGE_SIZE = 10;
 
-export default function PartnerTable({ partner = [], onDeletePartner }) {
+export default function PartnerTable({ partner = [], onDeletePartner, onEditPartner }) {
   const [page, setPage] = useState(1);
   const totalPages = Math.ceil(partner.length / PAGE_SIZE);
   const paginatedData = partner.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  const [notifyDialogOpen, setNotifyDialogOpen] = useState(false);
+  const [notifyDialogTitle, setNotifyDialogTitle] = useState('');
+  const [notifyDialogDesc, setNotifyDialogDesc] = useState('');
+  const [notifyDialogIsError, setNotifyDialogIsError] = useState(false);
 
   const handleDelete = async (partnerId) => {
     try {
@@ -50,9 +53,17 @@ export default function PartnerTable({ partner = [], onDeletePartner }) {
         throw new Error('Failed to delete partner');
       }
 
-      onDeletePartner(); 
+      await onDeletePartner();
+      setNotifyDialogTitle("Success");
+      setNotifyDialogDesc("Partner deleted successfully.");
+      setNotifyDialogIsError(false);
+      setNotifyDialogOpen(true);
     } catch (error) {
       console.error('Failed to delete partner', error);
+      setNotifyDialogTitle("Error");
+      setNotifyDialogDesc(error.message || "Failed to delete partner.");
+      setNotifyDialogIsError(true);
+      setNotifyDialogOpen(true);
     }
   };
 
@@ -104,11 +115,13 @@ export default function PartnerTable({ partner = [], onDeletePartner }) {
                   </TableCell>
                   <TableCell>
                     <div className="flex justify-center items-center gap-2">
-                      <Link href={`/partner-admin/form-partner?id=${item.partner_id}`}>
-                        <Button size="sm" variant="outline">
-                          Edit
-                        </Button>
-                      </Link>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => onEditPartner(item.partner_id)}
+                      >
+                        Edit
+                      </Button>
                       <Dialog>
                         <DialogTrigger asChild>
                           <Button
@@ -193,11 +206,27 @@ export default function PartnerTable({ partner = [], onDeletePartner }) {
             </Pagination>
           </div>
           <div className="text-xs text-gray-600 text-center mt-2">
-            Menampilkan {(page - 1) * PAGE_SIZE + 1} hingga{' '}
-            {Math.min(page * PAGE_SIZE, partner.length)} dari {partner.length} partner
+            Showing {(page - 1) * PAGE_SIZE + 1} to{' '}
+            {Math.min(page * PAGE_SIZE, partner.length)} of {partner.length} partners
           </div>
         </>
       )}
+
+      <Dialog open={notifyDialogOpen} onOpenChange={setNotifyDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className={notifyDialogIsError ? "text-red-600" : "text-green-600"}>
+              {notifyDialogTitle}
+            </DialogTitle>
+            <DialogDescription>{notifyDialogDesc}</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button>Close</Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
