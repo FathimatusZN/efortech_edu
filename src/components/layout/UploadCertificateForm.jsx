@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { AiOutlineFilePdf, AiOutlineFileUnknown } from "react-icons/ai";
 import { FaCloudUploadAlt, FaTrash } from "react-icons/fa";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
 export default function UploadUCertificateForm({ onSubmit, variant = "user", mode = "user" }) {
     const inputRef = useRef(null);
@@ -23,6 +24,9 @@ export default function UploadUCertificateForm({ onSubmit, variant = "user", mod
     const [certPreviewUrl, setCertPreviewUrl] = useState("");
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
+
+    const [previewLoading, setPreviewLoading] = useState(false);
+    const [previewFailed, setPreviewFailed] = useState(false);
 
     const user = typeof window !== "undefined"
         ? JSON.parse(localStorage.getItem("user")) || {}
@@ -48,11 +52,15 @@ export default function UploadUCertificateForm({ onSubmit, variant = "user", mod
     const handleFileChange = async (e) => {
         const file = e.target.files[0];
         setErrors({});
+
         if (file) {
             if (file.type !== "application/pdf") {
                 setErrors({ certFile: "Only PDF files are allowed." });
                 return;
             }
+
+            setPreviewLoading(true);
+            setPreviewFailed(false);
 
             setLoading(true);
             try {
@@ -61,6 +69,7 @@ export default function UploadUCertificateForm({ onSubmit, variant = "user", mod
                 setCertPreviewUrl(url);
             } catch (error) {
                 setErrors({ certFile: error.message || "Upload failed." });
+                setPreviewFailed(true);
             } finally {
                 setLoading(false);
             }
@@ -151,12 +160,12 @@ export default function UploadUCertificateForm({ onSubmit, variant = "user", mod
     };
 
     const renderFileIcon = () => {
-        if (!certFile) return <AiOutlineFileUnknown className="text-gray-500 w-5 h-5" />;
+        if (!certFile) return <AiOutlineFileUnknown className="text-gray-500 w-8 h-8" />;
         return <AiOutlineFilePdf className="text-red-500 w-5 h-5" />
     };
 
     return (
-        <div className="grid md:grid-cols-2 gap-16 mt-6 max-w-full mx-auto px-4">
+        <div className="grid md:grid-cols-2 gap-16 mt-6 max-w-full mx-auto">
             {/* Left: File Upload */}
             <div className="space-y-4">
                 <div>
@@ -179,31 +188,55 @@ export default function UploadUCertificateForm({ onSubmit, variant = "user", mod
                     ) : (
                         <div className="mt-2 space-y-2 relative">
                             <div className="flex items-center gap-2">
-                                {renderFileIcon()}
-                                <a
-                                    href={certPreviewUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-blue-600 underline text-sm"
-                                >
-                                    {certFile.name}
-                                </a>
+                                <div className="w-8 h-8 flex-shrink-0 flex items-center justify-center">
+                                    {renderFileIcon()}
+                                </div>
+                                <div className="max-w-full sm:max-w-xs whitespace-normal text-sm text-blue-600 underline">
+                                    <a
+                                        href={certPreviewUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-blue-600 underline text-sm break-all"
+                                    >
+                                        {certFile.name}
+                                    </a>
+                                </div>
                                 <button
                                     onClick={() => {
                                         setCertFile(null);
                                         setCertPreviewUrl("");
+                                        setPreviewLoading(false);
+                                        setPreviewFailed(false);
                                     }}
-                                    className="ml-auto bg-red-500 hover:bg-red-600 text-white rounded-full p-1"
+                                    className="ml-auto bg-red-500 hover:bg-red-600 text-white rounded-full p-2"
                                     title="Remove file"
                                 >
                                     <FaTrash className="text-xs" />
                                 </button>
                             </div>
-                            <embed
-                                src={certPreviewUrl}
-                                type="application/pdf"
-                                className="w-full h-80 border rounded"
-                            />
+
+                            <div className="w-full h-80 border rounded relative bg-white flex items-center justify-center">
+                                {previewLoading && !previewFailed && (
+                                    <div className="absolute z-10">
+                                        <LoadingSpinner />
+                                    </div>
+                                )}
+                                {!previewFailed ? (
+                                    <iframe
+                                        src={`https://docs.google.com/gview?url=${encodeURIComponent(certPreviewUrl)}&embedded=true`}
+                                        className={`w-full h-full border rounded ${previewLoading ? "invisible" : "visible"}`}
+                                        frameBorder="0"
+                                        title="Certificate Preview"
+                                        onLoad={() => setPreviewLoading(false)}
+                                        onError={() => {
+                                            setPreviewFailed(true);
+                                            setPreviewLoading(false);
+                                        }}
+                                    />
+                                ) : (
+                                    <p className="text-center text-gray-500">Preview Not Available for this File</p>
+                                )}
+                            </div>
                         </div>
                     )}
 
