@@ -76,7 +76,7 @@ export default function ChangePasswordPage() {
         <img src="/assets/Gambar2.jpg" alt="Change Password Image" className="w-full h-full object-cover object-top" />
       </div>
 
-      <div className="w-full md:w-1/2 h-auto flex items-center justify-center p-4">
+      <div className="w-full md:w-1/2 h-auto flex items-center justify-center p-4 pt-28">
         <div className="w-[550px] space-y-6 mt-[-80px]">
           <form onSubmit={handleSubmit} className="border-2 border-[#03649F] rounded-[10px] p-6 space-y-4 bg-white shadow-md">
             <div className="flex flex-col items-center space-y-2 mb-8">
