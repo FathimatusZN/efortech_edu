@@ -14,7 +14,8 @@ const DefaultNavbar = () => {
 
   const [menuState, setMenuState] = useState({
     mobile: false,
-    certificate: false,
+    certificateDesktop: false,
+    certificateMobile: false,
   });
 
   const refs = {
@@ -82,7 +83,7 @@ const DefaultNavbar = () => {
               pathname === link.path ||
               (link.subMenu &&
                 link.subMenu.some((sub) => pathname === sub.path));
-            const isMenuOpen = menuState.certificate;
+            const isMenuOpen = menuState.certificateDesktop;
 
             return (
               <div
@@ -93,7 +94,7 @@ const DefaultNavbar = () => {
                 {link.subMenu ? (
                   <>
                     <button
-                      onClick={() => toggleMenu("certificate")}
+                      onClick={() => toggleMenu("certificateDesktop")}
                       className={`flex items-center gap-1 ${
                         isActiveLink || isMenuOpen
                           ? "text-mainOrange font-semibold"
@@ -182,12 +183,12 @@ const DefaultNavbar = () => {
                     {link.subMenu ? (
                       <>
                         <button
-                          onClick={() => toggleMenu("certificate")}
+                          onClick={() => toggleMenu("certificateMobile")}
                           className="w-full text-left px-2 py-1 hover:bg-gray-100 rounded"
                         >
                           {link.name}
                         </button>
-                        {menuState.certificate && (
+                        {menuState.certificateMobile && (
                           <div className="ml-6 mt-1 space-y-1">
                             {link.subMenu.map((sub, idx) => (
                               <Link
