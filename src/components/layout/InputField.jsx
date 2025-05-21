@@ -12,7 +12,7 @@ const PageTitle = ({ title, className }) => {
 };
 
 // Save Button Component
-export const SaveButton = ({ onClick, disabled = false }) => {
+const SaveButton = ({ onClick, disabled = false }) => {
     return (
         <button
             className={`flex items-center gap-2 px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg shadow transition-colors duration-200
@@ -29,7 +29,7 @@ export const SaveButton = ({ onClick, disabled = false }) => {
 };
 
 // Discard Button Component
-export const DiscardButton = ({ onClick }) => {
+const DiscardButton = ({ onClick }) => {
     return (
         <button
             className="flex items-center gap-2 bg-neutral2 text-neutral3 px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg shadow hover:bg-error1 hover:text-white"
