@@ -33,7 +33,7 @@ export default function UploadCertificatePage() {
   };
 
   return (
-    <div className="max-w-screen mx-auto p-8">
+    <div className="max-w-full mx-auto p-4 sm:p-6 md:p-8">
       <h1 className="text-2xl font-bold text-center mb-6">
         Upload Certificate
       </h1>
