@@ -164,12 +164,12 @@ export default function CertificateValidation() {
                         className="w-full text-xs sm:text-sm px-2 py-1 sm:px-4 sm:py-2 border-mainOrange text-mainOrange hover:bg-mainOrange hover:text-white"
                         onClick={() =>
                           window.open(
-                            `/certificate/${item.certificate_id}`,
+                            `/certificate/${item.certificate_number}`,
                             "_blank"
                           )
                         }
                       >
-                        Preview
+                        See Detail
                       </Button>
                     </TableCell>
                   </TableRow>
