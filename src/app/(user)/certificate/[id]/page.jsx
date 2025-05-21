@@ -120,6 +120,81 @@ export default function CertificateDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Training Info */}
+      {certificate.type === 1 && certificate.training && (
+        <div className="mt-6 p-4 rounded-lg bg-white border shadow text-sm space-y-3">
+          <h2 className="text-base font-semibold text-mainBlue">Training Information</h2>
+          <div className="flex flex-col md:flex-row gap-4">
+            {/* Gambar Training */}
+            <div className="md:w-1/3 w-full">
+              <img
+                src={certificate.training.images?.[0]}
+                alt={certificate.training.training_name}
+                className="w-full h-auto object-cover rounded-md border"
+              />
+            </div>
+
+            {/* Detail Training */}
+            <div className="md:w-2/3 w-full space-y-3 flex flex-col justify-between">
+              <div className="space-y-2">
+                <h3 className="text-lg font-bold">{certificate.training.training_name}</h3>
+
+                <div className="flex gap-5">
+                  {/* Level */}
+                  <div className="text-sm text-mainBlue font-bold">
+                    {certificate.training.level === 1
+                      ? "Beginner Level"
+                      : certificate.training.level === 2
+                        ? "Intermediate Level"
+                        : "Advanced Level"}
+                  </div>
+
+                  {/* Rating */}
+                  <div className="flex items-center gap-1 text-yellow-500 text-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 fill-current" viewBox="0 0 20 20">
+                      <path d="M10 15l-5.878 3.09 1.122-6.545L.487 6.91l6.561-.954L10 0l2.952 5.956 6.561.954-4.757 4.635 1.122 6.545z" />
+                    </svg>
+                    <span className="text-gray-700 font-medium">
+                      {certificate.training.rating.toFixed(1)} / 5.0
+                    </span>
+                  </div>
+                </div>
+
+                {/* Description */}
+                <p className="text-gray-600 text-sm">{certificate.training.description}</p>
+
+                {/* Skills */}
+                {certificate.training.skills?.length > 0 && (
+                  <div>
+                    <span className="font-medium text-xs">Skills:</span>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {certificate.training.skills.map((skill, index) => (
+                        <span
+                          key={index}
+                          className="bg-mainBlue/10 text-mainBlue px-2 py-0.5 rounded-full text-xs"
+                        >
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* See Detail Button */}
+              <div className="flex justify-end pt-1">
+                <a
+                  href={`/training/${certificate.training.training_id}`}
+                  className="inline-block px-4 py-1 text-md font-medium text-white bg-mainBlue rounded hover:bg-lightBlue transition"
+                >
+                  See Detail
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
