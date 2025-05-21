@@ -106,7 +106,7 @@ const SigninForm = () => {
         <>
             {loading || loading2 || loading3 ? (
                 <div className="w-full min-h-screen flex flex-col md:flex-row">
-                    <div className="relative w-full md:w-1/2 aspect-[4/1] md:aspect-auto overflow-hidden">
+                    <div className="relative w-full md:w-1/2 aspect-[16/9] md:aspect-auto overflow-hidden">
                         <img
                             src="/assets/Gambar2.jpg"
                             alt="Signin Image"
@@ -136,7 +136,7 @@ const SigninForm = () => {
                 </div>
             ) : (
                 <div className="w-full min-h-screen flex flex-col md:flex-row">
-                    <div className="relative w-full md:w-1/2 aspect-[4/1] md:aspect-auto overflow-hidden">
+                    <div className="relative w-full md:w-1/2 aspect-[16/9] md:aspect-auto overflow-hidden">
                         <img
                             src="/assets/Gambar2.jpg"
                             alt="Signin Image"
