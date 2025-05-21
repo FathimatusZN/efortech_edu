@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { NotFound } from "../../../../components/ui/ErrorPage";
 
 export default function CertificateDetailPage() {
   const { id } = useParams();
@@ -36,11 +36,13 @@ export default function CertificateDetailPage() {
   if (loading) return <div className="p-6 text-center text-sm">Loading...</div>;
   if (!certificate)
     return (
-      <div className="p-6 text-center text-sm text-red-500">
-        Certificate not found
+      <div className="text-center">
+        <NotFound
+          message="We couldn’t find any certificate matching your keyword."
+          buttons={[]}
+        />
       </div>
     );
-
   return (
     <div className="max-w-7xl mx-auto p-3 sm:p-4 md:p-6 text-sm">
 
@@ -56,7 +58,7 @@ export default function CertificateDetailPage() {
           <div className="md:w-1/3 w-full flex flex-col items-center gap-2 rounded-xl border p-3 shadow bg-white text-center">
             <div className="w-24 h-24 rounded-full flex items-center justify-center">
               <img
-                src={certificate.user_photo}
+                src={certificate.user_photo || "/assets/user1.png"}
                 alt="User"
                 className="w-24 h-24 rounded-full object-cover border-4 border-white"
               />
