@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { FaEdit, FaTrash } from "react-icons/fa";
 import { NotFound } from "../../../../components/ui/ErrorPage";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import { toast } from "react-hot-toast";
 
 export default function TrainingDetailPage() {
   const router = useRouter();
@@ -16,6 +18,7 @@ export default function TrainingDetailPage() {
   const [training, setTraining] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   useEffect(() => {
     const fetchTraining = async () => {
@@ -45,10 +48,11 @@ export default function TrainingDetailPage() {
   if (error) return <div className="p-6 md:p-8 text-red-500">{error}</div>;
   if (!training) return <NotFound message={"We couldn't find the training you're looking for."} buttons={[{ text: "Back to Training Page", href: "/training-admin" }]} />;
 
-  const handleDelete = async () => {
-    const confirm = window.confirm("Are you sure you want to archive this training?");
-    if (!confirm) return;
+  const confirmDelete = () => {
+    setConfirmOpen(true);
+  };
 
+  const handleDelete = async () => {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/training/archive/${training.training_id}`, {
         method: "PUT",
@@ -57,16 +61,19 @@ export default function TrainingDetailPage() {
       const data = await res.json();
 
       if (res.ok) {
-        alert("Training has been archived successfully.");
+        toast.success("Training has been archived successfully.");
         router.push("/training-admin");
       } else {
-        alert(data.message || "Failed to archive training.");
+        toast.error(data.message || "Failed to archive training.");
       }
     } catch (error) {
-      alert("Error occurred while archiving training.");
+      toast.error("Error occurred while archiving training.");
       console.error(error);
+    } finally {
+      setConfirmOpen(false);
     }
   };
+
 
   return (
     <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
@@ -88,7 +95,7 @@ export default function TrainingDetailPage() {
               variant="destructive"
               size="sm"
               className="px-4 py-1 bg-red-600 hover:bg-red-700"
-              onClick={handleDelete}
+              onClick={confirmDelete}
             >
               <FaTrash className="text-sm mr-2" />
               Delete
@@ -205,6 +212,15 @@ export default function TrainingDetailPage() {
           </div>
 
         </div>
+
+        <ConfirmDialog
+          open={confirmOpen}
+          data="Training"
+          id={training.training_id}
+          title={training.training_name}
+          onCancel={() => setConfirmOpen(false)}
+          onConfirm={handleDelete}
+        />
       </div>
     </ProtectedRoute>
   );
