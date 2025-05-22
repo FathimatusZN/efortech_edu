@@ -127,7 +127,7 @@ const SigninForm = () => {
                                 />
                                 <div className="bg-blue-50 rounded-xl px-4 py-3 shadow-md w-full max-w-[350px] sm:max-w-xl mx-auto">
                                     <p className="text-xs sm:text-sm text-black italic text-center">
-                                        💡 Did you know? {randomFunfact}
+                                        💡 {randomFunfact}
                                     </p>
                                 </div>
                             </div>
