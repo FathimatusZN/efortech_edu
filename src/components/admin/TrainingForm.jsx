@@ -84,7 +84,7 @@ export default function TrainingForm({
         <div className="mt-2 flex gap-12 flex-wrap">
           {[
             { label: 'Beginner', value: 1 },
-            { label: 'Medium', value: 2 },
+            { label: 'Intermediate', value: 2 },
             { label: 'Advanced', value: 3 },
           ].map((item) => (
             <label key={item.value} className="flex items-center gap-2 cursor-pointer">
