@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FaEdit, FaTrash } from "react-icons/fa";
 import { NotFound } from "../../../../components/ui/ErrorPage";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
 export default function TrainingDetailPage() {
   const router = useRouter();
@@ -40,7 +41,7 @@ export default function TrainingDetailPage() {
     fetchTraining();
   }, [id]);
 
-  if (loading) return <div className="p-6 md:p-8">Loading...</div>;
+  if (loading) return <div className="p-6 md:p-8 item-center"><LoadingSpinner /></div>;
   if (error) return <div className="p-6 md:p-8 text-red-500">{error}</div>;
   if (!training) return <NotFound message={"We couldn't find the training you're looking for."} buttons={[{ text: "Back to Training Page", href: "/training-admin" }]} />;
 
