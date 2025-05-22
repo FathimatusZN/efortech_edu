@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { NotFound } from "@/components/ui/ErrorPage";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
 export default function TrainingPage() {
   const router = useRouter();
@@ -30,11 +31,13 @@ export default function TrainingPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     // Setup a delay to debounce the search query input
     const delayDebounce = setTimeout(() => {
       const fetchTrainings = async () => {
+        setIsLoading(true);
         try {
           // Build query params based on current filter/sort/search state
           const params = new URLSearchParams();
@@ -73,6 +76,8 @@ export default function TrainingPage() {
           }
         } catch (err) {
           console.error("Failed to fetch training data:", err);
+        } finally {
+          setIsLoading(false);
         }
       };
 
@@ -83,7 +88,6 @@ export default function TrainingPage() {
     // Clear timeout if any of the dependencies change before the delay completes
     return () => clearTimeout(delayDebounce);
   }, [filterStatus, sortOrder, searchQuery]); // Rerun effect when filters or search change
-
 
   const totalPages = Math.ceil(trainingData.length / itemsPerPage);
   const paginatedData = trainingData.slice(
@@ -106,11 +110,9 @@ export default function TrainingPage() {
 
   return (
     <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
-
-      <div className="flex flex-col justify-start w-full max-w-screen mx-auto min-h-screen px-8 pb-12">
+      <div className="flex flex-col justify-start w-full max-w-screen mx-auto min-h-screen pb-12 mx-auto px-2 sm:px-4 md:px-8">
         <div className="w-full flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 py-8 px-4">
           <h2 className="text-2xl font-bold">Training & Courses</h2>
-
           <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto items-stretch sm:items-center">
             <div className="relative w-full sm:w-auto">
               <input
@@ -118,14 +120,14 @@ export default function TrainingPage() {
                 placeholder="Search..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="text-sm w-full pl-6 pr-10 py-2 rounded-xl border-2 border-mainOrange focus:ring-0 focus:outline-none"
+                className="text-sm w-full pl-6 h-10 pr-10 py-2 rounded-md border-2 border-mainOrange focus:ring-0 focus:outline-none"
               />
               <FaSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
             </div>
 
-            <div className="flex gap-2 flex-wrap items-center">
+            <div className="flex gap-3 flex-wrap items-center">
               <Select value={filterStatus} onValueChange={setFilterStatus}>
-                <SelectTrigger className="w-[150px] border-2 border-mainOrange rounded-xl">
+                <SelectTrigger className="w-[150px] h-10 border-2 border-mainOrange rounded-md focus:ring-0 focus:outline-none">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -136,7 +138,7 @@ export default function TrainingPage() {
               </Select>
 
               <Select value={sortOrder} onValueChange={setSortOrder}>
-                <SelectTrigger className="w-[130px] border-2 border-mainOrange rounded-xl">
+                <SelectTrigger className="w-[150px] h-10 border-2 border-mainOrange rounded-md focus:ring-0 focus:outline-none">
                   <SelectValue placeholder="Sort" />
                 </SelectTrigger>
                 <SelectContent>
@@ -147,15 +149,19 @@ export default function TrainingPage() {
 
               <Button
                 variant="mainBlue"
-                size="sm"
                 onClick={() => router.push("/training-admin/add")}
               >
-                <Plus size={16} /> Add New
+                <Plus size={20} /> Add New
               </Button>
             </div>
           </div>
         </div>
 
+        {isLoading && (
+          <div className="flex items-center justify-center min-h-screen">
+            <LoadingSpinner />
+          </div>
+        )}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 px-4">
           {paginatedData.length > 0 ? (
             paginatedData.map((item) => {
@@ -175,6 +181,7 @@ export default function TrainingPage() {
                 <div
                   key={item.training_id}
                   className={`border shadow-lg rounded-2xl overflow-hidden flex flex-col cursor-pointer w-full h-[430px] max-w-sm ${cardClass}`}
+                  onClick={() => router.push(`/training-admin/${item.training_id}`)}
                 >
                   <div className="h-[200px] w-full relative">
                     {discount > 0 && (
@@ -224,7 +231,6 @@ export default function TrainingPage() {
 
                       <ArrowRight
                         className="text-gray-600 hover:text-mainOrange transition-all"
-                        onClick={() => router.push(`/training-admin/${item.training_id}`)}
                       />
                     </div>
                   </div>
