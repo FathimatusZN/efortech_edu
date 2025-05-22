@@ -17,7 +17,9 @@ import {
     FaMoneyBillWave,
     FaNewspaper,
     FaEye,
-    FaUserShield
+    FaUserShield,
+    FaChevronDown,
+    FaChevronUp
 } from "react-icons/fa";
 
 const DashboardAdmin = () => {
@@ -93,8 +95,8 @@ const DashboardAdmin = () => {
                     cancelled: item.registration.cancelled,
                     reg_total: item.registration.total_participants,
 
-                    valid: item.certificate.valid,
-                    expired: item.certificate.expired,
+                    valid_certificate: item.certificate.valid,
+                    expired_certificate: item.certificate.expired,
                     cert_total: item.certificate.total_issued,
 
                     additionalData: {
@@ -299,8 +301,8 @@ const DashboardAdmin = () => {
                                             completed: "#01458E",
                                             onprogress: "#03649F",
                                             cancelled: "#157AB2",
-                                            valid: "#ED7117",
-                                            expired: "#FCAE1E",
+                                            valid_certificate: "#ED7117",
+                                            expired_certificate: "#FCAE1E",
                                         }}
                                     />
                                 }
@@ -311,8 +313,8 @@ const DashboardAdmin = () => {
                             <Bar stackId="reg" dataKey="cancelled" fill="#157AB2" name="Cancelled" />
 
                             {/* Group 2: Certificate */}
-                            <Bar stackId="cert" dataKey="valid" fill="#ED7117" name="Valid" />
-                            <Bar stackId="cert" dataKey="expired" fill="#FCAE1E" name="Expired" />
+                            <Bar stackId="cert" dataKey="valid_certificate" fill="#ED7117" name="Valid Certificate" />
+                            <Bar stackId="cert" dataKey="expired_certificate" fill="#FCAE1E" name="Expired Certificate" />
                         </BarChart>
                     </ResponsiveContainer>
                 </div>
@@ -320,16 +322,18 @@ const DashboardAdmin = () => {
                 {/* Quick Global Review */}
                 <div
                     className="w-full max-w-6xl mx-auto mt-6 bg-white border rounded-lg shadow-md cursor-pointer p-4 mx-auto max-w-[1200px]"
-                    onClick={() => setShowGlobalStats(!showGlobalStats)}
-                    onMouseEnter={() => setShowGlobalStats(true)}
-                    onMouseLeave={() => setShowGlobalStats(false)}
                 >
-                    <h2 className="text-lg font-semibold text-center text-gray-800">
-                        Quick Global Review
-                    </h2>
-
+                    <div className="flex items-center justify-center">
+                        <button
+                            onClick={() => setShowGlobalStats(!showGlobalStats)}
+                            className="text-gray-600 hover:text-black focus:outline-none"
+                            aria-label="Toggle Global Stats"
+                        >
+                            <h2 className="text-lg font-semibold">Quick Global Review</h2>
+                        </button>
+                    </div>
                     {showGlobalStats && (
-                        <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-4 mt-4">
+                        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4 mt-4">
                             {Object.entries(globalStats).map(([key, value]) => (
                                 <div
                                     key={key}
