@@ -4,13 +4,13 @@ import React, { useEffect, useState, useRef, useCallback } from "react";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { auth } from "@/app/firebase/config";
-import { getIdToken } from "firebase/auth";
 import { Check, Trash2 } from "lucide-react";
 import { SuccessDialog } from "@/components/ui/SuccessDialog";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { onAuthStateChanged } from "firebase/auth";
 import { FaSortUp } from "react-icons/fa6";
 import { FaSortDown } from "react-icons/fa6";
+import { v4 as uuidv4 } from "uuid";
 
 // Training Header, display training banner with slideshow effect
 const TrainingHeader = React.memo(({ training }) => {
@@ -57,7 +57,7 @@ const RegistrationPage = () => {
   const [participantCount, setParticipantCount] = useState(1);
   const [participantInput, setParticipantInput] = useState("1");
   const [additionalEmails, setAdditionalEmails] = useState([
-    { id: crypto.randomUUID(), email: "" },
+    { id: uuidv4(), email: "" },
   ]);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(true);
@@ -288,7 +288,7 @@ const RegistrationPage = () => {
 
         if (targetLength > updatedEmails.length) {
           while (updatedEmails.length < targetLength) {
-            updatedEmails.push({ id: crypto.randomUUID(), email: "" });
+            updatedEmails.push({ id: uuidv4(), email: "" });
           }
         } else if (targetLength < updatedEmails.length) {
           return updatedEmails.slice(0, targetLength);
@@ -407,44 +407,59 @@ const RegistrationPage = () => {
       readOnly = false,
       className = "",
       children,
-    }) => (
-      <div className="mt-6 flex flex-col sm:flex-row items-start gap-2 sm:gap-4">
-        <label className="sm:w-1/4 text-black font-semibold pt-2">
-          {label} {required && <span className="text-red-500">*</span>}
-        </label>
-        <div className="sm:w-3/4 w-full flex flex-col">
-          {readOnly ? (
-            <div
-              className="p-2 pl-4 bg-gray-100 rounded-lg text-sm text-gray-700 min-h-[40px] flex items-center cursor-not-allowed hover:bg-gray-200 transition"
-              title="This field can only be edited in your profile"
-            >
-              {value || "-"}
-            </div>
-          ) : (
-            <div className="relative w-full">
-              <input
-                type={type}
-                min={min}
-                className={`w-full p-2 pl-4 ${
-                  children ? "pr-10" : "pr-4"
-                } border rounded-lg border-mainOrange placeholder:text-sm 
-    focus:border-orange-500 focus:ring-orange-500 focus:outline-none focus:ring-1 ${className}`}
-                placeholder={placeholder}
-                value={value}
-                onChange={onChange}
-              />
+    }) => {
+      const [showInfo, setShowInfo] = useState(false);
 
-              {children && (
-                <div className="absolute inset-y-0 right-2 flex flex-col justify-center items-center">
-                  {children}
-                </div>
-              )}
-            </div>
-          )}
-          {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+      const handleReadOnlyClick = () => {
+        setShowInfo(true);
+        setTimeout(() => setShowInfo(false), 2000);
+      };
+
+      return (
+        <div className="mt-6 flex flex-col sm:flex-row items-start">
+          <label className="sm:w-1/4 text-black font-semibold pt-2">
+            {label} {required && <span className="text-red-500">*</span>}
+          </label>
+          <div className="sm:w-3/4 w-full flex flex-col">
+            {readOnly ? (
+              <div
+                className="p-2 pl-4 bg-gray-100 rounded-lg text-sm text-gray-700 min-h-[40px] flex items-center cursor-not-allowed hover:bg-gray-200 transition"
+                onClick={handleReadOnlyClick}
+              >
+                {value || "-"}
+              </div>
+            ) : (
+              <div className="relative w-full">
+                <input
+                  type={type}
+                  min={min}
+                  className={`w-full p-2 pl-4 ${children ? "pr-10" : "pr-4"
+                    } border rounded-lg border-mainOrange placeholder:text-sm 
+              focus:border-orange-500 focus:ring-orange-500 focus:outline-none focus:ring-1 ${className}`}
+                  placeholder={placeholder}
+                  value={value}
+                  onChange={onChange}
+                />
+                {children && (
+                  <div className="absolute inset-y-0 right-2 flex flex-col justify-center items-center">
+                    {children}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ✅ Info muncul saat field readOnly diklik */}
+            {showInfo && readOnly && (
+              <p className="text-xs text-orange-600 mt-1">
+                This field can only be edited in your profile.
+              </p>
+            )}
+
+            {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+          </div>
         </div>
-      </div>
-    )
+      );
+    }
   );
 
   if (loading || redirecting) return <LoadingSpinner text="Loading..." />;
@@ -487,7 +502,7 @@ const RegistrationPage = () => {
         Registration Form
       </h2>
 
-      <div className="flex justify-center px-8">
+      <div className="flex justify-centermx-auto px-4 sm:px-6 md:px-8">
         <div className="max-w-3xl mb-20 mx-auto px-4 sm:px-6 pb-8 border-4 border-mainBlue rounded-lg bg-white shadow-2xl">
           <form onSubmit={handleSubmit}>
             <FormGroup label="Full Name" value={formData.fullName} readOnly />
@@ -513,10 +528,10 @@ const RegistrationPage = () => {
             <FormGroup
               label="Participant Count"
               required
-              type="number"
+              type="text"
               value={participantInput}
               onChange={handleParticipantCountChange}
-              className="text-center text-bold"
+              className="text-left text-bold"
             >
               <>
                 <button
@@ -535,6 +550,10 @@ const RegistrationPage = () => {
                 </button>
               </>
             </FormGroup>
+
+            <p className="text-xs text-gray-600 italic sm:ml-[25%] mb-1">
+              You can change this field if you are registering collectively with multiple participants.
+            </p>
 
             {/* Additional participant emails*/}
             {participantCount > 1 && (
