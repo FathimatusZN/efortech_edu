@@ -5,21 +5,9 @@ import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import ArticleCardAdmin from "@/components/admin/ArticleCardAdmin";
 import { NotFound } from "@/components/ui/ErrorPage";
 import { FaSearch, FaPlus } from "react-icons/fa";
-import {
-    Pagination,
-    PaginationContent,
-    PaginationItem,
-    PaginationLink,
-    PaginationNext,
-    PaginationPrevious,
-} from "@/components/ui/pagination";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
 const categoryOptions = [
     { id: 0, label: "All" },
@@ -37,6 +25,7 @@ const ArticleAdminPage = () => {
     const [selectedCategory, setSelectedCategory] = useState("All");
     const [page, setPage] = useState(1);
     const itemsPerPage = PAGE_SIZE; // 6 articles per page
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         fetchAllArticles();
@@ -53,17 +42,22 @@ const ArticleAdminPage = () => {
     }, []);
 
     const fetchAllArticles = async () => {
+        setIsLoading(true); // mulai loading
         try {
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/articles`);
             if (!response.ok) throw new Error("Failed to fetch articles");
             const data = await response.json();
-            setArticles(data.data);
+            setArticles(Array.isArray(data.data) ? data.data : []);
         } catch (error) {
             console.error("Error fetching articles:", error);
+            setArticles([]);
+        } finally {
+            setIsLoading(false);
         }
     };
 
     const fetchSearchResults = async () => {
+        setIsLoading(true);
         if (!searchQuery.trim()) {
             fetchAllArticles();
             return;
@@ -72,11 +66,13 @@ const ArticleAdminPage = () => {
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/articles/search?query=${encodeURIComponent(searchQuery)}`);
             const data = await response.json();
             if (!response.ok) throw new Error(data.message);
-            setArticles(data.data);
+            setArticles(Array.isArray(data.data) ? data.data : []);
             setPage(1);
         } catch (error) {
             console.error("Error searching articles:", error);
             setArticles([]);
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -94,9 +90,11 @@ const ArticleAdminPage = () => {
 
     const selectedCategoryId = categoryOptions.find(cat => cat.label === selectedCategory)?.id;
 
-    const filteredArticles = articles.filter(article => {
-        return selectedCategory === "All" || article.category === selectedCategoryId;
-    });
+    const filteredArticles = Array.isArray(articles)
+        ? articles.filter(article => {
+            return selectedCategory === "All" || article.category === selectedCategoryId;
+        })
+        : [];
 
     const totalPages = Math.ceil(filteredArticles.length / PAGE_SIZE);
     const paginatedArticles = filteredArticles.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -118,7 +116,7 @@ const ArticleAdminPage = () => {
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 onKeyDown={handleKeyDown}
-                                className="w-full h-[42px] pl-5 pr-10 rounded-l-lg border border-mainOrange shadow-sm focus:ring-1 focus:ring-mainOrange outline-none"
+                                className="w-full h-[42px] pl-5 pr-10 border-2 rounded-l-lg border border-mainOrange shadow-sm focus:ring-0 focus:outline-none"
                             />
                             <button
                                 onClick={fetchSearchResults}
@@ -136,7 +134,7 @@ const ArticleAdminPage = () => {
                                 setPage(1);
                             }}
                         >
-                            <SelectTrigger className="w-full sm:w-[180px] h-[42px] rounded-lg border-mainOrange">
+                            <SelectTrigger className="w-full sm:w-[180px] h-[42px] rounded-lg border-mainOrange focus:ring-0 focus:outline-none">
                                 <SelectValue placeholder="Select Category" />
                             </SelectTrigger>
                             <SelectContent>
@@ -159,79 +157,86 @@ const ArticleAdminPage = () => {
                     </div>
                 </div>
 
-                {/* Articles Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-6">
-                    {paginatedArticles.map((article) => (
-                        <ArticleCardAdmin
-                            key={article.article_id}
-                            article_id={article.article_id}
-                            title={article.title}
-                            content_body={article.content_body}
-                            category={article.category}
-                            views={article.views || 0}
-                            imageUrl={article.images?.[0] || "/assets/Gambar2.jpg"}
-                            onDelete={handleDeleteArticle}
-                        />
-                    ))}
-                </div>
-
-                {/* No Data */}
-                {Array.isArray(paginatedArticles) && paginatedArticles.length === 0 && (
-                    <NotFound
-                        message="We couldn’t find any articles matching your search or category. Try different keywords."
-                        buttons={[]}
-                    />
-                )}
-
-                {/* Pagination */}
-                <div className="justify-center mt-10">
-                    {totalPages > 1 && (
-                        <div className="flex justify-center mt-10">
-                            <Pagination>
-                                <PaginationContent className="gap-2">
-                                    <PaginationItem>
-                                        <PaginationPrevious
-                                            href="#"
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                setPage((prev) => Math.max(prev - 1, 1));
-                                            }}
-                                        />
-                                    </PaginationItem>
-                                    {Array.from({ length: totalPages }, (_, i) => (
-                                        <PaginationItem key={i}>
-                                            <PaginationLink
-                                                href="#"
-                                                isActive={page === i + 1}
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    setPage(i + 1);
-                                                }}
-                                            >
-                                                {i + 1}
-                                            </PaginationLink>
-                                        </PaginationItem>
-                                    ))}
-                                    <PaginationItem>
-                                        <PaginationNext
-                                            href="#"
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                setPage((prev) => Math.min(prev + 1, totalPages));
-                                            }}
-                                        />
-                                    </PaginationItem>
-                                </PaginationContent>
-                            </Pagination>
+                {/* Articles Grid & Pagination */}
+                <div>
+                    {isLoading ? (
+                        // Loading spinner hanya di sini
+                        <div className="flex justify-center items-center py-20">
+                            <LoadingSpinner />
                         </div>
+                    ) : (
+                        <>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-6">
+                                {paginatedArticles.map((article) => (
+                                    <ArticleCardAdmin
+                                        key={article.article_id}
+                                        article_id={article.article_id}
+                                        title={article.title}
+                                        content_body={article.content_body}
+                                        category={article.category}
+                                        views={article.views || 0}
+                                        imageUrl={article.images?.[0] || "/assets/Gambar2.jpg"}
+                                        onDelete={handleDeleteArticle}
+                                    />
+                                ))}
+                            </div>
+
+                            {paginatedArticles.length === 0 && (
+                                <NotFound
+                                    message="We couldn’t find any articles matching your search or category. Try different keywords."
+                                    buttons={[]}
+                                />
+                            )}
+
+                            {totalPages > 1 && (
+                                <div className="flex justify-center mt-10">
+                                    <Pagination>
+                                        <PaginationContent className="gap-2">
+                                            <PaginationItem>
+                                                <PaginationPrevious
+                                                    href="#"
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        setPage((prev) => Math.max(prev - 1, 1));
+                                                    }}
+                                                />
+                                            </PaginationItem>
+                                            {Array.from({ length: totalPages }, (_, i) => (
+                                                <PaginationItem key={i}>
+                                                    <PaginationLink
+                                                        href="#"
+                                                        isActive={page === i + 1}
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            setPage(i + 1);
+                                                        }}
+                                                    >
+                                                        {i + 1}
+                                                    </PaginationLink>
+                                                </PaginationItem>
+                                            ))}
+                                            <PaginationItem>
+                                                <PaginationNext
+                                                    href="#"
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        setPage((prev) => Math.min(prev + 1, totalPages));
+                                                    }}
+                                                />
+                                            </PaginationItem>
+                                        </PaginationContent>
+                                    </Pagination>
+                                </div>
+                            )}
+
+                            <p className="text-sm text-muted-foreground flex justify-center items-center mt-2">
+                                Showing {filteredArticles.length > 0
+                                    ? `${(page - 1) * itemsPerPage + 1} - ${Math.min(page * itemsPerPage, filteredArticles.length)}`
+                                    : 0
+                                } of {filteredArticles.length} article{filteredArticles.length !== 1 && "s"}
+                            </p>
+                        </>
                     )}
-                    {/* Showing info */}
-                    <p className="text-sm text-muted-foreground flex justify-center items-center mt-2">
-                        Showing {filteredArticles.length > 0
-                            ? `${(page - 1) * itemsPerPage + 1} - ${Math.min(page * itemsPerPage, filteredArticles.length)}`
-                            : 0
-                        } of {filteredArticles.length} article{filteredArticles.length !== 1 && "s"}
-                    </p>
                 </div>
             </div>
         </ProtectedRoute>
