@@ -3,8 +3,7 @@
 import { useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { auth } from "@/app/firebase/config";
-import { getAuth, EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
-import { useEffect } from "react";
+import { EmailAuthProvider, reauthenticateWithCredential, updatePassword } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
@@ -39,34 +38,19 @@ export default function ChangePasswordPage() {
     }
 
     try {
-      const token = await auth.currentUser.getIdToken();
+      const credential = EmailAuthProvider.credential(user.email, currentPassword);
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user/change-password`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          currentPassword,
-          newPassword,
-        }),
-      });
+      await reauthenticateWithCredential(user, credential);
 
-      const data = await res.json();
-
-      if (!res.ok || data.success === false) {
-        throw new Error(data.message || "Failed to change password.");
-      }
+      await updatePassword(user, newPassword);
 
       toast.success("Password updated successfully! Please sign in again.");
       await auth.signOut();
       router.push("/auth/signin");
 
     } catch (err) {
-      console.error("Change password error:", err);
-      setError(err.message || "An unexpected error occurred. Please try again.");
-      toast.error(err.message || "An unexpected error occurred.");
+      setError("Current password is incorrect or session expired.");
+      toast.error("Current password is incorrect or session expired.");
     }
   };
 
