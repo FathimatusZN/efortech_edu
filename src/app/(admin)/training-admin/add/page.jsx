@@ -4,11 +4,12 @@ import { useAuth } from "@/app/context/AuthContext";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import TrainingForm from "@/components/admin/TrainingForm";
 import { PageTitle, SaveButton, DiscardButton } from "@/components/layout/InputField";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import ConfirmDialog from "@/components/admin/ConfirmDialog";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import { SuccessDialog } from "@/components/ui/SuccessDialog";
 
 export default function AddTraining() {
-  const params = useParams();
   const router = useRouter();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -29,6 +30,11 @@ export default function AddTraining() {
   const [openDialog, setOpenDialog] = useState(false);
   const isFormValid = training_name.trim() !== "" && description.trim() !== "" && level !== 0 && duration !== "" && training_fees !== "" && validity_period !== "" && term_condition !== "" && skills !== "";
   const { user } = useAuth();
+
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [showError, setShowError] = useState(false);
+
+  const [trainingId, setTrainingId] = useState(null);
 
   const resetForm = () => {
     setTrainingname("");
@@ -84,13 +90,12 @@ export default function AddTraining() {
       if (!res.ok) throw new Error("Failed to create training");
 
       const data = await res.json();
-      alert("✅ New training created! ID: " + data.data.training_id);
+      setTrainingId(data.data.training_id);
+      setShowSuccess(true);
       resetForm();
-      router.push(`/training-admin/${data.data.training_id}`);
-
     } catch (err) {
       console.error("❌ Create error:", err);
-      alert("Failed to create new training.");
+      setShowError(true);
     }
   };
 
@@ -101,13 +106,13 @@ export default function AddTraining() {
   const handleDiscard = () => {
     resetForm();
     setOpenDialog(false);
-    router.push(`/training-admin/${trainingId}`);
+    router.push(`/training-admin`);
   };
 
   return (
     <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
       {isLoading ? (
-        <div className="text-center mt-10">Loading training data...</div>
+        <div className="text-center mt-10"><LoadingSpinner /></div>
       ) : (
         <div className="relative pt-4 px-4 sm:px-6 lg:px-8 max-w-[1440px] mx-auto min-h-screen">
           <div className="flex flex-wrap justify-between items-center w-full max-w-[1440px] mx-auto mb-2 gap-4">
@@ -159,6 +164,37 @@ export default function AddTraining() {
             setImages={setImages}
             onImageUpload={handleImageUpload}
             onSubmit={handleSubmit}
+          />
+
+          <SuccessDialog
+            open={showSuccess}
+            onOpenChange={(open) => {
+              setShowSuccess(open);
+              if (!open) {
+                resetForm();
+                router.push(`/training-admin/${trainingId}`);
+              }
+            }}
+            title="Training Updated!"
+            messages={[
+              "New training created!",
+              `ID: ${trainingId}`,
+            ]}
+            buttonText="See Training"
+            onButtonClick={() => {
+              router.push(`/training-admin/${trainingId}`);
+            }}
+          />
+
+          <SuccessDialog
+            open={showError}
+            onOpenChange={(open) => setShowError(open)}
+            title="Update Failed"
+            messages={[
+              "Something went wrong while add the training.",
+              "Please try again later or check your form."
+            ]}
+            buttonText="Close"
           />
         </div>
       )}
