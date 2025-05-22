@@ -1,6 +1,5 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useAuth } from "@/app/context/AuthContext";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import TrainingForm from "@/components/admin/TrainingForm";
 import {
@@ -12,6 +11,7 @@ import { useParams, useRouter } from "next/navigation";
 import ConfirmDialog from "@/components/admin/ConfirmDialog";
 import { NotFound } from "@/components/ui/ErrorPage";
 import { SuccessDialog } from "@/components/ui/SuccessDialog";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
 export default function EditTraining() {
     const params = useParams();
@@ -173,7 +173,7 @@ export default function EditTraining() {
     return (
         <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
             {isLoading ? (
-                <div className="text-center mt-10">Loading training data...</div>
+                <div className="text-center mt-10"><LoadingSpinner /></div>
             ) : (
                 <div className="relative pt-4 px-4 sm:px-6 lg:px-8 max-w-[1440px] mx-auto min-h-screen">
                     <div className="flex flex-wrap justify-between items-center w-full mb-4 gap-4">
@@ -223,6 +223,10 @@ export default function EditTraining() {
                         open={showSuccess}
                         onOpenChange={(open) => {
                             setShowSuccess(open);
+                            if (!open) {
+                                resetForm();
+                                router.push(`/training-admin/${trainingId}`);
+                            }
                         }}
                         title="Training Updated!"
                         messages={[
