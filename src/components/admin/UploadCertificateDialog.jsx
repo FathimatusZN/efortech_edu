@@ -208,7 +208,7 @@ export function UploadCertificateDialog({
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
-            <DialogContent className="max-w-6xl px-4 py-6 rounded-lg">
+            <DialogContent className="w-full max-w-[95vw] max-h-[95vh] px-4 py-6 rounded-lg">
                 <DialogHeader>
                     <DialogTitle>Upload Certificate</DialogTitle>
                 </DialogHeader>
