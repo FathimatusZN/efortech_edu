@@ -6,6 +6,7 @@ import { toast } from "react-hot-toast";
 import { ValidationTrainingTable } from "@/components/admin/ValidationTrainingTable";
 import { ValidationCertificateTable } from "@/components/admin/ValidationCertificateTable";
 import { AdditionalParticipantDialog } from "@/components/admin/AdditionalParticipantDialog";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
 const ValidationPage = () => {
   const [trainingData, setTrainingData] = useState([]);
@@ -146,7 +147,9 @@ const ValidationPage = () => {
             registration={selectedRegistration}
           />
           {loading ? (
-            <p>Loading...</p>
+            <div className="items-center justify-center">
+              <LoadingSpinner className="w-10 h-10" />
+            </div>
           ) : (
             <ValidationTrainingTable
               data={trainingData.slice(0, 5)}
@@ -175,7 +178,9 @@ const ValidationPage = () => {
           </h2>
 
           {loading ? (
-            <p>Loading...</p>
+            <div className="items-center justify-center">
+              <LoadingSpinner className="w-10 h-10" />
+            </div>
           ) : (
             <ValidationCertificateTable
               data={certificateData.slice(0, 5)}
