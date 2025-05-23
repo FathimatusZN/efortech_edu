@@ -20,6 +20,7 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { FaFilter } from "react-icons/fa";
 import { useRouter, useSearchParams } from "next/navigation";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
 const ValidationTrainingClient = () => {
     const searchParams = useSearchParams();
@@ -536,7 +537,9 @@ const ValidationTrainingClient = () => {
                                                 onStatusChange={handleStatusChange}
                                             />
                                         ) : (
-                                            <p>Loading...</p>
+                                            <div className="items-center justify-center">
+                                                <LoadingSpinner className="w-10 h-10" />
+                                            </div>
                                         )}
                                     </TabsContent>
 
@@ -560,7 +563,9 @@ const ValidationTrainingClient = () => {
                                                 onUploadClick={onShowUploadDialog}
                                             />
                                         ) : (
-                                            <p>Loading...</p>
+                                            <div className="items-center justify-center">
+                                                <LoadingSpinner className="w-10 h-10" />
+                                            </div>
                                         )}
                                     </TabsContent>
 
@@ -584,7 +589,9 @@ const ValidationTrainingClient = () => {
                                                 onUploadClick={onShowUploadDialog}
                                             />
                                         ) : (
-                                            <p>Loading...</p>
+                                            <div className="items-center justify-center">
+                                                <LoadingSpinner className="w-10 h-10" />
+                                            </div>
                                         )}
                                     </TabsContent>
 
@@ -603,7 +610,9 @@ const ValidationTrainingClient = () => {
                                                 onStatusChange={handleStatusChange}
                                             />
                                         ) : (
-                                            <p>Loading...</p>
+                                            <div className="items-center justify-center">
+                                                <LoadingSpinner className="w-10 h-10" />
+                                            </div>
                                         )}
                                     </TabsContent>
                                 </div>
