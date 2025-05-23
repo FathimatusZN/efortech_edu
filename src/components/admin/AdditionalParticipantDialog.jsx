@@ -84,10 +84,11 @@ export const AdditionalParticipantDialog = ({ open, onClose, registration }) => 
                     <td></td>
                     <td className="pt-2">
                       {registration.payment_proof.endsWith(".pdf") ? (
-                        <embed
-                          src={registration.payment_proof}
-                          type="application/pdf"
-                          className="w-full h-48 rounded border"
+
+                        <iframe
+                          src={`https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(registration.payment_proof)}`}
+                          title="Certificate File"
+                          className="w-full h-full"
                         />
                       ) : (
                         <img
