@@ -110,7 +110,7 @@ export default function TrainingPage() {
 
   return (
     <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
-      <div className="flex flex-col justify-start w-full max-w-screen mx-auto min-h-screen pb-12 mx-auto px-2 sm:px-4 md:px-8">
+      <div className="flex flex-col justify-start w-full max-w-screen mx-auto min-h-screen pb-12 px-2 sm:px-4 md:px-8">
         <div className="w-full flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 py-8 px-4">
           <h2 className="text-2xl font-bold">Training & Courses</h2>
           <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto items-stretch sm:items-center">
