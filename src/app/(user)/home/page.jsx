@@ -272,9 +272,7 @@ const Home = () => {
       {/* Empowering Tomorrow Section */}
       <div
         ref={sectionRef}
-        className={`mx-auto bg-mainBlue p-10 shadow-xl transition-opacity duration-1000 ${isVisible ? "opacity-100" : "opacity-0"
-          }`}
-      >
+        className={'mx-auto bg-mainBlue p-10 shadow-xl transition-opacity duration-1000 ${isVisible ? "opacity-100" : "opacity-0" }'} >
         <h1 className="text-3xl font-bold text-white">Empowering Tomorrow :</h1>
         <h2 className="text-2xl font-semibold text-white">
           Efortech’s Innovative Education Solutions
@@ -283,24 +281,22 @@ const Home = () => {
 
       {/* Efortech Solutions */}
       <div className="relative flex flex-col md:flex-row justify-between md:items-start mt-16">
-        <div className="relative flex flex-col md:flex-row justify-center items-center  gap-4 mt-16">
+        <div className="relative flex flex-col md:flex-row justify-center items-center gap-4 mt-16">
           <img
             src="/assets/foto2.png"
             alt="Image 1"
-            className="w-[400px] md:w-[300px] shadow-lg"
+            className="w-[200px] md:w-[300px] shadow-lg "
           />
           <img
             src="/assets/gambar1.jpg"
             alt="Image 2"
-            className="w-[400px] md:w-[300px] shadow-lg md:absolute md:left-[300px] md:top-12"
+            className="w-[200px] md:w-[300px] shadow-lg absolute left-[300px] top-12"
           />
         </div>
-        <div className="bg-orange-600 text-white p-6 w-full md:w-[700px] mt-20">
+        <div className="bg-orange-600 text-white p-6 mt-20 w-full md:w-[700px]">
           <h2 className="text-3xl font-bold text-right">Efortech Solutions</h2>
-          <p className="text-sm mt-3 text-right pl-6">
-            Offers training and certification programs focused on the
-            implementation of the Industrial Internet of Things (IIoT) through
-            the use of a Smart Integrated IIoT Training Kit.
+          <p className="text-sm mt-3 pl-6 text-right ">
+            Offers training and certification programs focused on the implementation of the Industrial Internet of Things (IIoT) through the use of a Smart Integrated IIoT Training Kit.
           </p>
         </div>
       </div>
@@ -361,25 +357,20 @@ const Home = () => {
           </button>
         </div>
 
-        <div className="relative w-full max-w-6xl mx-auto overflow-x-hidden px-8">
+        <div className="relative w-full max-w-6xl mx-auto overflow-x-hidden px-2 sm:px-4 md:px-8">
           <div
             ref={scrollRef}
-            className="flex gap-6 mt-4 pb-10 overflow-x-auto overflow-y-visible scroll-smooth no-scrollbar"
+            className="flex gap-4 mt-4 pb-10 overflow-x-auto overflow-y-visible scroll-smooth no-scrollbar"
           >
             {repeatedPartners.map((partner, index) => (
               <div
                 key={`${partner.id}-${index}`}
-                className="relative w-24 h-28 sm:w-28 sm:h-32 md:w-32 md:h-36 group cursor-pointer flex justify-center items-center flex-shrink-0"
+                className="relative w-20 h-24 sm:w-24 sm:h-28 md:w-28 md:h-32 group cursor-pointer flex justify-center items-center flex-shrink-0"
               >
                 {/* Layer nama mitra */}
-                <div className="absolute bottom-[-28px] sm:bottom-[-30px] md:bottom-[-32px] left-1/2 transform -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform duration-300 z-10">
+                <div className="absolute bottom-[-24px] sm:bottom-[-28px] md:bottom-[-30px] left-1/2 transform -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform duration-300 z-10">
                   <div
-                    className="bg-white border-2 border-mainOrange text-mainOrange 
-                                  text-xs sm:text-xs md:text-sm 
-                                  font-semibold py-0.5 sm:py-1 px-2 
-                                  rounded-md text-center break-words w-fit max-w-none 
-                                  shadow-md line-clamp-3"
-                  >
+                    className="bg-white border-2 border-mainOrange text-mainOrange text-[10px] sm:text-xs md:text-sm font-semibold py-[2px] sm:py-1 px-2 rounded-md text-center break-words w-fit max-w-none shadow-md line-clamp-3" >
                     {partner.partner_name}
                   </div>
                 </div>
@@ -391,11 +382,11 @@ const Home = () => {
                 </div>
 
                 {/* Layer logo */}
-                <div className="relative z-20 w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 bg-white rounded-md shadow-md flex items-center justify-center">
+                <div className="relative z-20 w-12 h-12 sm:w-14 sm:h-14 md:w-20 md:h-20 bg-white rounded-md shadow-md flex items-center justify-center">
                   <img
                     src={partner.partner_logo || "/default-logo.png"}
                     alt={partner.partner_name}
-                    className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 object-contain"
+                    className="w-10 h-10 sm:w-11 sm:h-11 md:w-14 md:h-14 object-contain"
                   />
                 </div>
               </div>
@@ -406,9 +397,9 @@ const Home = () => {
 
       <div className="text-center px-16 py-4">
         {/* Top Training */}
-        <div className="px-4 sm:px-6 lg:px-8 py-4 sm:py-4 max-w-screen-xl mx-auto">
-          <div className="flex justify-between items-center mb-6 flex-wrap gap-2">
-            <h2 className="text-xl md:text-3xl font-bold">
+        <div className="px-2 sm:px-4 lg:px-8 py-2 sm:py-4 max-w-screen-xl mx-auto">
+          <div className="flex justify-between items-center mb-6 gap-2 flex-nowrap overflow-hidden">
+            <h2 className="text-base sm:text-lg md:text-3xl font-bold truncate">
               Top Training & Certifications
             </h2>
             <Link
