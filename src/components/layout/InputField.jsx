@@ -106,8 +106,8 @@ const ImageUploader = ({ maxImages = 3, images, setImages, onImageUpload, upload
         const file = event.target.files[0];
         if (!file) return;
 
-        if (file.size > 1 * 1024 * 1024) {
-            alert('Image size exceeds 1MB. Please choose a smaller image.');
+        if (file.size > 5 * 1024 * 1024) {
+            alert('Image size exceeds 5MB. Please choose a smaller image.');
             return;
         }
 

@@ -3,11 +3,13 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { NotFound } from "../../../../components/ui/ErrorPage";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
 export default function CertificateDetailPage() {
   const { id } = useParams();
   const [certificate, setCertificate] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [pdfLoading, setPdfLoading] = useState(true);
 
   useEffect(() => {
     const fetchCertificate = async () => {
@@ -33,7 +35,7 @@ export default function CertificateDetailPage() {
     fetchCertificate();
   }, [id]);
 
-  if (loading) return <div className="p-6 text-center text-sm">Loading...</div>;
+  if (loading) return <div className="p-6 text-center text-sm"><LoadingSpinner /></div>;
   if (!certificate)
     return (
       <div className="text-center">
@@ -111,13 +113,19 @@ export default function CertificateDetailPage() {
           </div>
 
           {/* PDF Preview */}
-          <div className="md:w-2/3 w-full border rounded-lg shadow overflow-hidden">
+          <div className="md:w-2/3 w-full border rounded-lg shadow overflow-hidden relative">
+            {pdfLoading && (
+              <div className="absolute inset-0 z-10 bg-white/70 flex items-center justify-center">
+                <LoadingSpinner />
+              </div>
+            )}
             <iframe
               src={`https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(
                 certificate.cert_file
               )}`}
               className="w-full h-[400px]"
               title="Certificate PDF Preview"
+              onLoad={() => setPdfLoading(false)}
             />
           </div>
         </div>

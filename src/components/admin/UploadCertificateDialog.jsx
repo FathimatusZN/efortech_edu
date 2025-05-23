@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AiOutlineFilePdf, AiOutlineFileImage, AiOutlineFileUnknown } from "react-icons/ai";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
 export function UploadCertificateDialog({
     open,
@@ -26,6 +27,7 @@ export function UploadCertificateDialog({
     const [emailPreviewHtml, setEmailPreviewHtml] = useState("");
     const [emailPreviewLoading, setEmailPreviewLoading] = useState(false);
     const [emailPreviewFetched, setEmailPreviewFetched] = useState(false);
+    const [pdfLoading, setPdfLoading] = useState(false);
 
     const resetForm = () => {
         setCertificateNumber("");
@@ -47,6 +49,9 @@ export function UploadCertificateDialog({
         if (file) {
             setCertFile(null);
             setCertPreviewUrl("");
+            if (file.type === "application/pdf") {
+                setPdfLoading(true);
+            }
             try {
                 const url = await uploadFile(file);
                 setCertFile(file);
@@ -57,6 +62,7 @@ export function UploadCertificateDialog({
                     ...prev,
                     certFile: error.message || "Failed to upload file. Please try again.",
                 }));
+                setPdfLoading(false);
             }
         }
     };
@@ -202,7 +208,7 @@ export function UploadCertificateDialog({
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
-            <DialogContent className="max-w-6xl px-4 py-6 rounded-lg">
+            <DialogContent className="w-full max-w-[95vw] max-h-[95vh] px-4 py-6 rounded-lg">
                 <DialogHeader>
                     <DialogTitle>Upload Certificate</DialogTitle>
                 </DialogHeader>
@@ -276,7 +282,7 @@ export function UploadCertificateDialog({
                                         href={certPreviewUrl}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="text-blue-600 underline text-sm"
+                                        className="text-blue-600 underline text-sm break-all"
                                     >
                                         {certFile.name}
                                     </a>
@@ -289,11 +295,19 @@ export function UploadCertificateDialog({
                                         className="w-full max-h-60 object-contain border rounded"
                                     />
                                 ) : certFile.type === "application/pdf" ? (
-                                    <embed
-                                        src={certPreviewUrl}
-                                        type="application/pdf"
-                                        className="w-full h-60 border rounded"
-                                    />
+                                    <div className="relative w-full h-60 border rounded">
+                                        {pdfLoading && (
+                                            <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 z-10">
+                                                <span className="justify-center item-center"><LoadingSpinner /></span>
+                                            </div>
+                                        )}
+                                        <iframe
+                                            src={`https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(certPreviewUrl)}`}
+                                            title="Certificate File"
+                                            className="w-full h-full"
+                                            onLoad={() => setPdfLoading(false)}
+                                        />
+                                    </div>
                                 ) : (
                                     <p className="text-gray-600 text-sm italic">
                                         File preview not supported. Click the link to view.
