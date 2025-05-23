@@ -49,12 +49,12 @@ export function UploadCertificateDialog({
         if (file) {
             setCertFile(null);
             setCertPreviewUrl("");
+            if (file.type === "application/pdf") {
+                setPdfLoading(true);
+            }
             try {
                 const url = await uploadFile(file);
                 setCertFile(file);
-                if (file.type === "application/pdf") {
-                    setPdfLoading(true);
-                }
                 setCertPreviewUrl(url);
                 setErrors((prev) => ({ ...prev, certFile: null }));
             } catch (error) {
@@ -62,6 +62,7 @@ export function UploadCertificateDialog({
                     ...prev,
                     certFile: error.message || "Failed to upload file. Please try again.",
                 }));
+                setPdfLoading(false);
             }
         }
     };
