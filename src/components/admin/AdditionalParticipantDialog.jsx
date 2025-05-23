@@ -1,4 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useState, useEffect } from "react";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
 const formatDate = (isoString) => {
   const date = new Date(isoString);
@@ -25,11 +27,13 @@ const formatRupiah = (number) => {
 
 
 export const AdditionalParticipantDialog = ({ open, onClose, registration }) => {
+  const [isPreviewLoading, setPreviewLoading] = useState(true);
+
   if (!registration) return null;
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="w-full max-w-[95vw] sm:max-w-[90vw] lg:max-w-[70vw] xl:max-w-[60vw] p-3 sm:p-5 bg-white rounded-lg shadow-lg max-h-[90vh] overflow-y-auto text-sm sm:text-base">
+      <DialogContent className="w-full max-w-[95vw] sm:max-w-[90vw] lg:max-w-[70vw] xl:max-w-[60vw] p-2 sm:p-4 bg-white rounded-lg shadow-lg max-h-[90vh] overflow-y-auto text-sm sm:text-base">
         <DialogHeader>
           <DialogTitle className="text-mainBlue font-semibold text-2xl">Detail Registration</DialogTitle>
         </DialogHeader>
@@ -82,19 +86,27 @@ export const AdditionalParticipantDialog = ({ open, onClose, registration }) => 
                 {registration.payment_proof && (
                   <tr>
                     <td></td>
-                    <td className="pt-2">
-                      {registration.payment_proof.endsWith(".pdf") ? (
+                    <td className="pt-2 relative min-h-[50px]">
+                      {isPreviewLoading && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-50 z-10">
+                          <LoadingSpinner className="w-8 h-8 text-mainBlue" />
+                        </div>
+                      )}
 
+                      {registration.payment_proof.endsWith(".pdf") ? (
                         <iframe
                           src={`https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(registration.payment_proof)}`}
-                          title="Certificate File"
-                          className="w-full h-full"
+                          title="Payment Proof PDF"
+                          className="w-full min-h-[200px] md:min-h-[400px] border rounded"
+                          onLoad={() => setPreviewLoading(false)}
                         />
                       ) : (
                         <img
                           src={registration.payment_proof}
                           alt="Payment Proof"
                           className="w-auto max-h-48 rounded border"
+                          onLoad={() => setPreviewLoading(false)}
+                          onError={() => setPreviewLoading(false)}
                         />
                       )}
                     </td>
