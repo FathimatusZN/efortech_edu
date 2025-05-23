@@ -109,8 +109,8 @@ export const ConfirmCertificateDialog = ({
     };
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-md shadow-md w-full max-w-4xl">
+        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50 p-3 sm:p-4 md:p-6">
+            <div className="bg-white p-6 rounded-md shadow-md w-full max-w-4xl max-h-[90vh] overflow-y-auto">
                 <h2 className="text-lg font-semibold mb-4">Confirm Status Update</h2>
 
                 <div className="flex flex-col md:flex-row gap-6">
@@ -119,28 +119,23 @@ export const ConfirmCertificateDialog = ({
                         <table className="w-full text-sm mb-4">
                             <tbody>
                                 <tr>
-                                    <td className="pr-2 align-top text-gray-700 font-medium whitespace-nowrap">Certificate ID</td>
-                                    <td>: </td>
-                                    <td>{certificateId}</td>
+                                    <td className="pr-2 align-top text-gray-700 font-medium whitespace-nowrap font-semibold">Certificate ID</td>
+                                    <td className="break-all whitespace-normal">{certificateId}</td>
                                 </tr>
                                 <tr>
-                                    <td className="pr-2 align-top text-gray-700 font-medium whitespace-nowrap">Full Name</td>
-                                    <td>: </td>
-                                    <td>{fullname}</td>
+                                    <td className="pr-2 align-top text-gray-700 font-medium whitespace-nowrap font-semibold">Full Name</td>
+                                    <td className="break-all whitespace-normal">{fullname}</td>
                                 </tr>
                                 <tr>
-                                    <td className="pr-2 align-top text-gray-700 font-medium whitespace-nowrap">User ID</td>
-                                    <td>: </td>
-                                    <td>{userId}</td>
+                                    <td className="pr-2 align-top text-gray-700 font-medium whitespace-nowrap font-semibold">User ID</td>
+                                    <td className="break-all whitespace-normal">{userId}</td>
                                 </tr>
                                 <tr>
-                                    <td className="pr-2 align-top text-gray-700 font-medium whitespace-nowrap">Certificate Name</td>
-                                    <td>: </td>
-                                    <td>{certName}</td>
+                                    <td className="pr-2 align-top text-gray-700 font-medium whitespace-nowrap font-semibold">Certificate Name</td>
+                                    <td className="break-all whitespace-normal">{certName}</td>
                                 </tr>
                                 <tr>
-                                    <td className="pr-2 align-top text-gray-700 font-medium whitespace-nowrap">Selected Status</td>
-                                    <td>: </td>
+                                    <td className="pr-2 align-top text-gray-700 font-medium whitespace-nowrap font-semibold">Selected Status</td>
                                     <td className={`font-bold ${statusColor}`}>{statusText}</td>
                                 </tr>
                             </tbody>
