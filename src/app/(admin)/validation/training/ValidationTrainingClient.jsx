@@ -523,7 +523,7 @@ const ValidationTrainingClient = () => {
                             <div className="bg-white outline outline-3 outline-mainBlue rounded-2xl px-4 py-2 mb-4 shadow-[8px_8px_0px_0px_#157ab2] overflow-x-auto">
                                 <div className="flex items-center justify-between">
                                     {/* Need to be process tab */}
-                                    <TabsContent value="needprocess">
+                                    <TabsContent value="needprocess" className="w-full">
                                         <AdditionalParticipantDialog
                                             open={selectedRegistration !== null}
                                             onClose={() => setSelectedRegistration(null)}
@@ -537,14 +537,14 @@ const ValidationTrainingClient = () => {
                                                 onStatusChange={handleStatusChange}
                                             />
                                         ) : (
-                                            <div className="items-center justify-center">
+                                            <div className="w-full flex justify-center items-center min-h-[120px]">
                                                 <LoadingSpinner className="w-10 h-10" />
                                             </div>
                                         )}
                                     </TabsContent>
 
                                     {/* On Progress tab */}
-                                    <TabsContent value="onprogress">
+                                    <TabsContent value="onprogress" className="w-full">
                                         <UploadCertificateDialog
                                             open={isUploadDialogOpen}
                                             setOpen={setIsUploadDialogOpen}
@@ -563,14 +563,14 @@ const ValidationTrainingClient = () => {
                                                 onUploadClick={onShowUploadDialog}
                                             />
                                         ) : (
-                                            <div className="items-center justify-center">
+                                            <div className="w-full flex justify-center items-center min-h-[120px]">
                                                 <LoadingSpinner className="w-10 h-10" />
                                             </div>
                                         )}
                                     </TabsContent>
 
                                     {/* Completed tab */}
-                                    <TabsContent value="completed">
+                                    <TabsContent value="completed" className="w-full">
                                         <UploadCertificateDialog
                                             open={isUploadDialogOpen}
                                             setOpen={setIsUploadDialogOpen}
@@ -589,14 +589,14 @@ const ValidationTrainingClient = () => {
                                                 onUploadClick={onShowUploadDialog}
                                             />
                                         ) : (
-                                            <div className="items-center justify-center">
+                                            <div className="w-full flex justify-center items-center min-h-[120px]">
                                                 <LoadingSpinner className="w-10 h-10" />
                                             </div>
                                         )}
                                     </TabsContent>
 
                                     {/* Cancelled tab */}
-                                    <TabsContent value="cancelled">
+                                    <TabsContent value="cancelled" className="w-full">
                                         <AdditionalParticipantDialog
                                             open={selectedRegistration !== null}
                                             onClose={() => setSelectedRegistration(null)}
@@ -610,7 +610,7 @@ const ValidationTrainingClient = () => {
                                                 onStatusChange={handleStatusChange}
                                             />
                                         ) : (
-                                            <div className="items-center justify-center">
+                                            <div className="w-full flex justify-center items-center min-h-[120px]">
                                                 <LoadingSpinner className="w-10 h-10" />
                                             </div>
                                         )}
