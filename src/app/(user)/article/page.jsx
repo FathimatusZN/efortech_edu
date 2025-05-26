@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Pagination as SwiperPagination, Autoplay } from "swiper/modules";
@@ -24,6 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
 const categoryOptions = [
   { id: 0, label: "All" },
@@ -40,6 +41,7 @@ export default function ArticlePage() {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(true);
   const itemsPerPage = 9;
 
   useEffect(() => {
@@ -47,6 +49,7 @@ export default function ArticlePage() {
   }, []);
 
   const fetchArticles = async () => {
+    setLoading(true);
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/articles`
@@ -59,6 +62,9 @@ export default function ArticlePage() {
       setMostViewedArticles(sorted.slice(0, 3));
     } catch (error) {
       console.error("Error fetching articles:", error);
+      setArticles([]);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -67,10 +73,10 @@ export default function ArticlePage() {
       fetchArticles();
       return;
     }
+    setLoading(true);
     try {
       const res = await fetch(
-        `${
-          process.env.NEXT_PUBLIC_API_BASE_URL
+        `${process.env.NEXT_PUBLIC_API_BASE_URL
         }/api/articles/search?query=${encodeURIComponent(searchQuery)}`
       );
       const data = await res.json();
@@ -81,6 +87,8 @@ export default function ArticlePage() {
     } catch (error) {
       console.error("Search error:", error);
       setArticles([]);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -139,7 +147,6 @@ export default function ArticlePage() {
 
       {/* Search + Filter */}
       <div className="mt-6 mx-auto px-4 flex flex-col md:flex-row md:items-center md:justify-center gap-4">
-        {/* Search Field */}
         <div className="relative w-full md:w-1/3">
           <input
             type="text"
@@ -147,9 +154,7 @@ export default function ArticlePage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                fetchSearchResults();
-              }
+              if (e.key === "Enter") fetchSearchResults();
             }}
             className="w-full h-[38px] px-4 pr-10 border-2 border-mainOrange rounded-md"
           />
@@ -161,13 +166,12 @@ export default function ArticlePage() {
           </button>
         </div>
 
-        {/* Category Filter */}
         <div className="w-full md:w-1/6">
           <Select
             value={selectedCategory}
             onValueChange={(value) => {
               setSelectedCategory(value);
-              setPage(1); // reset ke halaman 1 kalau ganti kategori
+              setPage(1);
             }}
           >
             <SelectTrigger className="w-full h-[38px] rounded-md shadow-lg border-orange-500 focus:ring-orange-600">
@@ -184,9 +188,13 @@ export default function ArticlePage() {
         </div>
       </div>
 
-      {/* Article Cards */}
+      {/* Article Cards or Spinner */}
       <div className="p-10 mx-auto max-w-7xl w-full">
-        {paginatedArticles.length > 0 ? (
+        {loading ? (
+          <div className="flex justify-center items-center py-10">
+            <LoadingSpinner />
+          </div>
+        ) : paginatedArticles.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
             {paginatedArticles.map((article) => {
               const categoryObj = categoryOptions.find(
@@ -217,7 +225,7 @@ export default function ArticlePage() {
       </div>
 
       {/* Pagination */}
-      {totalPages > 1 && (
+      {!loading && totalPages > 1 && (
         <Pagination className="flex justify-center mt-8">
           <PaginationContent>
             <PaginationItem>
@@ -229,7 +237,6 @@ export default function ArticlePage() {
                 }}
               />
             </PaginationItem>
-
             {Array.from({ length: totalPages }, (_, i) => (
               <PaginationItem key={i}>
                 <PaginationLink
@@ -244,7 +251,6 @@ export default function ArticlePage() {
                 </PaginationLink>
               </PaginationItem>
             ))}
-
             <PaginationItem>
               <PaginationNext
                 href="#"
@@ -259,17 +265,19 @@ export default function ArticlePage() {
       )}
 
       {/* Showing info */}
-      <p className="text-sm text-muted-foreground mt-2 flex justify-center items-center">
-        Showing{" "}
-        {filteredArticles.length > 0
-          ? `${(page - 1) * itemsPerPage + 1} - ${Math.min(
+      {!loading && (
+        <p className="text-sm text-muted-foreground mt-2 flex justify-center items-center">
+          Showing{" "}
+          {filteredArticles.length > 0
+            ? `${(page - 1) * itemsPerPage + 1} - ${Math.min(
               page * itemsPerPage,
               filteredArticles.length
             )}`
-          : 0}{" "}
-        of {filteredArticles.length} article
-        {filteredArticles.length !== 1 && "s"}
-      </p>
+            : 0}{" "}
+          of {filteredArticles.length} article
+          {filteredArticles.length !== 1 && "s"}
+        </p>
+      )}
     </div>
   );
 }
