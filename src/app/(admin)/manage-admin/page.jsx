@@ -13,6 +13,7 @@ import { flexRender, getCoreRowModel, getSortedRowModel, getPaginationRowModel, 
 import { toast } from "react-hot-toast";
 import { AddAdminDialog, EditAdminDialog } from "@/components/admin/ManageAdminDialog";
 import { getAdminColumns } from "./table";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
 export default function ManageAdmin() {
     const [adminData, setAdminData] = useState([]);
@@ -35,6 +36,7 @@ export default function ManageAdmin() {
     const [editError, setEditError] = useState("");
     const [deleteError, setDeleteError] = useState("");
     const [editAdminData, setEditAdminData] = useState(null);
+    const [isTableLoading, setIsTableLoading] = useState(true);
 
     useEffect(() => {
         refreshData();
@@ -64,12 +66,15 @@ export default function ManageAdmin() {
     });
 
     const refreshData = async () => {
+        setIsTableLoading(true);
         try {
             const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/manageadmin/list`);
             const data = await res.json();
             if (res.ok) setAdminData(data.data);
         } catch (error) {
             console.error("Error refreshing data:", error);
+        } finally {
+            setIsTableLoading(false);
         }
     };
 
@@ -316,10 +321,16 @@ export default function ManageAdmin() {
                             ))}
                         </TableHeader>
                         <TableBody>
-                            {adminData.length > 0 ? (
-                                table.getRowModel().rows.map(row => (
+                            {isTableLoading ? (
+                                <TableRow>
+                                    <TableCell colSpan={columns.length} className="text-center py-10">
+                                        <LoadingSpinner />
+                                    </TableCell>
+                                </TableRow>
+                            ) : table.getRowModel().rows?.length ? (
+                                table.getRowModel().rows.map((row) => (
                                     <TableRow key={row.id}>
-                                        {row.getVisibleCells().map(cell => (
+                                        {row.getVisibleCells().map((cell) => (
                                             <TableCell key={cell.id}>
                                                 {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                             </TableCell>
@@ -328,7 +339,9 @@ export default function ManageAdmin() {
                                 ))
                             ) : (
                                 <TableRow>
-                                    <TableCell colSpan={columns.length} className="text-center">No data available</TableCell>
+                                    <TableCell colSpan={columns.length} className="text-center text-gray-500 py-6">
+                                        No admin data found.
+                                    </TableCell>
                                 </TableRow>
                             )}
                         </TableBody>

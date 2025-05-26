@@ -33,10 +33,10 @@ export default function PartnerSection({ partnersData }) {
   }, [partnersData, selectedCategory]);
 
   return (
-    <div className="text-center px-16 py-4">
-      <h2 className="text-xl md:text-3xl font-bold text-black">Our Partner</h2>
+    <div className="text-center">
+      <h2 className="text-xl md:text-3xl font-bold text-black mt-10">Our Partner</h2>
 
-      <div className="flex justify-center gap-4 my-4">
+      <div className="flex justify-center gap-6 my-4">
         {["College", "Institution"].map((category) => (
           <button
             key={category}
@@ -52,10 +52,10 @@ export default function PartnerSection({ partnersData }) {
         ))}
       </div>
 
-      <div className="relative w-full max-w-6xl mx-auto overflow-x-hidden px-8">
+      <div className="relative w-full max-w-6xl mx-auto overflow-x-hidden px-4">
         <div
           ref={scrollRef}
-          className="flex gap-6 mt-4 pb-10 overflow-x-auto overflow-y-visible scroll-smooth no-scrollbar"
+          className="flex gap-2 md:gap-6 mt-2 md:mt-4 pb-10 overflow-x-auto overflow-y-visible scroll-smooth no-scrollbar"
         >
           {repeatedPartners.map((partner, index) => (
             <div

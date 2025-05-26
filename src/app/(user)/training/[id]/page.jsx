@@ -163,7 +163,7 @@ const TrainingDetail = () => {
       <div className="mx-auto p-4 md:p-8 max-w-screen-xl">
         <div className="flex flex-col xl:flex-row gap-8">
           {/* Image Slider */}
-          <div className="relative w-full max-w-full xl:max-w-[800px] aspect-[4/3] flex-shrink-0 overflow-hidden rounded-lg shadow-md">
+          <div className="relative w-full max-w-full xl:max-w-[650px] aspect-[4/3] flex-shrink-0 overflow-hidden rounded-lg shadow-md">
             {trainingData.images.map((img, index) => (
               <Image
                 key={index}
@@ -180,18 +180,16 @@ const TrainingDetail = () => {
                 <button
                   key={index}
                   onClick={() => setCurrentSlide(index)}
-                  className={`w-3 h-3 rounded-full border-2 flex items-center justify-center transition-all ${
-                    currentSlide === index
-                      ? "border-mainOrange"
-                      : "border-gray-400"
-                  }`}
+                  className={`w-3 h-3 rounded-full border-2 flex items-center justify-center transition-all ${currentSlide === index
+                    ? "border-mainOrange"
+                    : "border-gray-400"
+                    }`}
                 >
                   <div
-                    className={`w-1 h-1 rounded-full ${
-                      currentSlide === index
-                        ? "bg-mainOrange"
-                        : "bg-transparent"
-                    }`}
+                    className={`w-1 h-1 rounded-full ${currentSlide === index
+                      ? "bg-mainOrange"
+                      : "bg-transparent"
+                      }`}
                   ></div>
                 </button>
               ))}
@@ -253,11 +251,10 @@ const TrainingDetail = () => {
               {trainingData.skills.map((tag, index) => (
                 <span
                   key={index}
-                  className={`px-2 py-1 text-sm border rounded-lg break-words max-w-full ${
-                    index % 2 === 0
-                      ? "border-mainOrange text-black"
-                      : "border-mainBlue text-black"
-                  }`}
+                  className={`px-2 py-1 text-sm border rounded-lg break-words max-w-full ${index % 2 === 0
+                    ? "border-mainOrange text-black"
+                    : "border-mainBlue text-black"
+                    }`}
                 >
                   {tag}
                 </span>
