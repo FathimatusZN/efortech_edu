@@ -6,6 +6,7 @@ import { Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SuccessDialog } from "@/components/ui/SuccessDialog";
 import { useRouter } from "next/navigation";
+import { toast } from "react-hot-toast";
 
 const StarRating = ({ rating, onRate, readonly = false }) => (
   <div className="flex items-center justify-center gap-2 mb-6">
@@ -39,10 +40,21 @@ export default function FeedbackForm() {
   const searchParams = useSearchParams();
   const readonlyParam = searchParams.get("readonly");
 
+  const [reviewError, setReviewError] = useState("");
+
   const router = useRouter();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validasi lokal
+    if (review.trim() === "") {
+      setReviewError("This field must be filled.");
+      return;
+    } else {
+      setReviewError(""); // Reset error jika valid
+    }
+
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/review/`,
@@ -66,7 +78,7 @@ export default function FeedbackForm() {
         setRating(5);
         setReview("");
       } else {
-        alert("Gagal submit review: " + result.message);
+        toast("Gagal submit review: " + result.message);
       }
     } catch (err) {
       console.error("Terjadi error:", err);
@@ -125,9 +137,15 @@ export default function FeedbackForm() {
           className="w-full h-32 p-3 border border-orange-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400 placeholder:text-gray-400 resize-none"
           placeholder="Write your review here.."
           value={review}
-          onChange={(e) => setReview(e.target.value)}
+          onChange={(e) => {
+            setReview(e.target.value);
+            if (reviewError) setReviewError(""); // reset error saat user mulai ngetik
+          }}
           readOnly={isReadonly}
         />
+        {reviewError && (
+          <p className="text-sm text-red-500 mt-1">{reviewError}</p>
+        )}
 
         {!isReadonly && (
           <div className="flex justify-center mt-6">
