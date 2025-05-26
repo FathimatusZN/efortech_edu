@@ -29,7 +29,7 @@ export default function TopTrainingSection({ topCourses }) {
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 min-[768px]:grid-cols-2 md:grid-cols-3 gap-4">
         {topCourses.map((course) => {
           const discountedPrice = getDiscountedPrice(
             course.final_price ?? course.training_fees,
