@@ -287,7 +287,7 @@ const Home = () => {
         <ArticleSection highlightArticles={highlightArticles} />
 
         {/* Review */}
-        <div className="flex flex-col-reverse md:flex-row items-center justify-between gap-10 md:gap-20 mt-10 px-4 md:px-16">
+        <div className="flex flex-col-reverse md:flex-row items-center justify-between gap-10 md:gap-20 mt-10 px-4 md:px-16 mb-16">
           {/* Review Cards */}
           <div className="w-full md:w-[50%] flex justify-center">
             <Swiper
@@ -312,7 +312,7 @@ const Home = () => {
                     <img
                       src={card.avatar}
                       alt={card.user}
-                      className="w-36 h-36 rounded-full object-cover"
+                      className="w-36 h-36 rounded-full object-cover aspect-square"
                     />
                     <div className="flex flex-col items-center mt-2 gap-2">
                       <h3 className="text-xl font-bold mt-2">{card.user}</h3>
