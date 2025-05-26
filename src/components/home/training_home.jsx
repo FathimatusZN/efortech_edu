@@ -18,18 +18,18 @@ export default function TopTrainingSection({ topCourses }) {
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-4 sm:py-4 max-w-screen-xl mx-auto">
       <div className="flex justify-between items-center mb-6 flex-wrap gap-2">
-        <h2 className="text-xl md:text-3xl font-bold">
+        <h2 className="text-base md:text-3xl font-bold">
           Top Training & Certifications
         </h2>
         <Link
           href="/training"
-          className="text-sm text-gray-600 hover:underline flex items-center gap-1"
+          className="text-xs md:text-sm text-gray-600 hover:underline flex items-center gap-1"
         >
           See All <FaAngleRight className="text-xs" />
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {topCourses.map((course) => {
           const discountedPrice = getDiscountedPrice(
             course.final_price ?? course.training_fees,
@@ -39,7 +39,7 @@ export default function TopTrainingSection({ topCourses }) {
           return (
             <Card
               key={course.training_id}
-              className="shadow-md rounded-xl overflow-hidden min-h-[400px] transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl"
+              className="shadow-md rounded-xl overflow-hidden min-h-[400px] flex flex-col transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl"
             >
               <div className="relative">
                 <img
@@ -58,28 +58,32 @@ export default function TopTrainingSection({ topCourses }) {
                 )}
               </div>
 
-              <CardContent className="p-4">
-                <h3 className="font-semibold text-lg mb-4 text-left">
+              <CardContent className="p-4 flex flex-col h-full">
+                <h3 className="font-semibold text-lg mb-2 text-left">
                   {course.training_name}
                 </h3>
-                <p className="text-sm italic text-gray-500 mb-8 text-left">
+                <p className="text-sm italic text-gray-500 text-left">
                   Graduates: {course.graduates.toLocaleString()} Mentees
                 </p>
-                <hr className="mb-3" />
-                <div className="flex justify-between items-center">
-                  <div className="flex flex-col text-sm font-semibold">
-                    {course.discount && (
-                      <span className="line-through text-gray-400 text-xs">
-                        {formatCurrency(course.training_fees)}
-                      </span>
-                    )}
-                    <span>{formatCurrency(discountedPrice)}</span>
+
+                {/* Spacer untuk dorong harga ke bawah */}
+                <div className="mt-auto">
+                  <hr className="my-3" />
+                  <div className="flex justify-between items-center">
+                    <div className="flex flex-col text-sm font-semibold">
+                      {course.discount > 0 && (
+                        <span className="line-through text-gray-400 text-xs">
+                          {formatCurrency(course.training_fees)}
+                        </span>
+                      )}
+                      <span>{formatCurrency(discountedPrice)}</span>
+                    </div>
+                    <Link href={`/training/${course.training_id}`}>
+                      <Button variant="orange" size="sm">
+                        View Details
+                      </Button>
+                    </Link>
                   </div>
-                  <Link href={`/training/${course.training_id}`}>
-                    <Button variant="orange" size="sm">
-                      View Details
-                    </Button>
-                  </Link>
                 </div>
               </CardContent>
             </Card>
