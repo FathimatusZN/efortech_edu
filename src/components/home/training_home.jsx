@@ -23,13 +23,13 @@ export default function TopTrainingSection({ topCourses }) {
         </h2>
         <Link
           href="/training"
-          className="text-xs md:text-sm text-gray-600 hover:underline flex items-center gap-1"
+          className="text-xs md:text-sm text-gray-600 hover:underline flex items-center mt-2 gap-1"
         >
           See All <FaAngleRight className="text-xs" />
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 min-[768px]:grid-cols-2 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 min-[768px]:grid-cols-2 min-[1000px]:grid-cols-3 gap-4">
         {topCourses.map((course) => {
           const discountedPrice = getDiscountedPrice(
             course.final_price ?? course.training_fees,

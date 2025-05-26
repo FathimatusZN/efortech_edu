@@ -22,13 +22,13 @@ const getCategoryLabel = (id) => {
 export default function ArticleSection({ highlightArticles }) {
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-4 sm:py-4 max-w-screen-xl mx-auto">
-      <div className="flex justify-between items-center mb-6 flex-wrap gap-2">
+      <div className="flex justify-between items-center mb-2 flex-wrap gap-2">
         <h2 className="text-base md:text-3xl font-bold mt-10">
           Educational Article Highlight
         </h2>
         <Link
           href="/article"
-          className="text-xs md:text-sm text-gray-600 hover:underline flex items-center gap-1 mt-14"
+          className="text-xs md:text-sm text-gray-600 hover:underline flex items-center gap-1 mt-12"
         >
           See All <FaAngleRight className="text-xs" />
         </Link>
