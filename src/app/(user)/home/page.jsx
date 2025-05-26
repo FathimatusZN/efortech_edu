@@ -9,8 +9,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FaAngleRight } from "react-icons/fa";
 import Link from "next/link";
-import { Navigation, Pagination } from "swiper/modules";
 import "swiper/css/pagination";
+import PartnerSection from "@/components/home/partner_home";
+import TopTrainingSection from "@/components/home/training_home";
 
 // Category options for article filtering/display
 const categoryOptions = [
@@ -36,23 +37,8 @@ const Home = () => {
 
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState("College");
 
   const sectionRef = useRef(null);
-  const scrollRef = useRef(null);
-
-  // Utility: Format number to IDR currency
-  const formatCurrency = (amount) =>
-    new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
-    }).format(amount);
-
-  // Utility: Calculate discounted price
-  const getDiscountedPrice = (price, discount) => {
-    if (!discount) return price;
-    return Math.round(price - (price * discount) / 100);
-  };
 
   // Fetch and prepare all required home data
   useEffect(() => {
@@ -185,35 +171,6 @@ const Home = () => {
     return () => sectionRef.current && observer.unobserve(sectionRef.current);
   }, []);
 
-  // Auto-scroll for partner logos
-  useEffect(() => {
-    const scrollEl = scrollRef.current;
-    if (!scrollEl) return;
-
-    let animationFrameId;
-
-    const scrollStep = () => {
-      scrollEl.scrollLeft += 1;
-
-      // Reset jika sudah setengah dari scrollWidth (karena ada 2x data)
-      if (scrollEl.scrollLeft >= scrollEl.scrollWidth / 2) {
-        scrollEl.scrollLeft = 0;
-      }
-
-      animationFrameId = requestAnimationFrame(scrollStep);
-    };
-
-    animationFrameId = requestAnimationFrame(scrollStep);
-
-    return () => cancelAnimationFrame(animationFrameId);
-  }, [partnersData, selectedCategory]);
-
-  // Duplicate partners to simulate infinite scroll
-  const repeatedPartners = [
-    ...partnersData[selectedCategory],
-    ...partnersData[selectedCategory],
-  ];
-
   return (
     <div className="bg-white">
       <div className="relative w-full max-h-[500px] flex items-center justify-center">
@@ -281,21 +238,26 @@ const Home = () => {
 
       {/* Efortech Solutions */}
       <div className="relative flex flex-col md:flex-row justify-between md:items-start mt-16">
-        <div className="relative flex flex-col md:flex-row justify-center items-center gap-4 mt-16">
+        <div className="relative flex flex-col md:flex-row items-start gap-4 mt-10 md:mt-16">
           <img
             src="/assets/foto2.png"
             alt="Image 1"
-            className="w-[200px] md:w-[300px] shadow-lg "
+            className="shadow-xl"
+            style={{ width: 'clamp(180px, 40vw, 300px)' }}
           />
           <img
             src="/assets/gambar1.jpg"
             alt="Image 2"
-            className="w-[200px] md:w-[300px] shadow-lg absolute left-[300px] top-12"
+            className="shadow-xl absolute top-12"
+            style={{
+              width: 'clamp(180px, 40vw, 300px)',
+              left: 'clamp(180px, 25vw, 300px)'
+            }}
           />
         </div>
         <div className="bg-orange-600 text-white p-6 mt-20 w-full md:w-[700px]">
-          <h2 className="text-3xl font-bold text-right">Efortech Solutions</h2>
-          <p className="text-sm mt-3 pl-6 text-right ">
+          <h2 className="text-xl md:text-3xl font-bold text-right">Efortech Solutions</h2>
+          <p className="text-xs md:text-sm mt-3 pl-6 text-right ">
             Offers training and certification programs focused on the implementation of the Industrial Internet of Things (IIoT) through the use of a Smart Integrated IIoT Training Kit.
           </p>
         </div>
@@ -303,10 +265,10 @@ const Home = () => {
 
       {/* Why Choose Us? */}
       <div className="flex flex-col p-8 mt-10">
-        <h2 className="text-xl md:text-3xl font-bold text-black text-right">
+        <h2 className="text-xl md:text-3xl font-bold text-black text-center md:text-right">
           Why Choose Us?
         </h2>
-        <p className="text-sm md:text-lg text-mainOrange font-semibold text-right mt-2 mb-8">
+        <p className="text-sm md:text-lg font-semibold text-mainOrange text-center md:text-right mt-2 mb-8">
           Using Smart Integrated IIoT Training Kit
         </p>
         <img
@@ -332,153 +294,21 @@ const Home = () => {
       </div>
 
       {/* Partner */}
-      <div className="text-center px-16 py-4">
-        <h2 className="text-xl md:text-3xl font-bold text-black">
-          Our Partner
-        </h2>
-        <div className="flex justify-center gap-4 my-4">
-          <button
-            className={`px-4 py-2 min-w-[120px] border rounded-full shadow-lg ${selectedCategory === "College"
-              ? "bg-mainBlue text-white"
-              : "border-mainBlue"
-              }`}
-            onClick={() => setSelectedCategory("College")}
-          >
-            College
-          </button>
-          <button
-            className={`px-4 py-2 min-w-[120px] border rounded-full shadow-lg ${selectedCategory === "Institution"
-              ? "bg-mainBlue text-white"
-              : "border-mainBlue"
-              }`}
-            onClick={() => setSelectedCategory("Institution")}
-          >
-            Institution
-          </button>
-        </div>
+      <PartnerSection partnersData={partnersData} />
 
-        <div className="relative w-full max-w-6xl mx-auto overflow-x-hidden px-2 sm:px-4 md:px-8">
-          <div
-            ref={scrollRef}
-            className="flex gap-4 mt-4 pb-10 overflow-x-auto overflow-y-visible scroll-smooth no-scrollbar"
-          >
-            {repeatedPartners.map((partner, index) => (
-              <div
-                key={`${partner.id}-${index}`}
-                className="relative w-20 h-24 sm:w-24 sm:h-28 md:w-28 md:h-32 group cursor-pointer flex justify-center items-center flex-shrink-0"
-              >
-                {/* Layer nama mitra */}
-                <div className="absolute bottom-[-24px] sm:bottom-[-28px] md:bottom-[-30px] left-1/2 transform -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform duration-300 z-10">
-                  <div
-                    className="bg-white border-2 border-mainOrange text-mainOrange text-[10px] sm:text-xs md:text-sm font-semibold py-[2px] sm:py-1 px-2 rounded-md text-center break-words w-fit max-w-none shadow-md line-clamp-3" >
-                    {partner.partner_name}
-                  </div>
-                </div>
-
-                {/* Layer tengah */}
-                <div className="absolute w-full h-20 sm:h-24 bottom-0 rounded-md overflow-hidden flex flex-col">
-                  <div className="h-1/2 bg-white w-full"></div>
-                  <div className="h-1/2 bg-gray-200 w-full"></div>
-                </div>
-
-                {/* Layer logo */}
-                <div className="relative z-20 w-12 h-12 sm:w-14 sm:h-14 md:w-20 md:h-20 bg-white rounded-md shadow-md flex items-center justify-center">
-                  <img
-                    src={partner.partner_logo || "/default-logo.png"}
-                    alt={partner.partner_name}
-                    className="w-10 h-10 sm:w-11 sm:h-11 md:w-14 md:h-14 object-contain"
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="text-center px-16 py-4">
+      <div className="text-center px-4 py-4">
         {/* Top Training */}
-        <div className="px-2 sm:px-4 lg:px-8 py-2 sm:py-4 max-w-screen-xl mx-auto">
-          <div className="flex justify-between items-center mb-6 gap-2 flex-nowrap overflow-hidden">
-            <h2 className="text-base sm:text-lg md:text-3xl font-bold truncate">
-              Top Training & Certifications
-            </h2>
-            <Link
-              href="/training"
-              className="text-sm text-gray-600 hover:underline flex items-center gap-1"
-            >
-              See All <FaAngleRight className="text-xs" />
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {topCourses.map((course) => {
-              const discountedPrice = getDiscountedPrice(
-                course.final_price ?? course.training_fees,
-                course.discount
-              );
-
-              return (
-                <Card
-                  key={course.training_id}
-                  className="shadow-md rounded-xl overflow-hidden min-h-[400px] transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl"
-                >
-                  <div className="relative">
-                    <img
-                      src={course.images?.[0] || "/default-image.jpg"}
-                      alt={course.training_name}
-                      className="h-48 w-full object-cover"
-                    />
-                    <span className="absolute top-2 left-2 bg-mainBlue text-white text-xs font-semibold px-3 py-1 rounded-full">
-                      {["Beginner", "Intermediate", "Advanced"][
-                        course.level - 1
-                      ] || "Unknown"}
-                    </span>
-                    {course.discount > 0 && (
-                      <div className="absolute top-2 right-2 bg-red-500 text-white text-[11px] font-semibold px-2 py-[2px] rounded-full shadow-md animate-bounce">
-                        🔥 {Math.round(course.discount)}% OFF
-                      </div>
-                    )}
-                  </div>
-
-                  <CardContent className="p-4">
-                    <h3 className="font-semibold text-lg mb-4 text-left">
-                      {course.training_name}
-                    </h3>
-                    <p className="text-sm italic text-gray-500 mb-8 text-left">
-                      Graduates: {course.graduates.toLocaleString()} Mentees
-                    </p>
-                    <hr className="mb-3" />
-                    <div className="flex justify-between items-center">
-                      <div className="flex flex-col text-sm font-semibold">
-                        {course.discount && (
-                          <span className="line-through text-gray-400 text-xs">
-                            {formatCurrency(course.training_fees)}
-                          </span>
-                        )}
-                        <span>{formatCurrency(discountedPrice)}</span>
-                      </div>
-                      <Link href={`/training/${course.training_id}`}>
-                        <Button variant="orange" size="sm">
-                          View Details
-                        </Button>
-                      </Link>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-        </div>
+        <TopTrainingSection topCourses={topCourses} />
 
         {/* Educational Article Highlight */}
-        <div className="py-10 px-4">
+        <div className="px-4 sm:px-6 lg:px-8 py-4 sm:py-4 max-w-screen-xl mx-auto">
           <div className="flex justify-between items-center mb-6 flex-wrap gap-2">
-            <h2 className="text-xl md:text-3xl font-bold">
+            <h2 className="text-base md:text-3xl font-bold">
               Educational Article Highlight
             </h2>
             <Link
               href="/article"
-              className="text-sm text-gray-600 hover:underline flex items-center gap-1"
+              className="text-xs md:text-sm text-gray-600 hover:underline flex items-center gap-1"
             >
               See All <FaAngleRight className="text-xs" />
             </Link>
