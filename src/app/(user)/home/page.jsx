@@ -156,8 +156,8 @@ const Home = () => {
 
   return (
     <div className="bg-white">
-      <div className="relative w-full max-h-[500px] flex items-center justify-center">
-        <div className="w-full aspect-[4/3] sm:aspect-[16/9] lg:aspect-[21/9] relative overflow-hidden mb-10">
+      <div className="relative w-full max-h-[90vh] flex items-center justify-center">
+        <div className="w-full aspect-[21/9] relative overflow-hidden">
           {/* Banner Slide */}
           <div
             className="flex transition-transform duration-1000 ease-in-out"
@@ -192,7 +192,7 @@ const Home = () => {
           </div>
         </div>
 
-        <div className="absolute bottom-[220px] sm:bottom-[100px] md:bottom-10 flex justify-center space-x-2">
+        <div className="absolute bottom-[15vh] sm:bottom-[10vh] md:bottom-[5vh] flex justify-center space-x-2">
           {slides.map((_, index) => (
             <button
               key={index}
@@ -287,7 +287,7 @@ const Home = () => {
         <ArticleSection highlightArticles={highlightArticles} />
 
         {/* Review */}
-        <div className="flex flex-col-reverse md:flex-row items-center justify-between gap-10 md:gap-20 mt-10 px-4 md:px-16 mb-16">
+        <div className="flex flex-col-reverse md:flex-row items-center justify-between gap-10 md:gap-20 mt-10 px-4 md:px-16 mb-20">
           {/* Review Cards */}
           <div className="w-full md:w-[50%] flex justify-center">
             <Swiper
