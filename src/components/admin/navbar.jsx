@@ -5,6 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/app/context/AuthContext";
 import { ChevronDown } from "lucide-react";
+import { FaSignOutAlt } from "react-icons/fa";
 
 const AdminNavbar = () => {
   const { user, logout, loading } = useAuth();
@@ -267,9 +268,9 @@ const AdminNavbar = () => {
                         logout();
                         router.push("/home");
                       }}
-                      className="block px-4 py-2 text-mainBlue hover:bg-gray-100 w-full text-left"
+                      className="block px-4 py-2 text-error1 hover:bg-gray-100 w-full text-left"
                     >
-                      Logout
+                      Logout <FaSignOutAlt className="inline ml-1 text-neutral3" />
                     </button>
                   </li>
                 </ul>
@@ -437,7 +438,7 @@ const AdminNavbar = () => {
                     }}
                     className="block px-2 py-1 text-red-600 hover:bg-gray-100 rounded w-full text-left"
                   >
-                    Logout
+                    Logout <FaSignOutAlt className="inline ml-1 text-neutral3" />
                   </button>
                 </li>
               </ul>
