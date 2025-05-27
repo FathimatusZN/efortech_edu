@@ -316,6 +316,24 @@ const AdminNavbar = () => {
                     />
                     <span>{displayName}</span>
                   </button>
+                  {menuState.userSubmenu && (
+                    <div className="ml-10 mt-2 space-y-1">
+                      <Link
+                        href="/edit-profile"
+                        className="block px-2 py-1 hover:bg-gray-100 rounded"
+                        onClick={closeAllMenus}
+                      >
+                        Edit Profile
+                      </Link>
+                      <Link
+                        href="/auth/change-password"
+                        className="block px-2 py-1 hover:bg-gray-100 rounded"
+                        onClick={closeAllMenus}
+                      >
+                        Change Password
+                      </Link>
+                    </div>
+                  )}
                 </li>
 
                 <li>
