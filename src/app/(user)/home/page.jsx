@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { EffectCards} from "swiper/modules";
+import { EffectCards } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/effect-cards";
 import "swiper/css/pagination";
@@ -192,7 +192,7 @@ const Home = () => {
           </div>
         </div>
 
-        <div className="absolute bottom-[15vh] sm:bottom-[10vh] md:bottom-[5vh] flex justify-center space-x-2">
+        <div className="absolute bottom-[5px] flex justify-center space-x-2">
           {slides.map((_, index) => (
             <button
               key={index}
@@ -220,29 +220,33 @@ const Home = () => {
       </div>
 
       {/* Efortech Solutions */}
-      <div className="relative flex flex-col md:flex-row justify-between md:items-start mt-16">
-        <div className="relative flex flex-col md:flex-row items-start gap-4 mt-10 md:mt-16">
+      <div className="relative flex flex-col md:flex-row justify-between items-center mt-6 lg:mt-16 md:mt-10 sm:mt-6 gap-8">
+        {/* Container gambar */}
+        <div className="relative flex justify-center items-center mt-10 sm:mt-2">
           <img
             src="/assets/foto2.png"
             alt="Image 1"
-            className="shadow-xl"
-            style={{ width: 'clamp(180px, 40vw, 300px)' }}
+            className="shadow-xl z-10"
+            style={{ width: 'clamp(140px, 28vw, 50vw)' }}
           />
           <img
             src="/assets/gambar1.jpg"
             alt="Image 2"
-            className="shadow-xl absolute top-12"
+            className="shadow-xl z-20"
             style={{
-              width: 'clamp(180px, 40vw, 300px)',
-              left: 'clamp(180px, 25vw, 300px)'
+              width: 'clamp(140px, 28vw, 50vw)',
+              marginTop: '4rem',
             }}
           />
         </div>
-        <div className="bg-orange-600 text-white p-6 mt-20 w-full md:w-[700px]">
-          <h2 className="text-xl md:text-3xl font-bold text-right">Efortech Solutions</h2>
-          <p className="text-xs md:text-sm mt-3 pl-6 text-right ">
-            Offers training and certification programs focused on the implementation of the Industrial Internet of Things (IIoT) through the use of a Smart Integrated IIoT Training Kit.
-          </p>
+
+        <div className="relative bg-orange-600 text-white p-6 w-full md:w-[65%] mt-0 lg:mt-32 md:mt-10 sm:mt-0">
+          <div className="relative z-30">
+            <h2 className="text-xl md:text-3xl font-bold text-right">Efortech Solutions</h2>
+            <p className="text-xs md:text-sm mt-3 pl-12 lg:pl-24 md:pl-10 sm:pl-16 text-right">
+              Offers training and certification programs focused on the implementation of the Industrial Internet of Things (IIoT) through the use of a Smart Integrated IIoT Training Kit.
+            </p>
+          </div>
         </div>
       </div>
 
