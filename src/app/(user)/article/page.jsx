@@ -226,7 +226,7 @@ export default function ArticlePage() {
 
       {/* Pagination */}
       {!loading && totalPages > 1 && (
-        <Pagination className="flex justify-center mt-8">
+        <Pagination className="flex justify-center my-8">
           <PaginationContent>
             <PaginationItem>
               <PaginationPrevious
