@@ -226,7 +226,7 @@ export default function ArticlePage() {
 
       {/* Pagination */}
       {!loading && totalPages > 1 && (
-        <Pagination className="flex justify-center my-8">
+        <Pagination className="flex justify-center mt-8">
           <PaginationContent>
             <PaginationItem>
               <PaginationPrevious
@@ -266,7 +266,7 @@ export default function ArticlePage() {
 
       {/* Showing info */}
       {!loading && (
-        <p className="text-sm text-muted-foreground mt-2 flex justify-center items-center">
+        <p className="text-sm text-muted-foreground mt-2 flex justify-center items-center pb-10">
           Showing{" "}
           {filteredArticles.length > 0
             ? `${(page - 1) * itemsPerPage + 1} - ${Math.min(
