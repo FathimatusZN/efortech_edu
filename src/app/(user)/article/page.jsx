@@ -31,7 +31,6 @@ const categoryOptions = [
   { id: 1, label: "Education" },
   { id: 2, label: "Event" },
   { id: 3, label: "Success Story" },
-  { id: 4, label: "Blog" },
 ];
 
 export default function ArticlePage() {
@@ -76,7 +75,8 @@ export default function ArticlePage() {
     setLoading(true);
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL
+        `${
+          process.env.NEXT_PUBLIC_API_BASE_URL
         }/api/articles/search?query=${encodeURIComponent(searchQuery)}`
       );
       const data = await res.json();
@@ -270,9 +270,9 @@ export default function ArticlePage() {
           Showing{" "}
           {filteredArticles.length > 0
             ? `${(page - 1) * itemsPerPage + 1} - ${Math.min(
-              page * itemsPerPage,
-              filteredArticles.length
-            )}`
+                page * itemsPerPage,
+                filteredArticles.length
+              )}`
             : 0}{" "}
           of {filteredArticles.length} article
           {filteredArticles.length !== 1 && "s"}
