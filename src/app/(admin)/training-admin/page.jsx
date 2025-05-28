@@ -34,6 +34,7 @@ export default function TrainingPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    setCurrentPage(1);
     // Setup a delay to debounce the search query input
     const delayDebounce = setTimeout(() => {
       const fetchTrainings = async () => {
