@@ -120,7 +120,7 @@ export default function TrainingDetailPage() {
                   training.level === 1
                     ? "Beginner"
                     : training.level === 2
-                      ? "Medium"
+                      ? "Intermediate"
                       : "Advanced"
                 }
               />
