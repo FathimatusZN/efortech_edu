@@ -58,11 +58,14 @@ const Home = () => {
           reviewRes.json(),
         ]);
 
+        const isYoutubeLink = (url) =>
+          /(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/.test(url);
+
         setSlides(
           (slidesData.data || [])
             .sort((a, b) => a.content_id.localeCompare(b.content_id))
             .map((item) => ({
-              type: item.content_link.includes("youtube") ? "video" : "image",
+              type: isYoutubeLink(item.content_link) ? "video" : "image",
               src: item.content_link,
             }))
         );
