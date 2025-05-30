@@ -8,6 +8,7 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ConfirmDialog from "@/components/admin/ConfirmDialog";
 import { PageTitle, SaveButton, DiscardButton } from "@/components/layout/InputField";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import { FaSearch, FaPlus} from "react-icons/fa";
 import {
   Dialog,
   DialogContent,
@@ -30,6 +31,11 @@ export default function PartnerAdminPage() {
   const [status, setStatus] = useState(1);
   const [logo, setLogo] = useState([]);
 
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
+  const [filterCategory, setFilterCategory] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
+
   const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
   const [dialogType, setDialogType] = useState(''); 
@@ -38,8 +44,15 @@ export default function PartnerAdminPage() {
   const isFormValid = partner_name.trim() !== "" && logo.length > 0;
 
   const fetchPartners = async () => {
+    setLoading(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/partner`);
+      const query = new URLSearchParams();
+
+      if (debouncedSearchTerm) query.append("search", debouncedSearchTerm);
+      if (filterCategory !== "") query.append("category", filterCategory);
+      if (filterStatus !== "") query.append("status", filterStatus);
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/partner?${query.toString()}`);
       const data = await res.json();
       setPartners(data.data || []);
     } catch (err) {
@@ -67,8 +80,18 @@ export default function PartnerAdminPage() {
   };
 
   useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 500);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchTerm]);
+
+  useEffect(() => {
     fetchPartners();
-  }, []);
+  }, [debouncedSearchTerm, filterCategory, filterStatus]);
 
   const handleAddPartner = () => {
     setPartnerName("");
@@ -163,7 +186,7 @@ export default function PartnerAdminPage() {
           <LoadingSpinner size={32} text="Loading..." />
         </div>
       ) : (
-        <div className="p-6 relative">
+        <div className="relative">
           <Dialog open={showDialog} onOpenChange={setShowDialog}>
             <DialogContent>
               <DialogHeader>
@@ -198,7 +221,10 @@ export default function PartnerAdminPage() {
               <ConfirmDialog
                 open={openConfirmDialog}
                 onCancel={() => setOpenConfirmDialog(false)}
-                onConfirm={handleDiscard}
+                onConfirm={async () => {
+                  await handleSubmit();
+                  setOpenConfirmDialog(false);
+                }}
                 onDiscard={handleDiscard}
               />
 
@@ -221,11 +247,44 @@ export default function PartnerAdminPage() {
             </div>
           ) : (
             <>
-              <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold">Partner Management</h1>
-                <Button variant="orange" onClick={handleAddPartner}>
-                  Add Partner
-                </Button>
+              <div className="w-full flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 py-4 px-4">
+                <h2 className="text-2xl font-bold">Partner Management</h2>
+                <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto items-stretch sm:items-center">
+                  <div className="relative w-full sm:w-auto">
+                    <input
+                      type="text"
+                      placeholder="Search..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="text-sm w-full pl-4 pr-4 h-10 py-2 rounded-md border-2 border-mainOrange focus:ring-0 focus:outline-none"
+                    />
+                    <FaSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
+                  </div>
+
+                  <select
+                    className="w-[150px] h-10 border-2 border-mainOrange rounded-md focus:ring-0 focus:outline-none text-sm"
+                    value={filterCategory}
+                    onChange={(e) => setFilterCategory(e.target.value)}
+                  >
+                    <option value="">All Category</option>
+                    <option value="1">Institution</option>
+                    <option value="2">College</option>
+                  </select>
+
+                  <select
+                    className="w-[150px] h-10 border-2 border-mainOrange rounded-md focus:ring-0 focus:outline-none text-sm"
+                    value={filterStatus}
+                    onChange={(e) => setFilterStatus(e.target.value)}
+                  >
+                    <option value="">All Status</option>
+                    <option value="1">Active</option>
+                    <option value="0">Archived</option>
+                  </select>
+
+                  <Button variant="orange" onClick={handleAddPartner}>
+                    <FaPlus size={20} /> Add Partner
+                  </Button>
+                </div>
               </div>
               <div className="bg-white outline outline-3 outline-mainBlue rounded-2xl p-4 sm:p-6 shadow-[8px_8px_0px_0px_#157ab2]">
                 <PartnerTable
