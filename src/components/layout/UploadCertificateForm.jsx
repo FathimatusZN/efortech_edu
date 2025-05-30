@@ -98,7 +98,7 @@ export default function UploadUCertificateForm({ onSubmit, variant = "user", mod
     };
 
     const handleSubmit = async () => {
-        const requiredFields = ["fullname", "cert_type", "issuer", "issued_date", "expired_date", "certificate_number"];
+        const requiredFields = ["fullname", "cert_type", "issuer", "issued_date", "certificate_number"];
         const newErrors = {};
 
         requiredFields.forEach((field) => {
@@ -122,7 +122,7 @@ export default function UploadUCertificateForm({ onSubmit, variant = "user", mod
             cert_type: formData.cert_type,
             issuer: formData.issuer,
             issued_date: formData.issued_date,
-            expired_date: formData.expired_date,
+            expired_date: formData.expired_date?.trim() ? formData.expired_date : null,
             certificate_number: formData.certificate_number,
             cert_file: certPreviewUrl,
         };
@@ -263,7 +263,7 @@ export default function UploadUCertificateForm({ onSubmit, variant = "user", mod
 
                 {/* Fullname */}
                 <div>
-                    <Label>Fullname (According to the Certificate)</Label>
+                    <Label>Fullname (According to the Certificate) <span className="text-red-500">*</span></Label>
                     <Input
                         name="fullname"
                         value={formData.fullname}
@@ -277,7 +277,7 @@ export default function UploadUCertificateForm({ onSubmit, variant = "user", mod
 
                 {/* Certificate Type */}
                 <div>
-                    <Label>Certificate Type</Label>
+                    <Label>Certificate Type <span className="text-red-500">*</span></Label>
                     <Input
                         name="cert_type"
                         value={formData.cert_type}
@@ -292,19 +292,19 @@ export default function UploadUCertificateForm({ onSubmit, variant = "user", mod
                 {/* Issuer + Certificate Number in one row */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <Label>Issued by</Label>
+                        <Label>Issued by <span className="text-red-500">*</span></Label>
                         <Input
                             name="issuer"
                             value={formData.issuer}
                             onChange={handleChange}
-                            placeholder="e.g. Efortech Solusi Integrasi"
+                            placeholder="e.g. PT. Efortech Solusi Integrasi"
                         />
                         {errors.issuer && (
                             <p className="text-sm text-red-500">{errors.issuer}</p>
                         )}
                     </div>
                     <div>
-                        <Label>Certificate Number</Label>
+                        <Label>Certificate Number <span className="text-red-500">*</span></Label>
                         <Input
                             name="certificate_number"
                             value={formData.certificate_number}
@@ -320,7 +320,7 @@ export default function UploadUCertificateForm({ onSubmit, variant = "user", mod
                 {/* Issued Date + Expired Date in one row */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <Label>Issued Date</Label>
+                        <Label>Issued Date <span className="text-red-500">*</span></Label>
                         <Input
                             name="issued_date"
                             type="date"
@@ -339,6 +339,7 @@ export default function UploadUCertificateForm({ onSubmit, variant = "user", mod
                             value={formData.expired_date}
                             onChange={handleChange}
                         />
+                        <p className="text-xs text-gray-500">Leave empty if no expiry date</p>
                         {errors.expired_date && (
                             <p className="text-sm text-red-500">{errors.expired_date}</p>
                         )}
