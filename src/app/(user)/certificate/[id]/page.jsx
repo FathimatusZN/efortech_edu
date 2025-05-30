@@ -91,11 +91,13 @@ export default function CertificateDetailPage() {
               <div>
                 <span>Expired Date:</span>
                 <div className="font-semibold">
-                  {new Date(certificate.expired_date).toLocaleDateString("en-US", {
-                    day: "numeric",
-                    month: "short",
-                    year: "numeric",
-                  })}
+                  {certificate.expired_date
+                    ? new Date(certificate.expired_date).toLocaleDateString("en-US", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    })
+                    : "No Expiry Date"}
                 </div>
               </div>
               <div>
