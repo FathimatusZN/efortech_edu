@@ -61,13 +61,24 @@ const Home = () => {
         const isYoutubeLink = (url) =>
           /(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/.test(url);
 
+        const extractYoutubeID = (url) => {
+          const match = url.match(/(?:youtube\.com\/(?:.*v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+          return match ? match[1] : '';
+        };
+
         setSlides(
           (slidesData.data || [])
             .sort((a, b) => a.content_id.localeCompare(b.content_id))
-            .map((item) => ({
-              type: isYoutubeLink(item.content_link) ? "video" : "image",
-              src: item.content_link,
-            }))
+            .map((item) => {
+              const isYoutube = isYoutubeLink(item.content_link);
+              const youtubeID = extractYoutubeID(item.content_link);
+              return {
+                type: isYoutube ? "video" : "image",
+                src: isYoutube
+                  ? `https://www.youtube.com/embed/${youtubeID}?autoplay=1&mute=1`
+                  : item.content_link,
+              };
+            })
         );
 
         setPartnersData({
@@ -168,12 +179,13 @@ const Home = () => {
           >
             {slides.map((slide, index) => (
               <div key={index} className="w-full flex-shrink-0 relative">
-                {slide.type === "video" ? (
+                {slide.type === "video" && currentSlide === index ? (
                   <div className="relative w-full h-full">
                     <div className="absolute top-0 left-0 w-full h-full">
                       <iframe
+                        key={currentSlide}
                         className="w-full h-full"
-                        src={`${slide.src}?enablejsapi=1&modestbranding=1&rel=0&autoplay=1`}
+                        src={`${slide.src}&enablejsapi=1&modestbranding=1&rel=0&autoplay=1&mute=1`}
                         title="IIoT Training Video"
                         frameBorder="0"
                         allow="autoplay; encrypted-media"
@@ -181,15 +193,16 @@ const Home = () => {
                       ></iframe>
                     </div>
                   </div>
-                ) : (
+                ) : slide.type === "image" ? (
                   <div className="relative w-full h-full">
                     <img
                       src={slide.src}
                       alt="Slide"
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover object-center"
+                      style={{ aspectRatio: "21/9" }}
                     />
                   </div>
-                )}
+                ) : null}
               </div>
             ))}
           </div>
