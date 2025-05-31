@@ -13,6 +13,7 @@ import { FaFilter } from "react-icons/fa";
 import { useRouter, useSearchParams } from "next/navigation";
 import UploadCertificateForm from "@/components/layout/UploadCertificateForm";
 import { SuccessDialog } from "@/components/ui/SuccessDialog";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
 const ValidationCertificateClient = () => {
     const searchParams = useSearchParams();
@@ -467,7 +468,9 @@ const ValidationCertificateClient = () => {
                                                 onStatusChange={handleStatusChange}
                                             />
                                         ) : (
-                                            <p>Loading...</p>
+                                            <div className="items-center justify-center">
+                                                <LoadingSpinner className="w-10 h-10" />
+                                            </div>
                                         )}
                                     </TabsContent>
 
@@ -482,7 +485,9 @@ const ValidationCertificateClient = () => {
                                                 onStatusChange={handleStatusChange}
                                             />
                                         ) : (
-                                            <p>Loading...</p>
+                                            <div className="items-center justify-center">
+                                                <LoadingSpinner className="w-10 h-10" />
+                                            </div>
                                         )}
                                     </TabsContent>
 

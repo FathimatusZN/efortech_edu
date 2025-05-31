@@ -61,7 +61,7 @@ const CertificateTable = ({
                                     <TableCell>{item.certificate_title}</TableCell>
                                     <TableCell>{item.issued_by}</TableCell>
                                     <TableCell>{formatDate(item.issued_date)}</TableCell>
-                                    <TableCell>{formatDate(item.expired_date)}</TableCell>
+                                    <TableCell>{item.expired_date ? formatDate(item.expired_date) : "No Expiry Date"}</TableCell>
                                     <TableCell>
                                         <Button
                                             className="bg-white text-black hover:bg-lightBlue hover:text-white transition duration-300 ease-in-out py-2 px-4 rounded-md"

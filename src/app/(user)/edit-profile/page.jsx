@@ -9,6 +9,7 @@ import { getIdToken } from "firebase/auth";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { toast } from "react-hot-toast";
 import { useAuth } from "@/app/context/AuthContext";
+import imageCompression from "browser-image-compression";
 
 export default function EditProfile() {
   const [user, loading] = useAuthState(auth);
@@ -175,14 +176,27 @@ export default function EditProfile() {
                   accept="image/*"
                   ref={fileInputRef}
                   className="hidden"
-                  onChange={(e) => {
+                  onChange={async (e) => {
                     const file = e.target.files[0];
                     if (file) {
-                      setNewImageFile(file);
-                      setProfile((prev) => ({
-                        ...prev,
-                        profileImage: URL.createObjectURL(file),
-                      }));
+                      try {
+                        const options = {
+                          maxSizeMB: 1,
+                          maxWidthOrHeight: 800,
+                          useWebWorker: true,
+                        };
+                        const compressedFile = await imageCompression(file, options);
+                        const previewUrl = URL.createObjectURL(compressedFile);
+
+                        setNewImageFile(compressedFile);
+                        setProfile((prev) => ({
+                          ...prev,
+                          profileImage: previewUrl,
+                        }));
+                      } catch (error) {
+                        console.error("Compression error:", error);
+                        toast.error("Failed to compress image");
+                      }
                     }
                   }}
                 />

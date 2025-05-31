@@ -9,9 +9,10 @@ import {
 } from "@/components/layout/InputField";
 import { useParams, useRouter } from "next/navigation";
 import ConfirmDialog from "@/components/admin/ConfirmDialog";
-
-// Error pages
 import { NotFound, InternalServerError } from "@/components/ui/ErrorPage";
+import { toast } from "react-hot-toast";
+import { SuccessDialog } from "@/components/ui/SuccessDialog";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
 export default function EditArticle() {
     const params = useParams();
@@ -32,6 +33,9 @@ export default function EditArticle() {
     const [images, setImages] = useState([]);
     const [author, setAuthor] = useState("");
     const [openDialog, setOpenDialog] = useState(false);
+
+    const [showSuccess, setShowSuccess] = useState(false);
+    const [showError, setShowError] = useState(false);
 
     // Check if form is ready to submit
     const isFormValid = title.trim() !== "" && content.trim() !== "" && category !== 0;
@@ -105,12 +109,10 @@ export default function EditArticle() {
 
             if (!res.ok) throw new Error("Failed to update article");
 
-            alert("✅ Article updated!");
-            router.push("/article-admin/");
-            resetForm();
+            setShowSuccess(true);
         } catch (err) {
             console.error("❌ Update error:", err);
-            alert("Failed to update article.");
+            toast.error("Failed to update article.");
         }
     };
 
@@ -154,7 +156,7 @@ export default function EditArticle() {
 
     // Show loading indicator while fetching article
     if (isLoading) {
-        return <div className="text-center mt-10">Loading article data...</div>;
+        return <div className="text-center mt-10"><LoadingSpinner /></div>;
     }
 
     // Main UI rendering the article editor form
@@ -247,6 +249,36 @@ export default function EditArticle() {
                     <SourcesInput sources={sources} setSources={setSources} />
                 </div>
             </div>
+            <SuccessDialog
+                open={showSuccess}
+                onOpenChange={(open) => {
+                    setShowSuccess(open);
+                    if (!open) {
+                        resetForm();
+                        router.push(`/article-admin`);
+                    }
+                }}
+                title="Article Updated!"
+                messages={[
+                    "Your changes have been successfully saved.",
+                    "Redirecting to article detail..."
+                ]}
+                buttonText="Continue"
+                onButtonClick={() => {
+                    router.push(`/article-admin`);
+                }}
+            />
+
+            <SuccessDialog
+                open={showError}
+                onOpenChange={(open) => setShowError(open)}
+                title="Update Failed"
+                messages={[
+                    "Something went wrong while updating the article.",
+                    "Please try again later or check your form."
+                ]}
+                buttonText="Close"
+            />
         </ProtectedRoute>
     );
 }

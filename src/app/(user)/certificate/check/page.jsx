@@ -23,6 +23,19 @@ import { Button } from "@/components/ui/button";
 
 const PAGE_SIZE = 10;
 
+const formatDate = (isoString) => {
+  if (!isoString) return "No Expiry Date";
+
+  const date = new Date(isoString);
+  const options = {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  };
+
+  return date.toLocaleString("en-US", options).replace(",", ",");
+};
+
 export default function CertificateValidation() {
   const [inputValue, setInputValue] = useState(""); // Text input value
   const [searchTerm, setSearchTerm] = useState(""); // Term used to query API
@@ -83,7 +96,7 @@ export default function CertificateValidation() {
   );
 
   return (
-    <div className="max-w-screen mx-auto p-8">
+    <div className="max-w-screen mx-auto p-4 sm:p-6 md:p-8">
       <h1 className="text-2xl font-bold text-center mb-6">
         Certificate Validation
       </h1>
@@ -96,7 +109,9 @@ export default function CertificateValidation() {
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={handleSearch}
-          className="w-full p-2 border border-secondBlue placeholder:text-mainOrange shadow-lg rounded-full pl-4"
+          className="w-full p-2 border border-secondBlue shadow-lg rounded-full pl-4 
+             placeholder:text-xs sm:placeholder:text-sm md:placeholder:text-base 
+             placeholder:text-mainOrange"
         />
         <FaSearch className="absolute right-4 text-orange-500" />
       </div>
@@ -123,7 +138,7 @@ export default function CertificateValidation() {
       {/* Search results */}
       {!loading && searchTerm !== "" && paginatedData.length > 0 && (
         <>
-          <div className="overflow-x-auto mt-8 px-4">
+          <div className="overflow-x-auto mt-8">
             <Table className="min-w-[800px]">
               <TableHeader>
                 <TableRow>
@@ -142,33 +157,32 @@ export default function CertificateValidation() {
                     <TableCell>{item.certificate_number}</TableCell>
                     <TableCell>{item.fullname}</TableCell>
                     <TableCell>
-                      {new Date(item.issued_date).toLocaleDateString()}
+                      {formatDate(item.issued_date)}
                     </TableCell>
                     <TableCell>{item.certificate_title}</TableCell>
                     <TableCell>
-                      {new Date(item.expired_date).toLocaleDateString()}
+                      {formatDate(item.expired_date)}
                     </TableCell>
                     <TableCell
-                      className={`font-semibold ${
-                        item.validity_status === "Valid"
-                          ? "text-green-600"
-                          : "text-red-600"
-                      }`}
+                      className={`font-semibold ${item.validity_status === "Valid"
+                        ? "text-green-600"
+                        : "text-red-600"
+                        }`}
                     >
                       {item.validity_status}
                     </TableCell>
                     <TableCell>
                       <Button
                         variant="outline"
-                        className="w-full border-mainOrange text-mainOrange hover:bg-mainOrange hover:text-white"
+                        className="w-full text-xs sm:text-sm px-2 py-1 sm:px-4 sm:py-2 border-mainOrange text-mainOrange hover:bg-mainOrange hover:text-white"
                         onClick={() =>
                           window.open(
-                            `/certificate/${item.certificate_id}`,
+                            `/certificate/${item.certificate_number}`,
                             "_blank"
                           )
                         }
                       >
-                        Preview
+                        See Detail
                       </Button>
                     </TableCell>
                   </TableRow>

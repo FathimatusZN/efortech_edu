@@ -3,8 +3,7 @@
 import { useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { auth } from "@/app/firebase/config";
-import { getAuth, EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
-import { useEffect } from "react";
+import { EmailAuthProvider, reauthenticateWithCredential, updatePassword } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
@@ -39,34 +38,19 @@ export default function ChangePasswordPage() {
     }
 
     try {
-      const token = await auth.currentUser.getIdToken();
+      const credential = EmailAuthProvider.credential(user.email, currentPassword);
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user/change-password`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          currentPassword,
-          newPassword,
-        }),
-      });
+      await reauthenticateWithCredential(user, credential);
 
-      const data = await res.json();
-
-      if (!res.ok || data.success === false) {
-        throw new Error(data.message || "Failed to change password.");
-      }
+      await updatePassword(user, newPassword);
 
       toast.success("Password updated successfully! Please sign in again.");
       await auth.signOut();
       router.push("/auth/signin");
 
     } catch (err) {
-      console.error("Change password error:", err);
-      setError(err.message || "An unexpected error occurred. Please try again.");
-      toast.error(err.message || "An unexpected error occurred.");
+      setError("Current password is incorrect or session expired.");
+      toast.error("Current password is incorrect or session expired.");
     }
   };
 
@@ -76,7 +60,7 @@ export default function ChangePasswordPage() {
         <img src="/assets/Gambar2.jpg" alt="Change Password Image" className="w-full h-full object-cover object-top" />
       </div>
 
-      <div className="w-full md:w-1/2 h-auto flex items-center justify-center p-4">
+      <div className="w-full md:w-1/2 h-auto flex items-center justify-center p-4 pt-28">
         <div className="w-[550px] space-y-6 mt-[-80px]">
           <form onSubmit={handleSubmit} className="border-2 border-[#03649F] rounded-[10px] p-6 space-y-4 bg-white shadow-md">
             <div className="flex flex-col items-center space-y-2 mb-8">

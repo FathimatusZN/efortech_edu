@@ -6,6 +6,7 @@ import TextEditor from "../../../components/admin/TextEditor";
 import { PageTitle, SaveButton, DiscardButton, InputField, SelectDropdown, ImageUploader, AddLabel, SourcesInput } from "@/components/layout/InputField";
 import { useParams, useRouter } from "next/navigation";
 import ConfirmDialog from "@/components/admin/ConfirmDialog";
+import { SuccessDialog } from "@/components/ui/SuccessDialog";
 
 export default function AddArticle() {
     const params = useParams();
@@ -21,10 +22,14 @@ export default function AddArticle() {
     const [author, setAuthor] = useState("");
 
     const [openDialog, setOpenDialog] = useState(false);
-
     const isFormValid = title.trim() !== "" && content.trim() !== "" && category !== 0;
 
     const { user } = useAuth();
+
+    const [showSuccess, setShowSuccess] = useState(false);
+    const [showError, setShowError] = useState(false);
+
+    const [articleId, setArticleId] = useState(null);
 
     const handleSubmit = async () => {
         console.log("🧪 Current user object:", user);
@@ -63,16 +68,12 @@ export default function AddArticle() {
             if (!res.ok) throw new Error("Failed to submit article");
 
             const data = await res.json();
-            alert("✅ Article added! ID: " + data.data.article_id);
-            setTitle("");
-            setCategory(0);
-            setTags([]);
-            setContent("");
-            setImages([]);
-            setSources([{ preview_text: "", source_link: "" }]);
+            setArticleId(data.data.article_id);
+            setShowSuccess(true);
+            resetForm();
         } catch (err) {
             console.error("❌ Submit error:", err);
-            alert("Failed to submit article.");
+            setShowError(true);
         }
     };
 
@@ -195,6 +196,18 @@ export default function AddArticle() {
 
                 </div>
             </div>
+
+            <SuccessDialog
+                open={showSuccess}
+                onOpenChange={setShowSuccess}
+                title="Article Submitted!"
+                messages={[
+                    `ID: ${articleId ?? "-"}`,
+                    "Your article was successfully submitted.",
+                ]}
+                buttonText="Back to Article List"
+                onButtonClick={() => router.push("/article-admin")}
+            />
         </ProtectedRoute>
     );
 }

@@ -6,41 +6,52 @@ import { toast } from "react-hot-toast";
 import { ValidationTrainingTable } from "@/components/admin/ValidationTrainingTable";
 import { ValidationCertificateTable } from "@/components/admin/ValidationCertificateTable";
 import { AdditionalParticipantDialog } from "@/components/admin/AdditionalParticipantDialog";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
 const ValidationPage = () => {
   const [trainingData, setTrainingData] = useState([]);
   const [certificateData, setCertificateData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [trainingLoading, setTrainingLoading] = useState(true);
+  const [isTrainingFetched, setIsTrainingFetched] = useState(false);
+
+  const [certificateLoading, setCertificateLoading] = useState(true);
+  const [isCertificateFetched, setIsCertificateFetched] = useState(false);
 
   const fetchTrainingData = async () => {
-    setLoading(true);
+    setTrainingLoading(true);
+    setIsTrainingFetched(false);
     try {
       const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/registration/search?status=1&status=2&status=3`;
       const res = await fetch(url);
       if (!res.ok) throw new Error("Failed to fetch training data");
       const result = await res.json();
       setTrainingData(result?.data || []);
+      setIsTrainingFetched(true);
     } catch (err) {
       console.error(err);
       toast.error("Failed to load training data");
+      setIsTrainingFetched(true);
     } finally {
-      setLoading(false);
+      setTrainingLoading(false);
     }
   };
 
   const fetchCertificateData = async () => {
-    setLoading(true);
+    setCertificateLoading(true);
+    setIsCertificateFetched(false);
     try {
       const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/ucertificate/search?status=1`;
       const res = await fetch(url);
       if (!res.ok) throw new Error("Failed to fetch certificate data");
       const result = await res.json();
       setCertificateData(result?.data || []);
+      setIsCertificateFetched(true);
     } catch (err) {
       console.error(err);
       toast.error("Failed to load certificate data");
+      setIsCertificateFetched(true);
     } finally {
-      setLoading(false);
+      setCertificateLoading(false);
     }
   };
 
@@ -145,13 +156,16 @@ const ValidationPage = () => {
             onClose={() => setSelectedRegistration(null)}
             registration={selectedRegistration}
           />
-          {loading ? (
-            <p>Loading...</p>
+          {trainingLoading ? (
+            <div className="items-center justify-center">
+              <LoadingSpinner className="w-10 h-10" />
+            </div>
+          ) : !trainingLoading && isTrainingFetched && trainingData.length === 0 ? (
+            <p className="text-center text-gray-500 py-4">No data available</p>
           ) : (
             <ValidationTrainingTable
               data={trainingData.slice(0, 5)}
               mode="needprocess"
-
               onShowDetailRegistration={onShowDetailRegistration}
               onStatusChange={handleRegistrationStatusChange}
               disablePagination={true}
@@ -174,8 +188,12 @@ const ValidationPage = () => {
             Certificate Validation
           </h2>
 
-          {loading ? (
-            <p>Loading...</p>
+          {certificateLoading ? (
+            <div className="items-center justify-center">
+              <LoadingSpinner className="w-10 h-10" />
+            </div>
+          ) : !certificateLoading && isCertificateFetched && certificateData.length === 0 ? (
+            <p className="text-center text-gray-500 py-4">No data available</p>
           ) : (
             <ValidationCertificateTable
               data={certificateData.slice(0, 5)}

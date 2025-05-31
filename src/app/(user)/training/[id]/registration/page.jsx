@@ -4,11 +4,13 @@ import React, { useEffect, useState, useRef, useCallback } from "react";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { auth } from "@/app/firebase/config";
-import { getIdToken } from "firebase/auth";
 import { Check, Trash2 } from "lucide-react";
 import { SuccessDialog } from "@/components/ui/SuccessDialog";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { onAuthStateChanged } from "firebase/auth";
+import { FaSortUp } from "react-icons/fa6";
+import { FaSortDown } from "react-icons/fa6";
+import { v4 as uuidv4 } from "uuid";
 
 // Training Header, display training banner with slideshow effect
 const TrainingHeader = React.memo(({ training }) => {
@@ -32,7 +34,7 @@ const TrainingHeader = React.memo(({ training }) => {
         layout="fill"
         objectFit="cover"
       />
-      <h1 className="absolute inset-0 flex items-center justify-center text-3xl font-extrabold text-white drop-shadow-2xl bg-black/30 p-2 shadow-blue-900 shadow-xl">
+      <h1 className="absolute inset-0 flex items-center justify-center sm:text-3xl text-lg font-extrabold text-white drop-shadow-2xl bg-black/30 p-2 shadow-blue-900 shadow-xl">
         {training.training_name}
       </h1>
     </div>
@@ -53,8 +55,9 @@ const RegistrationPage = () => {
     date: "",
   });
   const [participantCount, setParticipantCount] = useState(1);
+  const [participantInput, setParticipantInput] = useState("1");
   const [additionalEmails, setAdditionalEmails] = useState([
-    { id: crypto.randomUUID(), email: "" },
+    { id: uuidv4(), email: "" },
   ]);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(true);
@@ -263,51 +266,78 @@ const RegistrationPage = () => {
     await handleRegistrationSubmit();
   };
 
-  const handleParticipantCountChange = useCallback((e) => {
-    const count = Math.max(1, parseInt(e.target.value) || 1);
-    setParticipantCount(count);
+  const handleParticipantCountChange = useCallback(
+    (e) => {
+      const rawValue = e.target.value;
+      setParticipantInput(rawValue);
 
-    setAdditionalEmails((prevEmails) => {
-      const targetLength = count - 1;
-      const updatedEmails = [...prevEmails];
+      // Jangan proses kalau kosong (biar user bisa hapus angka dulu)
+      if (rawValue.trim() === "") return;
 
-      if (targetLength > updatedEmails.length) {
-        // Tambahkan field kosong
-        while (updatedEmails.length < targetLength) {
-          updatedEmails.push({ id: crypto.randomUUID(), email: "" });
-        }
-      } else if (targetLength < updatedEmails.length) {
-        // Hapus field kelebihan TAPI tetap simpan data yang ada
-        return updatedEmails.slice(0, targetLength);
-      }
+      const parsed = parseInt(rawValue, 10);
+      if (isNaN(parsed)) return;
 
-      return updatedEmails;
-    });
+      const count = Math.max(1, parsed);
+      if (count === participantCount) return;
+      setParticipantCount(count);
 
-    // Kita juga perlu sinkronisasi validasi dan error
-    setEmailValidation((prev) => {
-      const newValidation = { ...prev };
-      Object.keys(newValidation).forEach((key) => {
-        if (parseInt(key) >= count - 1) {
-          delete newValidation[key];
-        }
-      });
-      return newValidation;
-    });
+      // Sinkronkan email fields
+      setAdditionalEmails((prevEmails) => {
+        const targetLength = count - 1;
+        const updatedEmails = [...prevEmails];
 
-    setErrors((prev) => {
-      const newErrors = { ...prev };
-      Object.keys(newErrors).forEach((key) => {
-        if (key.startsWith("email")) {
-          const idx = parseInt(key.replace("email", ""));
-          if (idx >= count - 1) {
-            delete newErrors[key];
+        if (targetLength > updatedEmails.length) {
+          while (updatedEmails.length < targetLength) {
+            updatedEmails.push({ id: uuidv4(), email: "" });
           }
+        } else if (targetLength < updatedEmails.length) {
+          return updatedEmails.slice(0, targetLength);
         }
+
+        return updatedEmails;
       });
-      return newErrors;
-    });
-  }, []);
+
+      // Sinkronkan validasi
+      setEmailValidation((prev) => {
+        const newValidation = { ...prev };
+        Object.keys(newValidation).forEach((key) => {
+          if (parseInt(key) >= count - 1) {
+            delete newValidation[key];
+          }
+        });
+        return newValidation;
+      });
+
+      // Sinkronkan error
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        Object.keys(newErrors).forEach((key) => {
+          if (key.startsWith("email")) {
+            const idx = parseInt(key.replace("email", ""));
+            if (idx >= count - 1) {
+              delete newErrors[key];
+            }
+          }
+        });
+        return newErrors;
+      });
+    },
+    [participantCount]
+  );
+
+  const incrementParticipant = useCallback(() => {
+    const next = participantCount + 1;
+    const nextStr = next.toString();
+    setParticipantInput(nextStr);
+    handleParticipantCountChange({ target: { value: nextStr } });
+  }, [participantCount, handleParticipantCountChange]);
+
+  const decrementParticipant = useCallback(() => {
+    const next = Math.max(1, participantCount - 1);
+    const nextStr = next.toString();
+    setParticipantInput(nextStr);
+    handleParticipantCountChange({ target: { value: nextStr } });
+  }, [participantCount, handleParticipantCountChange]);
 
   const validateEmailExists = async (email, id, idx) => {
     const trimmedEmail = email.trim().toLowerCase();
@@ -375,34 +405,61 @@ const RegistrationPage = () => {
       placeholder,
       min,
       readOnly = false,
-    }) => (
-      <div className="mt-6 flex items-start">
-        <label className="w-1/4 text-black font-semibold pt-2">
-          {label} {required && <span className="text-red-500">*</span>}
-        </label>
-        <div className="w-3/4 flex flex-col">
-          {readOnly ? (
-            <div
-              className="p-2 pl-4 bg-gray-100 rounded-lg text-sm text-gray-700 min-h-[40px] flex items-center cursor-not-allowed hover:bg-gray-200 transition"
-              title="This field can only be edited in your profile"
-            >
-              {value || "-"}
-            </div>
-          ) : (
-            <input
-              type={type}
-              min={min}
-              className="p-2 pl-4 border rounded-lg border-mainOrange placeholder:text-sm 
-                focus:border-orange-500 focus:ring-orange-500 focus:outline-none focus:ring-1"
-              placeholder={placeholder}
-              value={value}
-              onChange={onChange}
-            />
-          )}
-          {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+      className = "",
+      children,
+    }) => {
+      const [showInfo, setShowInfo] = useState(false);
+
+      const handleReadOnlyClick = () => {
+        setShowInfo(true);
+        setTimeout(() => setShowInfo(false), 2000);
+      };
+
+      return (
+        <div className="mt-6 flex flex-col sm:flex-row items-start">
+          <label className="sm:w-1/4 text-black font-semibold pt-2">
+            {label} {required && <span className="text-red-500">*</span>}
+          </label>
+          <div className="sm:w-3/4 w-full flex flex-col">
+            {readOnly ? (
+              <div
+                className="p-2 pl-4 bg-gray-100 rounded-lg text-sm text-gray-700 min-h-[40px] flex items-center cursor-not-allowed hover:bg-gray-200 transition"
+                onClick={handleReadOnlyClick}
+              >
+                {value || "-"}
+              </div>
+            ) : (
+              <div className="relative w-full">
+                <input
+                  type={type}
+                  min={min}
+                  className={`w-full p-2 pl-4 ${children ? "pr-10" : "pr-4"
+                    } border rounded-lg border-mainOrange placeholder:text-sm 
+              focus:border-orange-500 focus:ring-orange-500 focus:outline-none focus:ring-1 ${className}`}
+                  placeholder={placeholder}
+                  value={value}
+                  onChange={onChange}
+                />
+                {children && (
+                  <div className="absolute inset-y-0 right-2 flex flex-col justify-center items-center">
+                    {children}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ✅ Info muncul saat field readOnly diklik */}
+            {showInfo && readOnly && (
+              <p className="text-xs text-orange-600 mt-1">
+                This field can only be edited in your profile.
+              </p>
+            )}
+
+            {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+          </div>
         </div>
-      </div>
-    )
+      );
+    }
   );
 
   if (loading || redirecting) return <LoadingSpinner text="Loading..." />;
@@ -445,65 +502,119 @@ const RegistrationPage = () => {
         Registration Form
       </h2>
 
-      <div className="max-w-3xl mb-20 mx-auto p-6 border-4 border-mainBlue rounded-lg bg-white shadow-2xl">
-        <form onSubmit={handleSubmit}>
-          <FormGroup label="Full Name" value={formData.fullName} readOnly />
-          <FormGroup label="Email" value={formData.email} readOnly />
-          <FormGroup
-            label="Institution"
-            value={formData.institution}
-            readOnly
-          />
+      <div className="flex justify-centermx-auto px-4 sm:px-6 md:px-8">
+        <div className="max-w-3xl mb-20 mx-auto px-4 sm:px-6 pb-8 border-4 border-mainBlue rounded-lg bg-white shadow-2xl">
+          <form onSubmit={handleSubmit}>
+            <FormGroup label="Full Name" value={formData.fullName} readOnly />
+            <FormGroup label="Email" value={formData.email} readOnly />
+            <FormGroup
+              label="Institution"
+              value={formData.institution}
+              readOnly
+            />
 
-          <FormGroup
-            label="Date"
-            required
-            type="date"
-            value={formData.date}
-            onChange={(e) =>
-              setFormData((prev) => ({ ...prev, date: e.target.value }))
-            }
-            error={errors.date}
-            min={new Date().toISOString().split("T")[0]} // Disable past dates
-          />
+            <FormGroup
+              label="Date"
+              required
+              type="date"
+              value={formData.date}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, date: e.target.value }))
+              }
+              error={errors.date}
+              min={new Date().toISOString().split("T")[0]} // Disable past dates
+            />
 
-          <FormGroup
-            label="Jumlah Peserta"
-            required
-            type="number"
-            min={1}
-            value={participantCount}
-            onChange={handleParticipantCountChange}
-          />
+            <FormGroup
+              label="Participant Count"
+              required
+              type="text"
+              value={participantInput}
+              onChange={handleParticipantCountChange}
+              className="text-left text-bold"
+            >
+              <>
+                <button
+                  type="button"
+                  onClick={incrementParticipant}
+                  className="pr-3 hover:text-mainOrange"
+                >
+                  <FaSortUp size={14} />
+                </button>
+                <button
+                  type="button"
+                  onClick={decrementParticipant}
+                  className="pr-3 hover:text-mainOrange"
+                >
+                  <FaSortDown size={14} />
+                </button>
+              </>
+            </FormGroup>
 
-          {/* Additional participant emails*/}
-          {participantCount > 1 && (
-            <div className="mt-6">
-              <label className="block text-black font-semibold mb-2">
-                Email Peserta Lain <span className="text-red-500">*</span>
-              </label>
-              {additionalEmails.map(({ id, email }, idx) => (
-                <div key={id} className="mb-2 relative">
-                  <div className="relative h-10">
-                    <input
-                      type="email"
-                      required
-                      className="w-full p-2 pl-4 pr-10 border rounded-lg border-mainOrange placeholder:text-sm 
+            <p className="text-xs text-gray-600 italic sm:ml-[25%] mb-1">
+              You can change this field if you are registering collectively with multiple participants.
+            </p>
+
+            {/* Additional participant emails*/}
+            {participantCount > 1 && (
+              <div className="mt-6">
+                <label className="block text-black font-semibold mb-2">
+                  Additional Participant Email{" "}
+                  <span className="text-red-500">*</span>
+                </label>
+                {additionalEmails.map(({ id, email }, idx) => (
+                  <div key={id} className="mb-2 relative">
+                    <div className="relative h-10">
+                      <input
+                        type="email"
+                        required
+                        className="w-full p-2 pl-4 pr-10 border rounded-lg border-mainOrange placeholder:text-sm 
                     focus:border-orange-500 focus:ring-orange-500 focus:outline-none focus:ring-1"
-                      placeholder={`Email peserta ke-${idx + 2}`}
-                      value={email}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        setAdditionalEmails((prev) =>
-                          prev.map((emailObj) =>
-                            emailObj.id === id
-                              ? { ...emailObj, email: value }
-                              : emailObj
-                          )
-                        );
+                        placeholder={`Participant Email ${idx + 2}`}
+                        value={email}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setAdditionalEmails((prev) =>
+                            prev.map((emailObj) =>
+                              emailObj.id === id
+                                ? { ...emailObj, email: value }
+                                : emailObj
+                            )
+                          );
 
-                        // Kalau kosong, langsung hapus validasi & error-nya
-                        if (!value.trim()) {
+                          if (!value.trim()) {
+                            setEmailValidation((prev) => {
+                              const { [id]: _, ...rest } = prev;
+                              return rest;
+                            });
+
+                            setErrors((prev) => {
+                              const { [id]: _, ...rest } = prev;
+                              return rest;
+                            });
+                            return;
+                          }
+                          // Debounce validasi email
+                          clearTimeout(debounceTimers.current[id]);
+                          debounceTimers.current[id] = setTimeout(() => {
+                            validateEmailExists(value, id, idx);
+                          }, 1000);
+                        }}
+                      />
+                      {/* Icon hapus */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAdditionalEmails((prev) =>
+                            prev.filter((emailObj) => emailObj.id !== id)
+                          );
+
+                          setParticipantCount((prevCount) => {
+                            const updated = Math.max(1, prevCount - 1);
+                            setParticipantInput(updated); // ✅ sync input field
+                            return updated;
+                          });
+
                           setEmailValidation((prev) => {
                             const { [id]: _, ...rest } = prev;
                             return rest;
@@ -513,100 +624,75 @@ const RegistrationPage = () => {
                             const { [id]: _, ...rest } = prev;
                             return rest;
                           });
-                          return;
-                        }
-                        // Debounce validasi email
-                        clearTimeout(debounceTimers.current[id]);
-                        debounceTimers.current[id] = setTimeout(() => {
-                          validateEmailExists(value, id, idx);
-                        }, 1000);
-                      }}
-                    />
-                    {/* Icon hapus */}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setAdditionalEmails((prev) =>
-                          prev.filter((emailObj) => emailObj.id !== id)
-                        );
-                        setParticipantCount((prev) => Math.max(1, prev - 1));
+                        }}
+                        className="absolute top-1/2 right-3 transform -translate-y-1/2 text-red-500 hover:text-red-700"
+                      >
+                        <Trash2 size={18} />
+                      </button>
 
-                        setEmailValidation((prev) => {
-                          const { [id]: _, ...rest } = prev;
-                          return rest;
-                        });
-
-                        setErrors((prev) => {
-                          const { [id]: _, ...rest } = prev;
-                          return rest;
-                        });
-                      }}
-                      className="absolute top-1/2 right-3 transform -translate-y-1/2 text-red-500 hover:text-red-700"
-                    >
-                      <Trash2 size={18} />
-                    </button>
-
-                    {/* Icon check jika email valid */}
-                    {email.trim() && emailValidation[id] && (
-                      <Check
-                        className="absolute top-1/2 right-10 transform -translate-y-1/2 text-green-500"
-                        size={18}
-                      />
+                      {/* Icon check jika email valid */}
+                      {email.trim() && emailValidation[id] && (
+                        <Check
+                          className="absolute top-1/2 right-10 transform -translate-y-1/2 text-green-500"
+                          size={18}
+                        />
+                      )}
+                    </div>
+                    {/* Error */}
+                    {errors[id] && (
+                      <p className="text-red-500 text-sm mt-1">{errors[id]}</p>
                     )}
                   </div>
-                  {/* Error */}
-                  {errors[id] && (
-                    <p className="text-red-500 text-sm mt-1">{errors[id]}</p>
-                  )}
-                </div>
-              ))}
+                ))}
+              </div>
+            )}
+
+            {/* Terms */}
+            <div className="mt-8 ml-0 sm:ml-6 flex items-start gap-2">
+              <input
+                type="checkbox"
+                id="terms"
+                className=" accent-orange-500 w-4 h-4 border border-gray-400 rounded-sm"
+                required
+              />
+              <label
+                htmlFor="terms"
+                className=" text-gray-800 text-sm leading-snug break-words"
+              >
+                I am responsible for the participant data that I have registered
+                and agree to all the terms and conditions of the training.
+              </label>
             </div>
-          )}
 
-          {/* Terms */}
-          <div className="mt-12 ml-6 flex items-start gap-2">
-            <input
-              type="checkbox"
-              id="terms"
-              className="mt-1.5 accent-orange-500 w-4 h-4 border border-gray-400 rounded-sm"
-              required
-            />
-            <label
-              htmlFor="terms"
-              className="ml-1 text-gray-800 text-sm leading-snug"
-            >
-              Saya bertanggung jawab atas data peserta yang saya daftarkan dan menyetujui seluruh syarat dan ketentuan pelatihan.
-            </label>
-          </div>
+            <div className="flex justify-center mt-6">
+              <button
+                type="submit"
+                className="bg-orange-500 text-white px-16 py-2 rounded-lg font-semibold shadow-md hover:bg-orange-600 transition-all"
+              >
+                Submit
+              </button>
+            </div>
+          </form>
 
-          <div className="flex justify-center mt-12">
-            <button
-              type="submit"
-              className="bg-orange-500 text-white px-16 py-2 rounded-lg font-semibold shadow-md hover:bg-orange-600 transition-all"
-            >
-              Submit
-            </button>
-          </div>
-        </form>
-
-        <SuccessDialog
-          open={showDialog}
-          onOpenChange={(open) => {
-            setShowDialog(open);
-            if (!open) {
-              setRedirecting(true);
-              setTimeout(() => {
-                router.push("/edit-profile");
-              }, 500);
-            }
-          }}
-          title="Registration Success!"
-          messages={[
-            "We’ll email the details to you soon.",
-            "Have a great day!",
-          ]}
-          buttonText="Okay"
-        />
+          <SuccessDialog
+            open={showDialog}
+            onOpenChange={(open) => {
+              setShowDialog(open);
+              if (!open) {
+                setRedirecting(true);
+                setTimeout(() => {
+                  router.push("/edit-profile");
+                }, 500);
+              }
+            }}
+            title="Registration Success!"
+            messages={[
+              "We’ll email the details to you soon.",
+              "Have a great day!",
+            ]}
+            buttonText="Okay"
+          />
+        </div>
       </div>
     </div>
   );

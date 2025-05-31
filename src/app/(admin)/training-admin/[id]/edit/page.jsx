@@ -1,6 +1,5 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useAuth } from "@/app/context/AuthContext";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import TrainingForm from "@/components/admin/TrainingForm";
 import {
@@ -11,6 +10,8 @@ import {
 import { useParams, useRouter } from "next/navigation";
 import ConfirmDialog from "@/components/admin/ConfirmDialog";
 import { NotFound } from "@/components/ui/ErrorPage";
+import { SuccessDialog } from "@/components/ui/SuccessDialog";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
 export default function EditTraining() {
     const params = useParams();
@@ -44,7 +45,8 @@ export default function EditTraining() {
         term_condition !== "" &&
         skills.length > 0;
 
-    const { user } = useAuth();
+    const [showSuccess, setShowSuccess] = useState(false);
+    const [showError, setShowError] = useState(false);
 
     useEffect(() => {
         const fetchTraining = async () => {
@@ -125,7 +127,7 @@ export default function EditTraining() {
             };
 
             if (!isFormValid) {
-                alert("Please fill in the required fields!");
+                setShowError(true);
                 return;
             }
 
@@ -143,12 +145,11 @@ export default function EditTraining() {
 
             if (!res.ok) throw new Error("Failed to update training");
 
-            alert("✅ Training updated!");
+            setShowSuccess(true);
             resetForm();
-            router.push(`/training-admin/${trainingId}`);
         } catch (err) {
             console.error("❌ Update error:", err);
-            alert("Failed to update training.");
+            setShowError(true);
         }
     };
 
@@ -172,7 +173,7 @@ export default function EditTraining() {
     return (
         <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
             {isLoading ? (
-                <div className="text-center mt-10">Loading training data...</div>
+                <div className="text-center mt-10"><LoadingSpinner /></div>
             ) : (
                 <div className="relative pt-4 px-4 sm:px-6 lg:px-8 max-w-[1440px] mx-auto min-h-screen">
                     <div className="flex flex-wrap justify-between items-center w-full mb-4 gap-4">
@@ -216,6 +217,37 @@ export default function EditTraining() {
                         setImages={setImages}
                         onImageUpload={handleImageUpload}
                         onSubmit={handleSubmit}
+                    />
+
+                    <SuccessDialog
+                        open={showSuccess}
+                        onOpenChange={(open) => {
+                            setShowSuccess(open);
+                            if (!open) {
+                                resetForm();
+                                router.push(`/training-admin/${trainingId}`);
+                            }
+                        }}
+                        title="Training Updated!"
+                        messages={[
+                            "Your changes have been successfully saved.",
+                            "Redirecting to training detail..."
+                        ]}
+                        buttonText="Continue"
+                        onButtonClick={() => {
+                            router.push(`/training-admin/${trainingId}`);
+                        }}
+                    />
+
+                    <SuccessDialog
+                        open={showError}
+                        onOpenChange={(open) => setShowError(open)}
+                        title="Update Failed"
+                        messages={[
+                            "Something went wrong while updating the training.",
+                            "Please try again later or check your form."
+                        ]}
+                        buttonText="Close"
                     />
                 </div>
             )}

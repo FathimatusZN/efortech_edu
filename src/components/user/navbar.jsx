@@ -3,6 +3,7 @@ import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/app/context/AuthContext";
 import { ChevronDown } from "lucide-react";
+import { FaSignOutAlt } from "react-icons/fa";
 
 const UserNavbar = () => {
   const { user, logout, loading } = useAuth();
@@ -12,7 +13,8 @@ const UserNavbar = () => {
   const [menuState, setMenuState] = useState({
     profile: false,
     mobile: false,
-    certificate: false,
+    certificateDesktop: false,
+    certificateMobile: false,
     userSubmenu: false,
   });
 
@@ -120,7 +122,7 @@ const UserNavbar = () => {
               pathname === link.path ||
               (link.subMenu &&
                 link.subMenu.some((sub) => pathname === sub.path));
-            const isMenuOpen = menuState.certificate;
+            const isMenuOpen = menuState.certificateDesktop;
             return (
               <div
                 key={index}
@@ -130,19 +132,17 @@ const UserNavbar = () => {
                 {link.subMenu ? (
                   <>
                     <button
-                      onClick={() => toggleMenu("certificate")}
-                      className={`flex items-center gap-1 ${
-                        isActiveLink || isMenuOpen
+                      onClick={() => toggleMenu("certificateDesktop")}
+                      className={`flex items-center gap-1 ${isActiveLink || isMenuOpen
                           ? "text-mainOrange font-semibold"
                           : "hover:text-mainOrange"
-                      }`}
+                        }`}
                     >
                       {link.name}
                       <ChevronDown
                         size={16}
-                        className={`transition-transform duration-200 ${
-                          isMenuOpen ? "rotate-180" : ""
-                        }`}
+                        className={`transition-transform duration-200 ${isMenuOpen ? "rotate-180" : ""
+                          }`}
                       />
                     </button>
                     {isMenuOpen && (
@@ -153,11 +153,10 @@ const UserNavbar = () => {
                             <Link
                               key={idx}
                               href={sub.path}
-                              className={`block px-4 py-2 hover:bg-gray-100 ${
-                                isSubActive
+                              className={`block px-4 py-2 hover:bg-gray-100 ${isSubActive
                                   ? "text-mainOrange font-semibold"
                                   : ""
-                              }`}
+                                }`}
                               onClick={closeAllMenus}
                             >
                               {sub.name}
@@ -170,11 +169,10 @@ const UserNavbar = () => {
                 ) : (
                   <Link
                     href={link.path}
-                    className={`hover:text-mainOrange ${
-                      pathname === link.path
+                    className={`hover:text-mainOrange ${pathname === link.path
                         ? "text-mainOrange font-semibold"
                         : ""
-                    }`}
+                      }`}
                     onClick={closeAllMenus}
                   >
                     {link.name}
@@ -218,9 +216,9 @@ const UserNavbar = () => {
                     logout();
                     router.push("/home");
                   }}
-                  className="block px-4 py-2 text-mainBlue hover:bg-gray-100 w-full text-left"
+                  className="block px-4 py-2 text-error1 hover:bg-gray-100 w-full text-left"
                 >
-                  Logout
+                  Logout <FaSignOutAlt className="inline ml-1 text-neutral3" />
                 </button>
               </div>
             )}
@@ -288,22 +286,21 @@ const UserNavbar = () => {
                     {link.subMenu ? (
                       <>
                         <button
-                          onClick={() => toggleMenu("certificate")}
+                          onClick={() => toggleMenu("certificateMobile")}
                           className="w-full text-left px-2 py-1 hover:bg-gray-100 rounded"
                         >
                           {link.name}
                         </button>
-                        {menuState.certificate && (
+                        {menuState.certificateMobile && (
                           <div className="ml-6 mt-1 space-y-1">
                             {link.subMenu.map((sub, idx) => (
                               <Link
                                 key={idx}
                                 href={sub.path}
-                                className={`block px-2 py-1 hover:bg-gray-100 rounded ${
-                                  pathname === sub.path
+                                className={`block px-2 py-1 hover:bg-gray-100 rounded ${pathname === sub.path
                                     ? "text-mainOrange font-semibold"
                                     : ""
-                                }`}
+                                  }`}
                                 onClick={closeAllMenus}
                               >
                                 {sub.name}
@@ -315,11 +312,10 @@ const UserNavbar = () => {
                     ) : (
                       <Link
                         href={link.path}
-                        className={`block px-2 py-1 hover:bg-gray-100 rounded ${
-                          pathname === link.path
+                        className={`block px-2 py-1 hover:bg-gray-100 rounded ${pathname === link.path
                             ? "text-mainOrange font-semibold"
                             : ""
-                        }`}
+                          }`}
                         onClick={closeAllMenus}
                       >
                         {link.name}
@@ -336,7 +332,7 @@ const UserNavbar = () => {
                     }}
                     className="block px-2 py-1 text-red-600 hover:bg-gray-100 rounded w-full text-left"
                   >
-                    Logout
+                    Logout <FaSignOutAlt className="inline ml-1 text-neutral3" />
                   </button>
                 </li>
               </ul>

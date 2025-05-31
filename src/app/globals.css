@@ -74,3 +74,58 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  .dot {
+    @apply w-3 h-3 rounded-full;
+  }
+
+  .animate-bounce {
+    animation: bounce 1s infinite ease-in-out;
+  }
+
+  .delay-\[150ms\] {
+    animation-delay: 150ms;
+  }
+
+  .delay-\[300ms\] {
+    animation-delay: 300ms;
+  }
+
+  @keyframes bounce {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  .dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 9999px;
+    display: inline-block;
+    animation-name: bounce;
+    animation-duration: 1.2s; /* lebih smooth dan pas */
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+  }
+
+  .delay-0 {
+    animation-delay: 0s;
+  }
+  .delay-1 {
+    animation-delay: 0.24s;
+  }
+  .delay-2 {
+    animation-delay: 0.48s;
+  }
+  .delay-3 {
+    animation-delay: 0.72s;
+  }
+  .delay-4 {
+    animation-delay: 0.96s;
+  }
+}

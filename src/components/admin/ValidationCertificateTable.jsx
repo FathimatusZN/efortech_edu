@@ -195,7 +195,7 @@ export const ValidationCertificateTable = ({
                 <TableCell>{item.cert_type}</TableCell>
                 <TableCell>{item.issuer}</TableCell>
                 <TableCell>{formatDate2(item.issued_date)}</TableCell>
-                <TableCell>{formatDate2(item.expired_date)}</TableCell>
+                <TableCell>{item.expired_date ? formatDate2(item.expired_date) : "No Expiry Date"}</TableCell>
                 <TableCell>
                   <Button
                     onClick={() => handleShowDetail(item)}

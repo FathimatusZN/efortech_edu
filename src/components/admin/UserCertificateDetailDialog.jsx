@@ -1,11 +1,11 @@
-// components/admin/UserCertificateDetailDialog.jsx
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
 const formatDate = (isoString) => {
   const date = new Date(isoString);
@@ -21,7 +21,16 @@ const formatDate = (isoString) => {
 
   return date.toLocaleString("en-US", options).replace(",", "");
 };
+
 export const UserCertificateDetailDialog = ({ open, onClose, item, mode }) => {
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (open) {
+      setIsLoading(true); // reset loading state when dialog opens
+    }
+  }, [open]);
+
   if (!item) return null;
 
   return (
@@ -30,11 +39,18 @@ export const UserCertificateDetailDialog = ({ open, onClose, item, mode }) => {
         <DialogHeader>
           <DialogTitle>Certificate Preview</DialogTitle>
         </DialogHeader>
-        <div className="w-full aspect-[4/3] sm:aspect-[3/2] md:aspect-[16/9]">
+
+        <div className="relative w-full aspect-[4/3] sm:aspect-[3/2] md:aspect-[16/9]">
+          {isLoading && (
+            <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/70">
+              <LoadingSpinner className="w-10 h-10" />
+            </div>
+          )}
           <iframe
-            src={item.cert_file}
+            src={`https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(item.cert_file)}`}
             title="Certificate File"
             className="w-full h-full border"
+            onLoad={() => setIsLoading(false)}
           />
         </div>
 

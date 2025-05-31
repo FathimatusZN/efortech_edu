@@ -96,7 +96,7 @@ export default function ForgotPasswordPage() {
 
       {loading ? (
         <div className="w-full min-h-screen flex flex-col md:flex-row">
-          <div className="relative w-full md:w-1/2 aspect-[4/1] md:aspect-auto overflow-hidden">
+          <div className="relative w-full md:w-1/2 aspect-[16/9] md:aspect-auto overflow-hidden">
             <img
               src="/assets/Gambar2.jpg"
               alt="Signin Image"
@@ -118,7 +118,7 @@ export default function ForgotPasswordPage() {
         </div>
       ) : (
         <div className="w-full min-h-screen flex flex-col md:flex-row">
-          <div className="relative w-full md:w-1/2 aspect-[4/1] md:aspect-auto overflow-hidden">
+          <div className="relative w-full md:w-1/2 aspect-[16/9] md:aspect-auto overflow-hidden">
             <img
               src="/assets/Gambar2.jpg"
               alt="Register Image"
@@ -127,7 +127,7 @@ export default function ForgotPasswordPage() {
           </div>
 
           <div className="w-full md:w-1/2 h-auto flex items-center justify-center md:px-8 pb-10 md:pb-14 xl:pb-20">
-            <div className="w-full max-w-[90%] sm:max-w-[400px] md:max-w-[550px] lg:max-w-[650px] xl:max-w-[750px] space-y-6 mx-auto pt-6 md:pt-8 lg: pt-10 xl:pt-12">
+            <div className="w-full max-w-[90%] sm:max-w-[400px] md:max-w-[550px] lg:max-w-[650px] xl:max-w-[750px] space-y-6 mx-auto pt-6 md:pt-8 lg: xl:pt-12">
               <h1 className="text-xl md:text-2xl lg:text-3xl xl:text-4xl font-bold text-black text-center">
                 Forgot Password
               </h1>

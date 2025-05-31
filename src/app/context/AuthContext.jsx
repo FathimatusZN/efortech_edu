@@ -9,6 +9,7 @@ export const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [sessionExpired, setSessionExpired] = useState(false);
 
     useEffect(() => {
         let unsubscribe = () => { };
@@ -17,8 +18,20 @@ export const AuthProvider = ({ children }) => {
             setLoading(true);
             const storedUser = localStorage.getItem("user");
             const storedToken = localStorage.getItem("token");
+            const loginTime = parseInt(localStorage.getItem("login_time"), 10);
+            const maxDuration = parseInt(localStorage.getItem("max_duration"), 10);
+            const now = Date.now();
 
-            if (storedUser && storedToken) {
+            const isExpired = loginTime && maxDuration && now - loginTime > maxDuration;
+
+            if (isExpired) {
+                logout(); // Clear user and token if expired
+                setSessionExpired(true);
+                setLoading(false);
+                return;
+            }
+
+            if (storedUser && storedToken && !isExpired) {
                 setUser(JSON.parse(storedUser));
             }
 
@@ -60,10 +73,18 @@ export const AuthProvider = ({ children }) => {
 
             const userData = res.data.data;
 
-            setUser(userData);
+            // Set max duration for localStorage login
+            const now = Date.now();
+            const duration = 3 * 60 * 60 * 1000;
+
+            // Save to localStorage
             localStorage.setItem("token", idToken);
             localStorage.setItem("role", userData.role);
             localStorage.setItem("user", JSON.stringify(userData));
+            localStorage.setItem("login_time", now.toString());
+            localStorage.setItem("max_duration", duration.toString());
+
+            setUser(userData);
 
             return userData;
         } catch (error) {
@@ -77,6 +98,9 @@ export const AuthProvider = ({ children }) => {
             setUser(null);
             localStorage.removeItem("user");
             localStorage.removeItem("token");
+            localStorage.removeItem("login_time");
+            localStorage.removeItem("max_duration");
+            localStorage.removeItem("role");
         } catch (error) {
             console.error("Error logging out:", error);
         }
@@ -91,7 +115,11 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, setUser, updateUser, login, logout, loading }}>
+        <AuthContext.Provider value={{
+            user, setUser, updateUser, login, logout, loading,
+            sessionExpired,
+            setSessionExpired,
+        }}>
             {children}
         </AuthContext.Provider>
     );

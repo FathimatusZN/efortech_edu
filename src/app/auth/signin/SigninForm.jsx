@@ -106,7 +106,7 @@ const SigninForm = () => {
         <>
             {loading || loading2 || loading3 ? (
                 <div className="w-full min-h-screen flex flex-col md:flex-row">
-                    <div className="relative w-full md:w-1/2 aspect-[4/1] md:aspect-auto overflow-hidden">
+                    <div className="relative w-full md:w-1/2 aspect-[16/9] md:aspect-auto overflow-hidden">
                         <img
                             src="/assets/Gambar2.jpg"
                             alt="Signin Image"
@@ -127,7 +127,7 @@ const SigninForm = () => {
                                 />
                                 <div className="bg-blue-50 rounded-xl px-4 py-3 shadow-md w-full max-w-[350px] sm:max-w-xl mx-auto">
                                     <p className="text-xs sm:text-sm text-black italic text-center">
-                                        💡 Did you know? {randomFunfact}
+                                        💡 {randomFunfact}
                                     </p>
                                 </div>
                             </div>
@@ -136,7 +136,7 @@ const SigninForm = () => {
                 </div>
             ) : (
                 <div className="w-full min-h-screen flex flex-col md:flex-row">
-                    <div className="relative w-full md:w-1/2 aspect-[4/1] md:aspect-auto overflow-hidden">
+                    <div className="relative w-full md:w-1/2 aspect-[16/9] md:aspect-auto overflow-hidden">
                         <img
                             src="/assets/Gambar2.jpg"
                             alt="Signin Image"
