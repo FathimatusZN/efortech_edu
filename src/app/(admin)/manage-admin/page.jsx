@@ -81,7 +81,7 @@ export default function ManageAdmin() {
     const handleSearch = async () => {
         try {
             let url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/manageadmin/list`;
-            if (searchQuery.trim()) url += `?name=${encodeURIComponent(searchQuery)}`;
+            if (searchQuery.trim()) url += `?search=${encodeURIComponent(searchQuery)}`;
             const res = await fetch(url);
             const data = await res.json();
             if (res.ok && Array.isArray(data.data)) setAdminData(data.data);
@@ -245,7 +245,7 @@ export default function ManageAdmin() {
                         <div className="relative flex w-full sm:w-[330px]">
                             <Input
                                 type="text"
-                                placeholder="Search"
+                                placeholder="Search by name or email"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 onKeyDown={(e) => { if (e.key === "Enter") handleSearch(); }}
