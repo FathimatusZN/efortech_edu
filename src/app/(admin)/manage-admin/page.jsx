@@ -14,6 +14,7 @@ import { toast } from "react-hot-toast";
 import { AddAdminDialog, EditAdminDialog } from "@/components/admin/ManageAdminDialog";
 import { getAdminColumns } from "./table";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import { ConfirmDialogAdmin } from "@/components/ui/ConfirmDialog";
 
 export default function ManageAdmin() {
     const [adminData, setAdminData] = useState([]);
@@ -38,6 +39,11 @@ export default function ManageAdmin() {
     const [editAdminData, setEditAdminData] = useState(null);
     const [isTableLoading, setIsTableLoading] = useState(true);
     const debounceRef = useRef(null);
+    const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+    const [confirmDialogData, setConfirmDialogData] = useState({
+        message: "",
+        onConfirm: () => { },
+    });
 
     useEffect(() => {
         refreshData();
@@ -193,54 +199,61 @@ export default function ManageAdmin() {
         }
     };
 
-    const handleDeleteAdmin = async (adminId) => {
-        setDeleting(true);
-        setDeleteError("");
-        if (!confirm("Are you sure you want to delete this admin?")) {
-            setDeleting(false);
-            return;
-        }
-        try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/manageadmin/delete/${adminId}`, {
-                method: "DELETE",
-            });
-            if (res.ok) {
-                toast.success("Admin deleted successfully");
-                setEditDialogOpen(false);
-                setEditAdminData(null);
-                refreshData();
-            } else {
-                const data = await res.json();
-                setDeleteError(data.message || "Failed to delete admin");
-            }
-        } catch {
-            setDeleteError("Error deleting admin");
-        } finally {
-            setDeleting(false);
-        }
+    const handleDeleteAdmin = (adminId) => {
+        setConfirmDialogData({
+            onConfirm: async () => {
+                setDeleting(true);
+                setDeleteError("");
+                try {
+                    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/manageadmin/delete/${adminId}`, {
+                        method: "DELETE",
+                    });
+                    if (res.ok) {
+                        toast.success("Admin deleted successfully");
+                        refreshData();
+                    } else {
+                        const data = await res.json();
+                        setDeleteError(data.message || "Failed to delete admin");
+                    }
+                } catch {
+                    setDeleteError("Error deleting admin");
+                } finally {
+                    setDeleting(false);
+                    setConfirmDialogOpen(false);
+                }
+            },
+        });
+        setConfirmDialogOpen(true);
     };
 
-    const handleDeleteSelected = async () => {
+    const handleDeleteSelected = () => {
         const selectedIds = table.getSelectedRowModel().rows.map(row => row.original.admin_id);
         if (selectedIds.length === 0) return;
-        if (!confirm(`Are you sure you want to delete ${selectedIds.length} admins?`)) return;
-        try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/manageadmin/delete-multiple`, {
-                method: "DELETE",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ admin_ids: selectedIds }),
-            });
-            if (res.ok) {
-                toast.success("Selected admins deleted successfully");
-                refreshData();
-                setSelectedRows({});
-            } else {
-                const data = await res.json();
-                console.error("Failed to delete admins:", data.message);
-            }
-        } catch (err) {
-            console.error("Error deleting admins:", err);
-        }
+
+        setConfirmDialogData({
+            onConfirm: async () => {
+                try {
+                    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/manageadmin/delete-multiple`, {
+                        method: "DELETE",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ admin_ids: selectedIds }),
+                    });
+                    if (res.ok) {
+                        toast.success("Selected admins deleted successfully");
+                        refreshData();
+                        setSelectedRows({});
+                    } else {
+                        const data = await res.json();
+                        console.error("Failed to delete admins:", data.message);
+                    }
+                } catch (err) {
+                    console.error("Error deleting admins:", err);
+                } finally {
+                    setConfirmDialogOpen(false);
+                }
+            },
+        });
+        setConfirmDialogOpen(true);
     };
 
     const resetAddDialog = () => {
@@ -450,6 +463,14 @@ export default function ManageAdmin() {
                         ? `${pagination.pageIndex * pagination.pageSize + 1} - ${pagination.pageIndex * pagination.pageSize + table.getRowModel().rows.length}`
                         : 0} of {adminData.length} Admin data
                 </p>
+
+                <ConfirmDialogAdmin
+                    open={confirmDialogOpen}
+                    data={"Admin"}
+                    onCancel={() => setConfirmDialogOpen(false)}
+                    onConfirm={confirmDialogData.onConfirm}
+                />
+
             </div>
         </ProtectedRoute>
     );
