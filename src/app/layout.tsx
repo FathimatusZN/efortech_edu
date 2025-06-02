@@ -7,6 +7,7 @@ import FooterWrapper from "@/components/layout/FooterWrapper";
 import { Toaster } from "react-hot-toast";
 import "./globals.css";
 import RouteLoader from "@/components/layout/RouteLoader";
+import SessionExpiredDialog from "@/components/ui/SessionExpiredDialog";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,6 +34,7 @@ export default function RootLayout({
 }) {
   return (
     <AuthProvider>
+      <SessionExpiredDialog />
       <html lang="en" className="h-full">
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}

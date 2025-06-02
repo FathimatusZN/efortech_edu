@@ -23,6 +23,19 @@ import { Button } from "@/components/ui/button";
 
 const PAGE_SIZE = 10;
 
+const formatDate = (isoString) => {
+  if (!isoString) return "No Expiry Date";
+
+  const date = new Date(isoString);
+  const options = {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  };
+
+  return date.toLocaleString("en-US", options).replace(",", ",");
+};
+
 export default function CertificateValidation() {
   const [inputValue, setInputValue] = useState(""); // Text input value
   const [searchTerm, setSearchTerm] = useState(""); // Term used to query API
@@ -144,11 +157,11 @@ export default function CertificateValidation() {
                     <TableCell>{item.certificate_number}</TableCell>
                     <TableCell>{item.fullname}</TableCell>
                     <TableCell>
-                      {new Date(item.issued_date).toLocaleDateString()}
+                      {formatDate(item.issued_date)}
                     </TableCell>
                     <TableCell>{item.certificate_title}</TableCell>
                     <TableCell>
-                      {new Date(item.expired_date).toLocaleDateString()}
+                      {formatDate(item.expired_date)}
                     </TableCell>
                     <TableCell
                       className={`font-semibold ${item.validity_status === "Valid"

@@ -19,7 +19,6 @@ export default function PartnerSection({ partnersData }) {
     const scrollStep = () => {
       scrollEl.scrollLeft += 1;
 
-      // Reset jika sudah setengah dari scrollWidth (karena ada 2x data)
       if (scrollEl.scrollLeft >= scrollEl.scrollWidth / 2) {
         scrollEl.scrollLeft = 0;
       }
@@ -40,11 +39,10 @@ export default function PartnerSection({ partnersData }) {
         {["College", "Institution"].map((category) => (
           <button
             key={category}
-            className={`px-4 py-2 min-w-[120px] border rounded-full shadow-lg ${
-              selectedCategory === category
-                ? "bg-mainBlue text-white"
-                : "border-mainBlue"
-            }`}
+            className={`px-4 py-2 min-w-[120px] border rounded-full shadow-lg ${selectedCategory === category
+              ? "bg-mainBlue text-white"
+              : "border-mainBlue"
+              }`}
             onClick={() => setSelectedCategory(category)}
           >
             {category}
@@ -63,7 +61,15 @@ export default function PartnerSection({ partnersData }) {
               className="relative w-24 h-28 sm:w-28 sm:h-32 md:w-32 md:h-36 group cursor-pointer flex justify-center items-center flex-shrink-0"
             >
               <div className="absolute bottom-[-28px] sm:bottom-[-30px] md:bottom-[-32px] left-1/2 transform -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform duration-300 z-10">
-                <div className="bg-white border-2 border-mainOrange text-mainOrange text-xs sm:text-xs md:text-sm font-semibold py-0.5 sm:py-1 px-2 rounded-md text-center break-words w-fit shadow-md line-clamp-3">
+                <div
+                  className={`bg-white border-2 border-mainOrange text-mainOrange font-semibold py-0.5 sm:py-1 px-2 rounded-md text-center break-words w-fit shadow-md line-clamp-3
+                    ${partner.partner_name.length > 30
+                      ? "text-[10px] sm:text-xs md:text-xs"
+                      : "text-xs sm:text-xs md:text-sm"
+                    }
+                    min-w-[130px]
+                  `}
+                >
                   {partner.partner_name}
                 </div>
               </div>

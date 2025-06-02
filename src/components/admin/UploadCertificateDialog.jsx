@@ -98,7 +98,6 @@ export function UploadCertificateDialog({
 
     const isFormValid =
         issuedDate.trim() &&
-        expiredDate.trim() &&
         certPreviewUrl;
 
     // Tombol preview cuma aktif kalau data lengkap dan ga loading preview
@@ -243,7 +242,7 @@ export function UploadCertificateDialog({
                         </div>
                         <div className="flex gap-4">
                             <div className="flex-1">
-                                <Label>Issued Date</Label>
+                                <Label>Issued Date <span className="text-red-500">*</span></Label>
                                 <Input
                                     type="date"
                                     value={issuedDate}
@@ -260,6 +259,7 @@ export function UploadCertificateDialog({
                                     value={expiredDate}
                                     onChange={(e) => setExpiredDate(e.target.value)}
                                 />
+                                <p className="text-gray-500 text-xs">Leave empty if no expiry date</p>
                                 {errors.expiredDate && (
                                     <p className="text-red-500 text-sm">{errors.expiredDate}</p>
                                 )}
@@ -267,7 +267,7 @@ export function UploadCertificateDialog({
                         </div>
 
                         <div>
-                            <Label>Certificate File</Label>
+                            <Label>Certificate File <span className="text-red-500">*</span></Label>
                             <Input type="file" onChange={handleFileChange} />
                             {errors.certFile && (
                                 <p className="text-red-500 text-sm">{errors.certFile}</p>
