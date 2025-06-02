@@ -13,7 +13,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-
+import CertificateDetailDialog from "@/components/admin/CertificateDetailDialog";
 const PAGE_SIZE = 10;
 
 // Status labels mapped to status codes
@@ -51,6 +51,8 @@ export const ValidationTrainingTable = ({
   const [page, setPage] = useState(1);
   const totalPages = Math.ceil(data.length / PAGE_SIZE);
   const paginatedData = data.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const [selectedCertificate, setSelectedCertificate] = useState(null);
+  const [showCertificateDialog, setShowCertificateDialog] = useState(false);
 
   // Render attendance buttons or status
   const renderAttendanceColumn = (item) => {
@@ -130,7 +132,15 @@ export const ValidationTrainingTable = ({
     const status = item.attendance_status;
 
     if (item.has_certificate) {
-      return <span className="text-green-600">Uploaded</span>;
+      return (
+        <Button
+          variant="outline"
+          className="text-green-600 border-green-500 hover:bg-green-100"
+          onClick={() => handleOpenCertificateDetail(item.certificate_id)}
+        >
+          Uploaded
+        </Button>
+      );
     }
 
     const canUpload = status === true;
@@ -145,6 +155,22 @@ export const ValidationTrainingTable = ({
         <TbCloudUpload className="ml-2" />
       </Button>
     );
+  };
+
+  const handleOpenCertificateDetail = async (certificateId) => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/certificate/${certificateId}`);
+      const json = await res.json();
+      console.log("Certificate detail response:", json);
+      if (json.status === "success" && json.data) {
+        setSelectedCertificate(json.data);
+        setShowCertificateDialog(true);
+      } else {
+        alert("Certificate not found or failed to fetch.");
+      }
+    } catch (err) {
+      console.error("Error fetching certificate:", err);
+    }
   };
 
   return (
@@ -288,6 +314,13 @@ export const ValidationTrainingTable = ({
           Showing {(page - 1) * PAGE_SIZE + 1} to{" "}
           {Math.min(page * PAGE_SIZE, data.length)} of {data.length} data
         </div>
+      )}
+      {showCertificateDialog && selectedCertificate && (
+        <CertificateDetailDialog
+          data={selectedCertificate}
+          open={showCertificateDialog}
+          onClose={() => setShowCertificateDialog(false)}
+        />
       )}
     </div>
   );
