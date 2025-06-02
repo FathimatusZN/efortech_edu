@@ -399,23 +399,36 @@ export default function ManageAdmin() {
                         <PaginationItem>
                             <PaginationPrevious
                                 href="#"
-                                onClick={(e) => { e.preventDefault(); table.previousPage(); }}
+                                onClick={e => {
+                                    e.preventDefault();
+                                    if (table.getCanPreviousPage()) table.previousPage();
+                                }}
                                 disabled={!table.getCanPreviousPage()}
                             />
                         </PaginationItem>
+
                         {Array.from({ length: table.getPageCount() }).map((_, i) => (
                             <PaginationItem key={i}>
                                 <PaginationLink
                                     href="#"
                                     isActive={table.getState().pagination.pageIndex === i}
-                                    onClick={(e) => { e.preventDefault(); table.setPageIndex(i); }}
-                                >{i + 1}</PaginationLink>
+                                    onClick={e => {
+                                        e.preventDefault();
+                                        table.setPageIndex(i);
+                                    }}
+                                >
+                                    {i + 1}
+                                </PaginationLink>
                             </PaginationItem>
                         ))}
+
                         <PaginationItem>
                             <PaginationNext
                                 href="#"
-                                onClick={(e) => { e.preventDefault(); table.nextPage(); }}
+                                onClick={e => {
+                                    e.preventDefault();
+                                    if (table.getCanNextPage()) table.nextPage();
+                                }}
                                 disabled={!table.getCanNextPage()}
                             />
                         </PaginationItem>
