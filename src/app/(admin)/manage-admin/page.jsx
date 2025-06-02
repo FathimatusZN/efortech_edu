@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { FaPlus, FaSearch, FaTrash } from "react-icons/fa";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { flexRender, getCoreRowModel, getSortedRowModel, getPaginationRowModel, getFilteredRowModel, useReactTable } from "@tanstack/react-table";
 import { toast } from "react-hot-toast";
 import { AddAdminDialog, EditAdminDialog } from "@/components/admin/ManageAdminDialog";
@@ -37,6 +37,7 @@ export default function ManageAdmin() {
     const [deleteError, setDeleteError] = useState("");
     const [editAdminData, setEditAdminData] = useState(null);
     const [isTableLoading, setIsTableLoading] = useState(true);
+    const debounceRef = useRef(null);
 
     useEffect(() => {
         refreshData();
@@ -91,6 +92,27 @@ export default function ManageAdmin() {
             setAdminData([]);
         }
     };
+
+    const prevQuery = useRef("");
+
+    useEffect(() => {
+        if (debounceRef.current) clearTimeout(debounceRef.current);
+
+        if (searchQuery.trim() === "") {
+            if (prevQuery.current !== "") {
+                handleSearch();
+                prevQuery.current = "";
+            }
+            return;
+        }
+
+        debounceRef.current = setTimeout(() => {
+            handleSearch();
+            prevQuery.current = searchQuery;
+        }, 1200);
+
+        return () => clearTimeout(debounceRef.current);
+    }, [searchQuery]);
 
     const handleSearchEmail = async (e) => {
         e.preventDefault();
@@ -248,11 +270,20 @@ export default function ManageAdmin() {
                                 placeholder="Search by name or email"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                onKeyDown={(e) => { if (e.key === "Enter") handleSearch(); }}
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter") {
+                                        e.preventDefault();
+                                        if (debounceRef.current) clearTimeout(debounceRef.current);
+                                        handleSearch();
+                                    }
+                                }}
                                 className="w-full h-[36px] pl-5 pr-10 border-2 border-mainOrange rounded-md"
                             />
                             <button
-                                onClick={handleSearch}
+                                onClick={() => {
+                                    if (debounceRef.current) clearTimeout(debounceRef.current);
+                                    handleSearch();
+                                }}
                                 className="absolute right-2 top-1/2 -translate-y-1/2 text-black hover:text-mainOrange"
                             >
                                 <FaSearch className="mr-2" />
