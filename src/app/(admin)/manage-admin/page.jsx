@@ -313,18 +313,28 @@ export default function ManageAdmin() {
                     </div>
                 </div>
 
-                <div className="flex justify-between items-center mb-4">
+                <div className="flex flex-wrap justify-between items-start gap-4 mb-4">
                     <h3 className="text-xl font-semibold">Admin List</h3>
-                    <div className="flex items-center gap-4">
+
+                    <div className="flex flex-wrap items-center gap-4">
                         {Object.keys(table.getState().rowSelection).length > 0 && (
-                            <Button variant="destructive" size="sm" onClick={handleDeleteSelected} className="flex items-center gap-2">
+                            <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={handleDeleteSelected}
+                                className="flex items-center gap-2 whitespace-nowrap"
+                            >
                                 <FaTrash /> Delete Selected
                             </Button>
                         )}
-                        <Select defaultValue="all" onValueChange={(value) => {
-                            if (value === "all") setColumnFilters([]);
-                            else setColumnFilters([{ id: "role_name", value }]);
-                        }}>
+
+                        <Select
+                            defaultValue="all"
+                            onValueChange={(value) => {
+                                if (value === "all") setColumnFilters([]);
+                                else setColumnFilters([{ id: "role_name", value }]);
+                            }}
+                        >
                             <SelectTrigger className="w-[130px] bg-mainBlue text-white border-none">
                                 <SelectValue placeholder="Filter Role" />
                             </SelectTrigger>
