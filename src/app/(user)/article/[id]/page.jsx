@@ -61,17 +61,17 @@ export default function ArticleDetail({ params }) {
             pagination={{ clickable: true }}
             autoplay={{ delay: 5000 }}
             loop={true}
-            className="w-full h-[800px]"
+            className="w-full h-auto"
           >
             {article.images.map((img, index) => (
               <SwiperSlide key={index}>
-                <div className="relative w-full h-full aspect-[16/9]">
+                <div className="relative w-full h-full aspect-[4/3] sm:aspect-[16/9]">
                   <img
                     src={img}
                     alt={`Image ${index}`}
                     className="absolute inset-0 w-full h-full object-cover"
                   />
-                  <div className="absolute bottom-[-10px] left-1/2 transform -translate-x-1/2 w-[100%] h-5 bg-mainBlue blur-xl opacity-100"></div>
+                  <div className="absolute bottom-[-10px] left-1/2 transform -translate-x-1/2 w-full h-5 bg-mainBlue blur-xl opacity-100"></div>
                 </div>
               </SwiperSlide>
             ))}
@@ -80,13 +80,13 @@ export default function ArticleDetail({ params }) {
       )}
 
       {/* Judul */}
-      <h1 className="text-3xl font-bold mt-6 text-center py-4 px-4 text-secondBlue">
+      <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mt-6 text-center py-4 px-4 text-secondBlue">
         {article.title}
       </h1>
 
       {/* Penulis & Tanggal Terbit */}
-      <div className="flex justify-between text-mainGrey text-sm px-8">
-        <span>Written by : {article.author}</span>
+      <div className="flex flex-col sm:flex-row justify-between text-mainGrey text-sm sm:text-base px-4 sm:px-8 gap-2 sm:gap-0">
+        <span>Written by: {article.author}</span>
         <span>
           {new Date(article.create_date).toLocaleDateString("id-ID", {
             year: "numeric",
@@ -98,19 +98,19 @@ export default function ArticleDetail({ params }) {
 
       {/* Deskripsi Artikel */}
       <div
-        className="prose prose-lg text-black text-justify pb-8 px-16 mt-4 max-w-none"
+        className="prose prose-sm sm:prose-base lg:prose-lg text-black text-justify pb-8 px-4 sm:px-8 md:px-16 mt-4 max-w-none"
         dangerouslySetInnerHTML={{ __html: article.content_body }}
       />
 
       {/* Sumber */}
       {article.sources && article.sources.length > 0 && (
-        <div className="border-t border-gray-300 py-4 px-8">
-          <div className="px-8 pb-4 flex gap-2 flex-wrap">
-            <span className="text-md text-black">Sumber:</span>
+        <div className="border-t border-gray-300 py-4 px-4 sm:px-8">
+          <div className="flex flex-wrap gap-2">
+            <span className="text-sm sm:text-md text-black">Sumber:</span>
             {article.sources.map((source, index) => (
               <span
                 key={index}
-                className={`text-sm font-semibold px-4 py-1 rounded-full ${
+                className={`text-xs sm:text-sm font-semibold px-3 py-1 rounded-full ${
                   index % 2 === 0
                     ? "bg-mainBlue text-white"
                     : "bg-mainOrange text-white"
@@ -132,12 +132,12 @@ export default function ArticleDetail({ params }) {
 
       {/* Tags */}
       {article.tags && article.tags.length > 0 && (
-        <div className="px-8 pb-8 flex gap-2 flex-wrap">
-          <span className="text-md text-black ">Tags : </span>
+        <div className="px-4 sm:px-8 pb-8 flex gap-2 flex-wrap">
+          <span className="text-sm sm:text-md text-black">Tags:</span>
           {article.tags.map((tag, index) => (
             <span
               key={index}
-              className={`border text-sm font-semibold px-3 py-1 rounded-full ${
+              className={`border text-xs sm:text-sm font-semibold px-3 py-1 rounded-full ${
                 index % 2 === 0
                   ? "border-mainBlue text-mainBlue"
                   : "border-mainOrange text-mainOrange"
