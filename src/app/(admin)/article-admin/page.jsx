@@ -27,7 +27,6 @@ const categoryOptions = [
   { id: 1, label: "Education" },
   { id: 2, label: "Event" },
   { id: 3, label: "Success Story" },
-  { id: 4, label: "Blog" },
 ];
 
 const PAGE_SIZE = 6;
@@ -79,8 +78,7 @@ const ArticleAdminPage = () => {
     }
     try {
       const response = await fetch(
-        `${
-          process.env.NEXT_PUBLIC_API_BASE_URL
+        `${process.env.NEXT_PUBLIC_API_BASE_URL
         }/api/articles/search?query=${encodeURIComponent(searchQuery)}`
       );
       const data = await response.json();
@@ -115,10 +113,10 @@ const ArticleAdminPage = () => {
 
   const filteredArticles = Array.isArray(articles)
     ? articles.filter((article) => {
-        return (
-          selectedCategory === "All" || article.category === selectedCategoryId
-        );
-      })
+      return (
+        selectedCategory === "All" || article.category === selectedCategoryId
+      );
+    })
     : [];
 
   const totalPages = Math.ceil(filteredArticles.length / PAGE_SIZE);
@@ -261,9 +259,9 @@ const ArticleAdminPage = () => {
                 Showing{" "}
                 {filteredArticles.length > 0
                   ? `${(page - 1) * itemsPerPage + 1} - ${Math.min(
-                      page * itemsPerPage,
-                      filteredArticles.length
-                    )}`
+                    page * itemsPerPage,
+                    filteredArticles.length
+                  )}`
                   : 0}{" "}
                 of {filteredArticles.length} article
                 {filteredArticles.length !== 1 && "s"}
