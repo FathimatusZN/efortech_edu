@@ -266,7 +266,7 @@ export default function UploadUCertificateForm({ onSubmit, variant = "user", mod
                     <Label>Fullname (According to the Certificate) <span className="text-red-500">*</span></Label>
                     <Input
                         name="fullname"
-                        value={formData.fullname}
+                        value={formData.fullname || ""}
                         onChange={handleChange}
                         placeholder="Type Fullname here"
                     />
