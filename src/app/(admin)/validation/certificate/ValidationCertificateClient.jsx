@@ -499,6 +499,7 @@ const ValidationCertificateClient = () => {
                                             <SuccessDialog
                                                 open={showDialog}
                                                 onOpenChange={setShowDialog}
+                                                messages={["Certificate Uploaded Successfully!", "Uploaded certificate were automatically validated and saved."]}
                                             />
                                         </div>
                                     </TabsContent>
