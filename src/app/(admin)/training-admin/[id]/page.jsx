@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { FaEdit, FaTrash } from "react-icons/fa";
 import { NotFound } from "../../../../components/ui/ErrorPage";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
-import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { toast } from "react-hot-toast";
 
 export default function TrainingDetailPage() {
