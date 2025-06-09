@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { FaEdit, FaTrash, FaEye, FaShapes } from "react-icons/fa";
 import { useRouter } from "next/navigation";
-import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { toast } from "react-hot-toast";
 
 const categoryMap = {

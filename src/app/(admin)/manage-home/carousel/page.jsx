@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { useEffect, useState } from 'react';
 import { Input } from '@/components/ui/input';
@@ -19,20 +19,22 @@ const getYoutubeID = (url) => {
   const regex =
     /(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
   const match = url.match(regex);
-  return match ? match[1] : '';
+  return match ? match[1] : "";
 };
 
 export default function CarouselUploader() {
-  const [mediaType, setMediaType] = useState('image');
+  const [mediaType, setMediaType] = useState("image");
   const [file, setFile] = useState(null);
-  const [youtubeUrl, setYoutubeUrl] = useState('');
+  const [youtubeUrl, setYoutubeUrl] = useState("");
   const [carouselData, setCarouselData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [editIndex, setEditIndex] = useState(null);
 
   async function fetchCarouselData() {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/home`);
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/home`
+      );
       const json = await res.json();
       if (json.data) {
         setCarouselData(json.data);
@@ -78,9 +80,9 @@ export default function CarouselUploader() {
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/home/${content_id}`,
       {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ content_link }),
       }
@@ -94,9 +96,9 @@ export default function CarouselUploader() {
   async function handleUpload(content_id) {
     setLoading(true);
     try {
-      if (mediaType === 'youtube' && youtubeUrl) {
+      if (mediaType === "youtube" && youtubeUrl) {
         await updateContent(content_id, youtubeUrl);
-        setYoutubeUrl('');
+        setYoutubeUrl("");
       } else if (file) {
         const imageUrl = await uploadImage(file);
         await updateContent(content_id, imageUrl);
