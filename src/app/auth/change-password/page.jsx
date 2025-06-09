@@ -55,7 +55,7 @@ export default function ChangePasswordPage() {
   };
 
   return (
-    <div className="w-full min-h-screen flex flex-col md:flex-row -mt-16">
+    <div className="w-full md:min-h-screen flex flex-col md:flex-row -mt-16">
       <div className="relative w-full md:w-1/2 h-64 md:h-auto overflow-hidden">
         <img src="/assets/Gambar2.jpg" alt="Change Password Image" className="w-full h-full object-cover object-top" />
       </div>
