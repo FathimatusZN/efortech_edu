@@ -86,7 +86,6 @@ const CertificateTable = ({
                     </Table>
                 </div>
             )}
-            {/* Pagination */}
             {!disablePagination && (
                 <div className="flex justify-center mt-8">
                     <Pagination>

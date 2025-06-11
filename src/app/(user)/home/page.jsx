@@ -190,7 +190,6 @@ const Home = () => {
     <div className="bg-white">
       <div className="relative w-full max-h-[90vh] flex items-center justify-center">
         <div className="w-full aspect-[21/9] relative overflow-hidden">
-          {/* Banner Slide */}
           <div
             className="flex transition-transform duration-1000 ease-in-out"
             style={{ transform: `translateX(-${currentSlide * 100}%)` }}
@@ -243,7 +242,6 @@ const Home = () => {
         </div>
       </div>
 
-      {/* Empowering Tomorrow Section */}
       <div
         ref={sectionRef}
         className={'mx-auto bg-mainBlue p-10 shadow-xl transition-opacity duration-1000 ${isVisible ? "opacity-100" : "opacity-0" }'} >
@@ -253,9 +251,7 @@ const Home = () => {
         </h2>
       </div>
 
-      {/* Efortech Solutions */}
       <div className="relative flex flex-col md:flex-row justify-between items-center mt-6 lg:mt-16 md:mt-10 sm:mt-6 gap-8">
-        {/* Container gambar */}
         <div className="relative flex justify-center items-center mt-10 sm:mt-2">
           <img
             src="/assets/foto2.png"
@@ -284,7 +280,6 @@ const Home = () => {
         </div>
       </div>
 
-      {/* Why Choose Us? */}
       <div className="flex flex-col p-8 mt-10">
         <h2 className="text-xl md:text-3xl font-bold text-black text-center md:text-right">
           Why Choose Us?
@@ -299,7 +294,6 @@ const Home = () => {
         />
       </div>
 
-      {/* What Will You Get? */}
       <div className="flex flex-col p-10 items-center">
         <h2 className="text-xl md:text-3xl font-bold text-black">
           What Will You Get?
@@ -314,19 +308,15 @@ const Home = () => {
         />
       </div>
 
-      {/* Partner */}
       <PartnerSection partnersData={partnersData} />
 
       <div className="text-center px-4 py-4">
-        {/* Top Training */}
+
         <TopTrainingSection topCourses={topCourses} />
 
-        {/* Educational Article Highlight */}
         <ArticleSection highlightArticles={highlightArticles} />
 
-        {/* Review */}
         <div className="flex flex-col-reverse md:flex-row items-center justify-between gap-10 md:gap-20 mt-10 px-4 md:px-16 mb-20">
-          {/* Review Cards */}
           <div className="w-full md:w-[50%] flex justify-center">
             <Swiper
               effect={"cards"}
@@ -384,7 +374,6 @@ const Home = () => {
             </Swiper>
           </div>
 
-          {/* Review Section Heading */}
           <div className="w-full md:w-[50%] text-center md:text-left">
             <h2 className="text-xl md:text-3xl font-bold text-black">
               What They Say?
@@ -396,7 +385,6 @@ const Home = () => {
         </div>
       </div>
 
-      {/* Scroll to Top Button */}
       {showScrollTop && (
         <button
           onClick={scrollToTop}

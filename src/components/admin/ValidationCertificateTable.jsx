@@ -211,7 +211,7 @@ export const ValidationCertificateTable = ({
           </TableBody>
         </Table>
       )}
-      {/* Pagination */}
+      
       {!disablePagination && (
         <div className="flex justify-center mt-8">
           <Pagination>

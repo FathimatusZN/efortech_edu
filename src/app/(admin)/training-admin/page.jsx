@@ -253,7 +253,6 @@ export default function TrainingPage() {
 
         </div>
 
-        {/* === PAGINATION === */}
         {totalPages > 1 && (
           <Pagination className="mt-12">
             <PaginationContent>

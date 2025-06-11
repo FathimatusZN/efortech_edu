@@ -31,7 +31,7 @@ export default function TrainingForm({
 }) {
   return (
     <div className="outline outline-3 outline-mainBlue p-6 bg-white shadow-md rounded-lg border w-full">
-      {/* Training name & Status */}
+
       <div className="flex flex-wrap md:flex-nowrap gap-8 justify-between">
         <div className="w-full md:w-[75%] flex flex-col space-y-4">
           <InputField
@@ -58,7 +58,6 @@ export default function TrainingForm({
         </div>
       </div>
 
-      {/* Description */}
       <div className="w-full mt-4 relative">
         <label className="block text-md font-semibold w-full">
           Description<span className="text-red-500"> *</span>
@@ -76,7 +75,6 @@ export default function TrainingForm({
         />
       </div>
 
-      {/* Level */}
       <div className="w-full mt-4">
         <label className="block text-md font-semibold w-full">
           Level<span className="text-red-500"> *</span>
@@ -107,9 +105,7 @@ export default function TrainingForm({
         </div>
       </div>
 
-      {/* Duration, Fees, Discount, Validity */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mt-6">
-        {/* Training Duration */}
         <div>
           <label className="block text-sm font-semibold mb-1">Training Duration<span className="text-red-500"> *</span></label>
           <div className="mt-2 flex items-center gap-2">
@@ -128,7 +124,6 @@ export default function TrainingForm({
           </div>
         </div>
 
-        {/* Training Fees */}
         <div>
           <label className="block text-sm font-semibold mb-1">Training Fees<span className="text-red-500"> *</span></label>
           <div className="mt-2 flex items-center gap-2">
@@ -147,7 +142,6 @@ export default function TrainingForm({
           </div>
         </div>
 
-        {/* Discount */}
         <div>
           <label className="block text-sm font-semibold mb-1">Discount</label>
           <div className="mt-2 flex items-center gap-2">
@@ -165,7 +159,6 @@ export default function TrainingForm({
           </div>
         </div>
 
-        {/* Certificate Validity */}
         <div>
           <label className="block text-sm font-semibold mb-1">Certificate Validity Period<span className="text-red-500"> *</span></label>
           <div className="mt-2 flex items-center gap-2">
@@ -185,7 +178,6 @@ export default function TrainingForm({
         </div>
       </div>
 
-      {/* Terms and Conditions */}
       <div className="w-full mt-4">
         <label className="block text-sm font-semibold w-full">
           Terms and Conditions<span className="text-red-500"> *</span>
@@ -203,9 +195,7 @@ export default function TrainingForm({
         />
       </div>
 
-      {/* Skills & Images */}
       <div className="flex flex-wrap md:flex-nowrap gap-8 mt-4">
-        {/* Skills */}
         <div className="w-full md:w-[40%] flex flex-col">
           <label className="font-semibold block mb-1">
             Skills <span className="text-red-500">*</span>
@@ -213,7 +203,6 @@ export default function TrainingForm({
           <SkillsInput skills={skills} setSkills={setSkills} />
         </div>
 
-        {/* Images */}
         <div className="w-full md:w-[60%]">
           <ImageUploader
             maxImages={3}

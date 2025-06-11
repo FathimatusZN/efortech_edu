@@ -27,7 +27,6 @@ export default function TrainingDetailPage() {
         const data = await res.json();
 
         if (res.ok) {
-          console.log("Fetched training:", data.data);
           setTraining(data.data);
         } else {
           return <NotFound
@@ -103,7 +102,6 @@ export default function TrainingDetailPage() {
           </div>
         </div>
 
-        {/* Hero Image + Info */}
         <div className="relative">
           <img
             src={training.images[0] || "/fallback.jpg"}
@@ -111,7 +109,6 @@ export default function TrainingDetailPage() {
             className="w-full h-72 sm:h-80 md:h-[380px] object-cover rounded-xl"
           />
 
-          {/* Info Box */}
           <div className="absolute inset-x-0 bottom-[15px] flex justify-center px-4 max-h-50">
             <div className="bg-white/50 backdrop-blur-md rounded-2xl px-4 sm:px-5 py-4 sm:py-4 flex flex-col md:flex-row justify-between items-stretch w-full max-w-5xl gap-4 md:gap-4">
               <InfoItem
@@ -155,14 +152,12 @@ export default function TrainingDetailPage() {
           </div>
         </div>
 
-        {/* Title Section */}
         <div className="mt-12 text-center px-4">
           <h1 className="text-2xl sm:text-3xl font-bold text-mainBlue">
             {training.training_name}
           </h1>
         </div>
 
-        {/* Content Section */}
         <div className="mt-10 space-y-6 px-4">
           <div>
             <h2 className="text-xl sm:text-2xl text-mainOrange font-bold mb-1">About</h2>

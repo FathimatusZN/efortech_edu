@@ -103,8 +103,6 @@ export default function EditProfile() {
         uploadedImageUrl = uploadData.data.imageUrl;
       }
 
-      console.log("newImageFile:", newImageFile);
-
       // Update user profile
       const editRes = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user/edit-profile`, {
         method: "PUT",
@@ -143,7 +141,6 @@ export default function EditProfile() {
 
       <div className="outline outline-3 outline-mainBlue p-6 rounded-lg">
         <div className="flex flex-col lg:flex-row gap-6 items-center relative">
-          {/* Profile Image Section */}
           <div
             className="relative aspect-square w-40 h-40 sm:w-48 sm:h-48 lg:w-60 lg:h-60"
             onMouseEnter={() => setIsHovered(true)}
@@ -230,7 +227,6 @@ export default function EditProfile() {
             )}
           </div>
 
-          {/* Full Size Modal Image */}
           {showImageModal && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70">
               <div className="bg-white p-4 rounded-lg shadow-lg max-w-sm w-full aspect-square flex flex-col items-center">
@@ -249,7 +245,6 @@ export default function EditProfile() {
             </div>
           )}
 
-          {/* User Info Inputs */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
             {[
               { label: "Full Name", name: "fullName", type: "text" },
@@ -307,7 +302,6 @@ export default function EditProfile() {
         </div>
       </div>
 
-      {/* History Training Section */}
       <div className="mt-8">
         <TrainingHistory userId={user?.uid} />
       </div>

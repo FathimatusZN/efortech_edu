@@ -40,7 +40,6 @@ export const AdditionalParticipantDialog = ({ open, onClose, registration }) => 
 
         <div className="space-y-6">
           <div className="bg-neutral1 p-2 sm:p-6 rounded-lg shadow-md space-y-1">
-            {/* Registration Detail */}
             <div className="grid grid-cols-1 sm:grid-cols-[180px_1fr] gap-y-1 gap-x-2 text-sm sm:text-base text-center sm:text-left">
               <div className="font-semibold">Registrant Name</div>
               <div>{registration.registrant_name}</div>
@@ -105,7 +104,6 @@ export const AdditionalParticipantDialog = ({ open, onClose, registration }) => 
               </div>
             )}
 
-            {/* Participants Table */}
             <div className="mt-6 space-y-2">
               <p className="font-semibold text-mainBlue">Participants:</p>
               <div className="overflow-x-auto">

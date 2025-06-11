@@ -47,8 +47,6 @@ const ErrorTemplate = ({ code, message, image, buttons }) => {
     );
 };
 
-// Factory-style exports
-
 export const BadRequest = ({
     message = "Your request could not be understood by the server due to malformed syntax.",
     image = "/assets/bad-request.png",

@@ -3,9 +3,8 @@ import Link from "next/link";
 export default function Footer() {
   return (
     <footer className="bg-secondBlue text-white py-10 px-6 md:px-20 text-center">
-      {/* Navigasi */}
+
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8 text-sm md:text-base text-center md:text-left py-8 text-white items-center justify-center">
-        {/* Home */}
         <div className="space-y-2 text-center">
           <Link href="/">
             <h3 className="text-lg font-bold text-secondOrange cursor-pointer hover:underline">
@@ -14,7 +13,6 @@ export default function Footer() {
           </Link>
         </div>
 
-        {/* Training */}
         <div className="space-y-2 text-center">
           <Link href="/training">
             <h3 className="text-lg font-bold text-secondOrange hover:underline">
@@ -28,7 +26,6 @@ export default function Footer() {
           </Link>
         </div>
 
-        {/* Certificate */}
         <div className="space-y-2 text-center">
           <Link href="/certificate/check">
             <h3 className="text-lg font-bold text-secondOrange hover:underline">
@@ -47,7 +44,6 @@ export default function Footer() {
           </Link>
         </div>
 
-        {/* Articles */}
         <div className="space-y-2 text-center">
           <Link href="/article">
             <h3 className="text-lg font-bold text-secondOrange hover:underline">
@@ -65,7 +61,6 @@ export default function Footer() {
           </Link>
         </div>
 
-        {/* Profile */}
         <div className="space-y-2 text-center">
           <Link href="/edit-profile">
             <h3 className="text-lg font-bold text-secondOrange hover:underline">
@@ -80,11 +75,8 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* Kontak & Form */}
       <div className="flex flex-col lg:flex-row gap-8 mt-12 text-left">
-        {/* Kontak */}
         <div className="flex-[2]">
-          {/* Sosial Media */}
           <div className="flex justify-center lg:justify-start gap-14 my-6 flex-wrap">
             <a
               href="https://wa.me/628113300143"
@@ -128,10 +120,8 @@ export default function Footer() {
             </a>
           </div>
 
-          {/* Lokasi */}
           <h3 className="font-bold pt-6 mb-4 text-center md:text-left">Contact Information</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 text-center md:text-left">
-            {/* Surabaya */}
             <div>
               <p className="font-bold">Surabaya</p>
               <Link href="https://maps.app.goo.gl/49n5Yrh1vbZjmLSv7">
@@ -143,7 +133,6 @@ export default function Footer() {
               </Link>
             </div>
 
-            {/* Jakarta */}
             <div>
               <p className="font-bold">Jakarta</p>
               <Link href="https://maps.app.goo.gl/Eb8ZonRmpqgM2Sbk6">
@@ -155,7 +144,6 @@ export default function Footer() {
               </Link>
             </div>
 
-            {/* Bandung */}
             <div>
               <Link href="https://maps.app.goo.gl/yoScYVQ9fdwpXyFHA">
                 <div className="hover:underline cursor-pointer">
@@ -169,7 +157,6 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Newsletter Form */}
         <div className="flex-[1] text-white p-4 sm:p-6 bg-secondBlue rounded-md">
           <h3 className="font-bold text-lg mb-4">Send a Newsletter!</h3>
           <form className="space-y-4">
@@ -203,7 +190,6 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* Copyright */}
       <div className="text-center mt-8 text-sm">
         <p>© 2025 Efortech Solutions. All Rights Reserved</p>
       </div>

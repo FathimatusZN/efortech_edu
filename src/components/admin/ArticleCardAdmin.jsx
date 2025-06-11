@@ -61,7 +61,6 @@ function ArticleCardAdmin({ article_id, title, category, content_body, views, im
     return (
         <>
             <div className="w-full max-w-4xl border-2 border-mainBlue rounded-lg p-4 flex flex-col md:flex-row gap-4 shadow-[8px_8px_0px_0px_#157ab2] bg-white relative">
-                {/* Image & Info */}
                 <div className="w-full md:w-3/5 flex flex-col items-center">
                     <div className="w-full h-[200px] sm:h-[250px] md:h-[200px] rounded-[10px] overflow-hidden">
                         <img src={getImageSrc(imageUrl)} alt="Article" className="w-full h-full object-cover" />
@@ -76,7 +75,6 @@ function ArticleCardAdmin({ article_id, title, category, content_body, views, im
                     </div>
                 </div>
 
-                {/* Content */}
                 <div className="flex flex-col flex-grow justify-between w-full">
                     <div>
                         <h2 className="text-mainBlack font-montserrat font-semibold text-[clamp(16px,2vw,20px)] leading-tight mb-2 text-justify">
@@ -87,7 +85,6 @@ function ArticleCardAdmin({ article_id, title, category, content_body, views, im
                         </p>
                     </div>
 
-                    {/* Actions */}
                     <div className="flex flex-grow flex-col justify-end items-end">
                         <div className="flex gap-3 mt-4">
                             <button
@@ -109,7 +106,6 @@ function ArticleCardAdmin({ article_id, title, category, content_body, views, im
                 </div>
             </div>
 
-            {/* Confirm Dialog */}
             <ConfirmDialog
                 open={showConfirm}
                 data="article"

@@ -116,7 +116,6 @@ export default function ArticlePage() {
 
   return (
     <div className="max-w-screen w-full relative mx-auto">
-      {/* Carousel */}
       <Swiper
         modules={[SwiperPagination, Autoplay]}
         pagination={{ el: ".custom-pagination", clickable: true }}
@@ -145,7 +144,6 @@ export default function ArticlePage() {
       </Swiper>
       <div className="custom-pagination flex justify-center mt-4"></div>
 
-      {/* Search + Filter */}
       <div className="mt-6 mx-auto px-4 flex flex-col md:flex-row md:items-center md:justify-center gap-4">
         <div className="relative w-full md:w-1/3">
           <input
@@ -188,7 +186,6 @@ export default function ArticlePage() {
         </div>
       </div>
 
-      {/* Article Cards or Spinner */}
       <div className="p-10 mx-auto max-w-7xl w-full">
         {loading ? (
           <div className="flex justify-center items-center py-10">
@@ -224,7 +221,6 @@ export default function ArticlePage() {
         )}
       </div>
 
-      {/* Pagination */}
       {!loading && totalPages > 1 && (
         <Pagination className="flex justify-center mt-8">
           <PaginationContent>
@@ -264,7 +260,6 @@ export default function ArticlePage() {
         </Pagination>
       )}
 
-      {/* Showing info */}
       {!loading && (
         <p className="text-sm text-muted-foreground mt-2 flex justify-center items-center pb-10">
           Showing{" "}

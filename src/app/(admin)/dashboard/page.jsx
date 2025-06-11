@@ -160,8 +160,6 @@ const DashboardAdmin = () => {
         <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
             <div className="relative pt-4 px-4 sm:px-6 lg:px-8 max-w-[1440px] mx-auto min-h-screen">
                 <h1 className="text-2xl sm:text-3xl font-bold text-center mb-6">Admin Dashboard</h1>
-
-                {/* To Do's Section */}
                 <div
                     className="w-full max-w-6xl mx-auto bg-cover bg-center rounded-xl relative p-4"
                     style={{ backgroundImage: "url('/assets/dashboard-bg.png')" }}
@@ -169,7 +167,6 @@ const DashboardAdmin = () => {
                     <h2 className="w-full text-center text-white font-bold text-xl sm:text-2xl mb-4">
                         To Do's
                     </h2>
-                    {/* To Do's Cards */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                         {[
                             {
@@ -198,7 +195,7 @@ const DashboardAdmin = () => {
                             },
                         ].map((card, idx) => (
                             <Link key={idx} href={card.href}>
-                                <div className="cursor-pointer h-[200px] bg-white bg-opacity-10 backdrop-blur-md rounded-xl shadow-lg flex flex-col items-center justify-center p-4 shadow-[inset_4px_2px_15px_rgba(255,255,255,0.4)]
+                                <div className="cursor-pointer h-[200px] bg-white bg-opacity-10 backdrop-blur-md rounded-xl flex flex-col items-center justify-center p-4 shadow-[inset_4px_2px_15px_rgba(255,255,255,0.4)]
       transition-transform duration-300 ease-in-out transform hover:scale-[1.05] hover:shadow-[0_10px_25px_rgba(255,255,255,0.2)] hover:backdrop-blur-xl">
                                     <h2 className="text-lg sm:text-xl font-semibold text-white text-center">{card.title}</h2>
                                     <p className="text-gray-200 text-5xl sm:text-6xl font-bold drop-shadow-md text-center">{card.value}</p>
@@ -210,9 +207,7 @@ const DashboardAdmin = () => {
                     </div>
                 </div>
 
-                {/* Charts Section */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 mx-auto max-w-[1200px]">
-                    {/* Top Trainings by Rating */}
                     <div className="bg-white shadow-md p-4 rounded-lg border border-[#01458E]">
                         <h2 className="text-lg font-semibold text-center mb-2">Top Trainings by Rating</h2>
                         <ResponsiveContainer width="100%" height={300}>
@@ -247,7 +242,6 @@ const DashboardAdmin = () => {
                         </ResponsiveContainer>
                     </div>
 
-                    {/* Monthly Registrations Area Chart */}
                     <div className="bg-white shadow-md p-4 rounded-lg border border-[#01458E]">
                         <h2 className="text-lg font-semibold text-center mb-2">Monthly Registrations</h2>
                         <ResponsiveContainer width="100%" height={300} >
@@ -286,7 +280,7 @@ const DashboardAdmin = () => {
                 </div>
 
                 {/* Training Overview */}
-                <div className="w-full max-w-6xl mx-auto mt-6 bg-white border border-lightBlue rounded-lg shadow-md cursor-pointer p-4 mx-auto max-w-[1200px]" >
+                <div className="w-full max-w-6xl mx-auto mt-6 bg-white border border-lightBlue rounded-lg shadow-md cursor-pointer p-4" >
                     <h2 className="text-lg sm:text-xl font-semibold mb-4">Training Overview</h2>
                     <ResponsiveContainer width="100%" height={400}>
                         <BarChart data={trainingOverview} margin={{ top: 20, right: 30, left: 0, bottom: 80 }}>
@@ -307,12 +301,10 @@ const DashboardAdmin = () => {
                                     />
                                 }
                             />
-                            {/* Group 1: Registration */}
                             <Bar stackId="reg" dataKey="completed" fill="#01458E" name="Completed" />
                             <Bar stackId="reg" dataKey="onprogress" fill="#03649F" name="On Progress" />
                             <Bar stackId="reg" dataKey="cancelled" fill="#157AB2" name="Cancelled" />
 
-                            {/* Group 2: Certificate */}
                             <Bar stackId="cert" dataKey="valid_certificate" fill="#ED7117" name="Valid Certificate" />
                             <Bar stackId="cert" dataKey="expired_certificate" fill="#FCAE1E" name="Expired Certificate" />
                         </BarChart>
@@ -321,7 +313,7 @@ const DashboardAdmin = () => {
 
                 {/* Quick Global Review */}
                 <div
-                    className="w-full max-w-6xl mx-auto mt-6 bg-white border rounded-lg shadow-md cursor-pointer p-4 mx-auto max-w-[1200px]"
+                    className="w-full max-w-6xl mx-auto mt-6 bg-white border rounded-lg shadow-md cursor-pointer p-4"
                 >
                     <div className="flex items-center justify-center">
                         <button

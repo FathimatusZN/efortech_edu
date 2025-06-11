@@ -145,7 +145,6 @@ export default function TrainingHistoryCard({
 
   return (
     <div className="bg-white w-full max-w-[5000px] max-h-[433px] border-2 border-mainBlue rounded-xl shadow-lg hover:shadow-xl transition-all overflow-hidden">
-      {/* IMAGE */}
       <div className="relative w-full h-[200px] overflow-hidden">
         {images.map((img, index) => (
           <img
@@ -157,7 +156,6 @@ export default function TrainingHistoryCard({
           />
         ))}
 
-        {/* Dots */}
         <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
           {images.map((_, index) => (
             <button

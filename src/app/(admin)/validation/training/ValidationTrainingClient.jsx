@@ -159,7 +159,6 @@ const ValidationTrainingClient = () => {
         setLoading(true);
         try {
             const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}${buildQueryParams()}`;
-            console.log(`fetch tab : ${url}`);
             const response = await fetch(url);
             if (!response.ok) throw new Error();
 

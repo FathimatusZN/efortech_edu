@@ -213,7 +213,6 @@ export function UploadCertificateDialog({
                 </DialogHeader>
 
                 <div className="grid md:grid-cols-2 gap-12 max-h-[80vh] overflow-auto px-1">
-                    {/* Left - Form input */}
                     <div className="space-y-2">
                         <div className="flex gap-4">
                             <div className="flex-1">
@@ -317,7 +316,6 @@ export function UploadCertificateDialog({
                         )}
                     </div>
 
-                    {/* Right - Email Preview & Actions */}
                     <div className="space-y-4">
                         <Button
                             onClick={fetchEmailPreview}

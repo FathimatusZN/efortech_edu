@@ -19,7 +19,7 @@ export default function EditTraining() {
     const trainingId = params.id;
 
     const [isLoading, setIsLoading] = useState(true);
-    const [notFound, setNotFound] = useState(false); // 🔍 Flag for "Not Found" state
+    const [notFound, setNotFound] = useState(false); 
 
     // Form fields state
     const [training_name, setTrainingname] = useState("");
@@ -56,7 +56,6 @@ export default function EditTraining() {
                 );
 
                 if (!response.ok) {
-                    // 🚨 If training is not found, show NotFound component
                     setNotFound(true);
                     return;
                 }
@@ -69,7 +68,6 @@ export default function EditTraining() {
                     return;
                 }
 
-                // 🧩 Populate form fields
                 setTrainingname(training.training_name);
                 setStatus(training.status);
                 setDescription(training.description);
@@ -163,7 +161,6 @@ export default function EditTraining() {
         router.push(`/training-admin/${trainingId}`);
     };
 
-    // 🔴 If training not found, render NotFound component
     if (!isLoading && notFound) {
         return (
             <NotFound message="Oops! We couldn't find the training you're looking for." buttons={[{ text: "Back to Training Page", href: "/training-admin" }]} />

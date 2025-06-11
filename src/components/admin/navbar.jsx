@@ -114,7 +114,6 @@ const AdminNavbar = () => {
   return (
     <nav className="sticky top-0 z-50 bg-white py-3 drop-shadow-[0_2px_4px_rgba(237,113,23,0.3)]">
       <div className="flex items-center justify-between gap-4 px-4 sm:px-6 lg:px-8 w-full max-w-screen-xl mx-auto">
-        {/* Logo */}
         <div className="flex-shrink w-auto">
           <img
             src="/assets/logo.png"
@@ -123,7 +122,6 @@ const AdminNavbar = () => {
           />
         </div>
 
-        {/* Desktop Nav */}
         <div className="hidden md:flex items-center lg:space-x-8 md:space-x-4 font-medium">
           {navLinks.map((link, index) => {
             const isActive =
@@ -141,39 +139,41 @@ const AdminNavbar = () => {
               >
                 {link.submenu ? (
                   <button
-                    className={`flex items-center focus:outline-none hover:text-mainOrange ${isActive
-                      ? "text-mainOrange font-semibold"
-                      : "text-mainBlue"
-                      }`}
+                    className={`flex items-center focus:outline-none hover:text-mainOrange ${
+                      isActive
+                        ? "text-mainOrange font-semibold"
+                        : "text-mainBlue"
+                    }`}
                   >
                     {link.name}
                     <ChevronDown
                       size={16}
-                      className={`ml-1 transition-transform duration-200 ${isDropdownOpen ? "rotate-180" : ""
-                        }`}
+                      className={`ml-1 transition-transform duration-200 ${
+                        isDropdownOpen ? "rotate-180" : ""
+                      }`}
                     />
                   </button>
                 ) : (
                   <Link
                     href={link.path}
-                    className={`flex items-center hover:text-mainOrange ${isActive
-                      ? "text-mainOrange font-semibold"
-                      : "text-mainBlue"
-                      }`}
+                    className={`flex items-center hover:text-mainOrange ${
+                      isActive
+                        ? "text-mainOrange font-semibold"
+                        : "text-mainBlue"
+                    }`}
                     onClick={closeAllMenus}
                   >
                     {link.name}
                   </Link>
                 )}
 
-                {/* Dropdown submenu */}
                 {link.submenu && (
                   <div
-                    className={`absolute z-10 bg-white border rounded shadow-lg mt-2 transition-all duration-150 ${isDropdownOpen ? "block" : "hidden"
-                      }`}
+                    className={`absolute z-10 bg-white border rounded shadow-lg mt-2 transition-all duration-150 ${
+                      isDropdownOpen ? "block" : "hidden"
+                    }`}
                   >
                     <ul className="py-2 w-60 text-mainBlue font-normal">
-                      {/* Link utama di atas submenu */}
                       <li>
                         <Link
                           href={link.path}
@@ -188,10 +188,11 @@ const AdminNavbar = () => {
                           <Link
                             href={sub.path}
                             onClick={closeAllMenus}
-                            className={`block px-4 py-2 hover:bg-gray-100 ${router.pathname === sub.path
-                              ? "font-semibold text-mainOrange"
-                              : ""
-                              }`}
+                            className={`block px-4 py-2 hover:bg-gray-100 ${
+                              router.pathname === sub.path
+                                ? "font-semibold text-mainOrange"
+                                : ""
+                            }`}
                           >
                             {sub.name}
                           </Link>
@@ -204,7 +205,6 @@ const AdminNavbar = () => {
             );
           })}
 
-          {/* Profile Dropdown */}
           <div className="relative" ref={refs.profile}>
             <button
               onClick={() => toggleMenu("profile")}
@@ -270,7 +270,8 @@ const AdminNavbar = () => {
                       }}
                       className="block px-4 py-2 text-error1 hover:bg-gray-100 w-full text-left"
                     >
-                      Logout <FaSignOutAlt className="inline ml-1 text-neutral3" />
+                      Logout{" "}
+                      <FaSignOutAlt className="inline ml-1 text-neutral3" />
                     </button>
                   </li>
                 </ul>
@@ -279,7 +280,6 @@ const AdminNavbar = () => {
           </div>
         </div>
 
-        {/* Mobile Nav */}
         <div className="md:hidden relative" ref={refs.mobileButton}>
           <button
             onClick={() => toggleMenu("mobile")}
@@ -374,7 +374,6 @@ const AdminNavbar = () => {
                     </li>
                   ))}
 
-                {/* Mobile Validation dropdown */}
                 <li className="relative" ref={refs.validation}>
                   <button
                     onClick={() => toggleMenu("validation")}
@@ -382,8 +381,9 @@ const AdminNavbar = () => {
                   >
                     <span>Validation</span>
                     <svg
-                      className={`w-4 h-4 transform transition-transform ${menuState.validation ? "rotate-180" : ""
-                        }`}
+                      className={`w-4 h-4 transform transition-transform ${
+                        menuState.validation ? "rotate-180" : ""
+                      }`}
                       fill="none"
                       stroke="currentColor"
                       strokeWidth="2"
@@ -438,7 +438,8 @@ const AdminNavbar = () => {
                     }}
                     className="block px-2 py-1 text-red-600 hover:bg-gray-100 rounded w-full text-left"
                   >
-                    Logout <FaSignOutAlt className="inline ml-1 text-neutral3" />
+                    Logout{" "}
+                    <FaSignOutAlt className="inline ml-1 text-neutral3" />
                   </button>
                 </li>
               </ul>

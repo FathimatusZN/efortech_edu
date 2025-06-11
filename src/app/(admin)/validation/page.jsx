@@ -145,7 +145,6 @@ const ValidationPage = () => {
           Validation
         </h1>
 
-        {/* Training Registration Validation */}
         <div className="bg-white outline outline-3 outline-mainBlue rounded-2xl p-4 sm:p-6 shadow-[8px_8px_0px_0px_#157ab2]">
           <h2 className="text-lg md:text-xl font-semibold mb-4">
             Training Registration Validation
@@ -182,7 +181,6 @@ const ValidationPage = () => {
           </div>
         </div>
 
-        {/* Certificate Validation */}
         <div className="bg-white outline outline-3 outline-mainBlue rounded-2xl p-4 sm:p-6 shadow-[8px_8px_0px_0px_#157ab2]">
           <h2 className="text-lg md:text-xl font-semibold mb-4">
             Certificate Validation
