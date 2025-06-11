@@ -39,14 +39,32 @@ export const getAdminColumns = (handleEdit) => [
     {
         accessorKey: "last_updated",
         header: ({ column }) => (
-            <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>Last Updated <ArrowUpDown className="ml-2 h-4 w-4" /></Button>
-        )
+            <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+                Last Updated <ArrowUpDown className="ml-2 h-4 w-4" />
+            </Button>
+        ),
+        sortingFn: (rowA, rowB, columnId) => {
+            const dateA = parseCustomDate(rowA.getValue(columnId));
+            const dateB = parseCustomDate(rowB.getValue(columnId));
+            return dateA - dateB;
+        }
     },
     {
         accessorKey: "last_login",
         header: ({ column }) => (
-            <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>Last Login <ArrowUpDown className="ml-2 h-4 w-4" /></Button>
-        )
+            <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+                Last Login <ArrowUpDown className="ml-2 h-4 w-4" />
+            </Button>
+        ),
+        sortingFn: (rowA, rowB, columnId) => {
+            const dateA = parseCustomDate(rowA.getValue(columnId));
+            const dateB = parseCustomDate(rowB.getValue(columnId));
+            // Prioritaskan non-null (null dianggap paling akhir)
+            if (!dateA && !dateB) return 0;
+            if (!dateA) return 1;
+            if (!dateB) return -1;
+            return dateA - dateB;
+        }
     },
     {
         accessorKey: "role_name",
@@ -88,3 +106,24 @@ export const getAdminColumns = (handleEdit) => [
         }
     },
 ];
+
+function parseCustomDate(dateStr) {
+    if (!dateStr) return null;
+    // Format: "dd/MM/yy, hh.mm.ss AM/PM"
+    const [datePart, timePartWithMeridiem] = dateStr.split(", ");
+    if (!datePart || !timePartWithMeridiem) return null;
+
+    const [day, month, yearShort] = datePart.split("/");
+    const [timePart, meridiem] = timePartWithMeridiem.split(" ");
+    const [hoursStr, minutesStr, secondsStr] = timePart.split(".");
+
+    let hours = parseInt(hoursStr, 10);
+    const minutes = parseInt(minutesStr, 10);
+    const seconds = parseInt(secondsStr, 10);
+    const year = parseInt("20" + yearShort, 10);
+
+    if (meridiem === "PM" && hours !== 12) hours += 12;
+    if (meridiem === "AM" && hours === 12) hours = 0;
+
+    return new Date(year, month - 1, day, hours, minutes, seconds);
+}

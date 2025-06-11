@@ -112,7 +112,7 @@ export default function TrainingDetailPage() {
           />
 
           {/* Info Box */}
-          <div className="absolute inset-x-0 bottom-[15] flex justify-center px-4 max-h-50">
+          <div className="absolute inset-x-0 bottom-[15px] flex justify-center px-4 max-h-50">
             <div className="bg-white/50 backdrop-blur-md rounded-2xl px-4 sm:px-5 py-4 sm:py-4 flex flex-col md:flex-row justify-between items-stretch w-full max-w-5xl gap-4 md:gap-4">
               <InfoItem
                 label="Level"

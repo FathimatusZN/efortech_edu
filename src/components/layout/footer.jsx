@@ -1,6 +1,24 @@
 import Link from "next/link";
+import { useEffect } from "react";
 
 export default function Footer() {
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://js.hsforms.net/forms/embed/v2.js";
+    script.async = true;
+    script.onload = () => {
+      if (window.hbspt) {
+        window.hbspt.forms.create({
+          region: "na2",
+          portalId: "243021366",
+          formId: "f528fdb0-e01e-45ee-88eb-bc032434b9ff",
+          target: "#hubspotForm",
+        });
+      }
+    };
+    document.body.appendChild(script);
+  }, []);
+
   return (
     <footer className="bg-secondBlue text-white py-10 px-6 md:px-20 text-center">
       {/* Navigasi */}
@@ -174,34 +192,7 @@ export default function Footer() {
         {/* Newsletter Form */}
         <div className="flex-[1] text-white p-4 sm:p-6 bg-secondBlue rounded-md">
           <h3 className="font-bold text-lg mb-4">Send a Newsletter!</h3>
-          <form className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Email <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="email"
-                placeholder="Email"
-                className="w-full p-2 rounded text-black border border-gray-300"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Full Name <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                placeholder="Full Name"
-                className="w-full p-2 rounded text-black border border-gray-300"
-              />
-            </div>
-            <button
-              type="submit"
-              className="w-full sm:w-28 bg-mainBlue hover:bg-secondBlue shadow-md text-white px-4 py-2 rounded"
-            >
-              Submit
-            </button>
-          </form>
+          <div id="hubspotForm"></div>
         </div>
       </div>
 

@@ -187,8 +187,8 @@ const RegisterPage = () => {
           </div>
         </div>
       ) : (
-        <div className="w-full min-h-screen flex flex-col md:flex-row">
-          <div className="relative w-full md:w-1/2 aspect-[4/1] md:aspect-auto overflow-hidden">
+        <div className="w-full md:min-h-screen flex flex-col md:flex-row">
+          <div className="relative w-full md:w-1/2 aspect-[16/9] md:aspect-auto overflow-hidden">
             <img
               src="/assets/Gambar2.jpg"
               alt="Register Image"
@@ -196,7 +196,7 @@ const RegisterPage = () => {
             />
           </div>
 
-          <div className="w-full md:w-1/2 h-auto flex items-center justify-center md:px-8 pb-10 md:pb-14 xl:pb-20">
+          <div className="w-full md:w-1/2 flex flex-grow items-center justify-center md:px-8 pb-10 md:pb-14 xl:pb-20">
             <div className="w-full max-w-[90%] sm:max-w-[400px] md:max-w-[550px] lg:max-w-[650px] xl:max-w-[750px] space-y-6 mx-auto pt-6 md:pt-10 xl:pt-16">
               <h1 className="text-xl md:text-2xl lg:text-3xl xl:text-4xl font-bold text-black text-center">
                 Register Form
@@ -328,9 +328,8 @@ const RegisterPage = () => {
                   <p className="text-gray-500 text-center text-xs md:text-sm lg:text-base xl:text-lg">
                     Already have an account?{" "}
                     <span
-                      className={`text-[#ED7117] font-semibold hover:underline cursor-pointer ${
-                        loading ? "pointer-events-none opacity-50" : ""
-                      }`}
+                      className={`text-[#ED7117] font-semibold hover:underline cursor-pointer ${loading ? "pointer-events-none opacity-50" : ""
+                        }`}
                       onClick={handleRedirectToSignIn}
                     >
                       Sign In
