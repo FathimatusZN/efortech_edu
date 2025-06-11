@@ -10,8 +10,8 @@ export default function Footer() {
       if (window.hbspt) {
         window.hbspt.forms.create({
           region: "na2",
-          portalId: "243021366",
-          formId: "f528fdb0-e01e-45ee-88eb-bc032434b9ff",
+          portalId: "144051944",
+          formId: "90ae5a0d-771f-49ce-bba7-54156408d5b2",
           target: "#hubspotForm",
         });
       }

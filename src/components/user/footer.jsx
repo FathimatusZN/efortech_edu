@@ -1,9 +1,26 @@
 import Link from "next/link";
+import { useEffect } from "react";
 
 export default function Footer() {
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://js.hsforms.net/forms/embed/v2.js";
+    script.async = true;
+    script.onload = () => {
+      if (window.hbspt) {
+        window.hbspt.forms.create({
+          region: "na2",
+          portalId: "144051944",
+          formId: "90ae5a0d-771f-49ce-bba7-54156408d5b2",
+          target: "#hubspotForm",
+        });
+      }
+    };
+    document.body.appendChild(script);
+  }, []);
+
   return (
     <footer className="bg-secondBlue text-white py-10 px-6 md:px-20 text-center">
-
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8 text-sm md:text-base text-center md:text-left py-8 text-white items-center justify-center">
         <div className="space-y-2 text-center">
           <Link href="/">
@@ -120,7 +137,9 @@ export default function Footer() {
             </a>
           </div>
 
-          <h3 className="font-bold pt-6 mb-4 text-center md:text-left">Contact Information</h3>
+          <h3 className="font-bold pt-6 mb-4 text-center md:text-left">
+            Contact Information
+          </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 text-center md:text-left">
             <div>
               <p className="font-bold">Surabaya</p>
@@ -159,34 +178,7 @@ export default function Footer() {
 
         <div className="flex-[1] text-white p-4 sm:p-6 bg-secondBlue rounded-md">
           <h3 className="font-bold text-lg mb-4">Send a Newsletter!</h3>
-          <form className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Email <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="email"
-                placeholder="Email"
-                className="w-full p-2 rounded text-black border border-gray-300"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Full Name <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                placeholder="Full Name"
-                className="w-full p-2 rounded text-black border border-gray-300"
-              />
-            </div>
-            <button
-              type="submit"
-              className="w-full sm:w-28 bg-mainBlue hover:bg-secondBlue shadow-md text-white px-4 py-2 rounded"
-            >
-              Submit
-            </button>
-          </form>
+          <div id="hubspotForm"></div>
         </div>
       </div>
 
