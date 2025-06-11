@@ -89,7 +89,7 @@ export default function EditProfile() {
       // Upload new image if selected
       if (newImageFile) {
         const formData = new FormData();
-        formData.append("images", newImageFile);
+        formData.append("images", newImageFile, newImageFile.name);
 
         const uploadRes = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user/upload-user-photo`, {
           method: "POST",
@@ -102,6 +102,8 @@ export default function EditProfile() {
 
         uploadedImageUrl = uploadData.data.imageUrl;
       }
+
+      console.log("newImageFile:", newImageFile);
 
       // Update user profile
       const editRes = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user/edit-profile`, {
@@ -185,10 +187,19 @@ export default function EditProfile() {
                           maxWidthOrHeight: 800,
                           useWebWorker: true,
                         };
-                        const compressedFile = await imageCompression(file, options);
-                        const previewUrl = URL.createObjectURL(compressedFile);
+                        const compressedBlob = await imageCompression(file, options);
 
-                        setNewImageFile(compressedFile);
+                        let originalName = file.name && file.name !== "blob"
+                          ? file.name
+                          : `user-photo-${Date.now()}.jpg`;
+
+                        const renamedFile = new File([compressedBlob], originalName, {
+                          type: compressedBlob.type,
+                        });
+
+                        const previewUrl = URL.createObjectURL(renamedFile);
+                        setNewImageFile(renamedFile);
+
                         setProfile((prev) => ({
                           ...prev,
                           profileImage: previewUrl,
