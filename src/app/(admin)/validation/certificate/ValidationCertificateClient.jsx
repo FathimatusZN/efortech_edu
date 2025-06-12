@@ -1,5 +1,3 @@
-//efortech_edu\src\app\(admin)\validation\certificate\page.jsx
-
 "use client";
 
 import ProtectedRoute from "@/components/auth/ProtectedRoute";

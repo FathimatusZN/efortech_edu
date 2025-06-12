@@ -140,8 +140,8 @@ const ValidationPage = () => {
 
   return (
     <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
-      <div className="max-w-screen mx-auto px-4 sm:px-6 md:px-8 py-6 space-y-12">
-        <h1 className="text-xl md:text-2xl font-bold text-left mt-4">
+      <div className="max-w-screen mx-auto px-4 sm:px-6 md:px-8 py-6 space-y-6">
+        <h1 className="text-xl md:text-2xl font-bold text-left">
           Validation
         </h1>
 

@@ -273,7 +273,7 @@ export default function ManageAdmin() {
 
     return (
         <ProtectedRoute allowedRoles={["superadmin"]}>
-            <div className="relative pt-4 px-4 sm:px-6 lg:px-8 max-w-[1440px] mx-auto min-h-screen">
+            <div className="relative pt-4 pb-8 px-4 sm:px-6 lg:px-8 max-w-[1440px] mx-auto min-h-screen">
                 <div className="flex flex-wrap justify-between items-center mt-6 mb-4 gap-4">
                     <PageTitle title="Manage Admin" />
                     <div className="flex flex-wrap items-center gap-3 sm:gap-4">

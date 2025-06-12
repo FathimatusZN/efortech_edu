@@ -128,7 +128,7 @@ const ArticleAdminPage = () => {
 
   return (
     <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
-      <div className="relative pt-4 px-4 sm:px-6 lg:px-8 max-w-[1440px] mx-auto min-h-screen">
+      <div className="relative pt-4 pb-8 px-4 sm:px-6 lg:px-8 max-w-[1440px] mx-auto min-h-screen">
         <div className="flex flex-wrap justify-between items-center w-full max-w-[1440px] mx-auto mt-6 mb-6 gap-4">
           <h1 className="text-2xl sm:text-3xl font-bold">Articles</h1>
           <div className="flex flex-wrap items-center gap-3 sm:gap-4 w-full sm:w-auto">
