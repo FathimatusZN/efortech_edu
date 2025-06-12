@@ -191,7 +191,7 @@ const Home = () => {
       <div className="relative w-full max-h-[90vh] flex items-center justify-center">
         <div className="w-full aspect-[21/9] relative overflow-hidden">
           <div
-            className="flex transition-transform duration-1000 ease-in-out"
+            className="flex transition-transform duration-3000 ease-in-out"
             style={{ transform: `translateX(-${currentSlide * 100}%)` }}
           >
             {slides.map((slide, index) => (

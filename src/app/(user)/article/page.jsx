@@ -92,6 +92,15 @@ export default function ArticlePage() {
     }
   };
 
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % (mostViewedArticles.length || 1));
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [mostViewedArticles]);
+
   const stripHtml = (html) => {
     if (!html) return "";
     const plain = html.replace(/<[^>]*>/g, "").trim();
@@ -116,33 +125,50 @@ export default function ArticlePage() {
 
   return (
     <div className="max-w-screen w-full relative mx-auto">
-      <Swiper
-        modules={[SwiperPagination, Autoplay]}
-        pagination={{ el: ".custom-pagination", clickable: true }}
-        autoplay={{ delay: 5000 }}
-        loop
-        className="w-full h-[500px] aspect-[4/3] md:aspect-[16/9] overflow-hidden shadow-lg"
-      >
-        {mostViewedArticles.map((article) => (
-          <SwiperSlide
-            key={article.article_id}
-            className="relative cursor-pointer"
-            onClick={() => router.push(`/article/${article.article_id}`)}
+      <div className="relative w-full aspect-[21/9] max-h-[90vh] overflow-hidden shadow-lg">
+        {mostViewedArticles.length > 0 && (
+          <div
+            className="w-full h-full cursor-pointer relative"
+            onClick={() =>
+              router.push(
+                `/article/${mostViewedArticles[currentSlide].article_id}`
+              )
+            }
           >
             <img
-              src={article.images?.[0] || "/assets/Gambar2.jpg"}
-              alt={article.title}
+              src={
+                mostViewedArticles[currentSlide].images?.[0] ||
+                "/assets/Gambar2.jpg"
+              }
+              alt={mostViewedArticles[currentSlide].title}
               className="absolute inset-0 w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-black/50 flex items-end text-white text-center p-6">
               <h1 className="text-lg md:text-xl lg:text-2xl font-bold">
-                {article.title}
+                {mostViewedArticles[currentSlide].title}
               </h1>
             </div>
-          </SwiperSlide>
-        ))}
-      </Swiper>
-      <div className="custom-pagination flex justify-center mt-4"></div>
+          </div>
+        )}
+
+        <div className="absolute bottom-[5px] left-0 right-0 flex justify-center space-x-2 z-10">
+          {mostViewedArticles.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setCurrentSlide(index)}
+              className={`w-3 h-3 rounded-full border-2 flex items-center justify-center transition-all ${
+                currentSlide === index ? "border-mainOrange" : "border-gray-400"
+              }`}
+            >
+              <div
+                className={`w-1 h-1 rounded-full ${
+                  currentSlide === index ? "bg-mainOrange" : "bg-transparent"
+                }`}
+              ></div>
+            </button>
+          ))}
+        </div>
+      </div>
 
       <div className="mt-6 mx-auto px-4 flex flex-col md:flex-row md:items-center md:justify-center gap-4">
         <div className="relative w-full md:w-1/3">

@@ -28,7 +28,7 @@ export default function ArticleCard({
       <img
         src={image}
         alt={title}
-        className="w-full h-[200px] object-cover rounded-tl-xl"
+        className="w-full max-h-[200px] aspect-video object-cover rounded-tl-xl"
       />
 
       <div className="flex flex-col flex-grow justify-between p-4">
