@@ -76,7 +76,7 @@ export default function TrainingDetailPage() {
 
   return (
     <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
         {/* Page Header */}
         <div className="flex flex-col sm:flex-row sm:justify-between items-start sm:items-center mt-6 mb-6 gap-4">
           <h1 className="text-xl sm:text-2xl font-bold">Training Detail</h1>

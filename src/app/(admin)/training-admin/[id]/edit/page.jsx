@@ -19,7 +19,7 @@ export default function EditTraining() {
     const trainingId = params.id;
 
     const [isLoading, setIsLoading] = useState(true);
-    const [notFound, setNotFound] = useState(false); 
+    const [notFound, setNotFound] = useState(false);
 
     // Form fields state
     const [training_name, setTrainingname] = useState("");
@@ -172,7 +172,7 @@ export default function EditTraining() {
             {isLoading ? (
                 <div className="text-center mt-10"><LoadingSpinner /></div>
             ) : (
-                <div className="relative pt-4 px-4 sm:px-6 lg:px-8 max-w-[1440px] mx-auto min-h-screen">
+                <div className="relative pt-4 px-4 sm:px-6 lg:px-8 max-w-[1440px] mx-auto min-h-screen pb-8">
                     <div className="flex flex-wrap justify-between items-center w-full mb-4 gap-4">
                         <PageTitle title="Edit Training" />
 
