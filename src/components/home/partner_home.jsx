@@ -3,46 +3,29 @@
 import { useRef, useState, useEffect } from "react";
 
 export default function PartnerSection({ partnersData }) {
-  const scrollRef = useRef(null);
   const [selectedCategory, setSelectedCategory] = useState("College");
+
   const repeatedPartners = [
+    ...partnersData[selectedCategory],
     ...partnersData[selectedCategory],
     ...partnersData[selectedCategory],
   ];
 
-  useEffect(() => {
-    const scrollEl = scrollRef.current;
-    if (!scrollEl) return;
-
-    let animationFrameId;
-
-    const scrollStep = () => {
-      scrollEl.scrollLeft += 1;
-
-      if (scrollEl.scrollLeft >= scrollEl.scrollWidth / 2) {
-        scrollEl.scrollLeft = 0;
-      }
-
-      animationFrameId = requestAnimationFrame(scrollStep);
-    };
-
-    animationFrameId = requestAnimationFrame(scrollStep);
-
-    return () => cancelAnimationFrame(animationFrameId);
-  }, [partnersData, selectedCategory]);
-
   return (
     <div className="text-center">
-      <h2 className="text-xl md:text-3xl font-bold text-black mt-10">Our Partner</h2>
+      <h2 className="text-xl md:text-3xl font-bold text-black mt-10">
+        Our Partner
+      </h2>
 
       <div className="flex justify-center gap-6 my-4">
         {["College", "Institution"].map((category) => (
           <button
             key={category}
-            className={`px-4 py-2 min-w-[120px] border rounded-full shadow-lg ${selectedCategory === category
-              ? "bg-mainBlue text-white"
-              : "border-mainBlue"
-              }`}
+            className={`px-4 py-2 min-w-[120px] border rounded-full shadow-lg ${
+              selectedCategory === category
+                ? "bg-mainBlue text-white"
+                : "border-mainBlue"
+            }`}
             onClick={() => setSelectedCategory(category)}
           >
             {category}
@@ -51,24 +34,19 @@ export default function PartnerSection({ partnersData }) {
       </div>
 
       <div className="relative w-full max-w-6xl mx-auto overflow-x-hidden px-4">
-        <div
-          ref={scrollRef}
-          className="flex gap-2 md:gap-6 mt-2 md:mt-4 pb-10 overflow-x-auto overflow-y-visible scroll-smooth no-scrollbar"
-        >
-          {repeatedPartners.map((partner, index) => (
+        <div className="flex gap-2 md:gap-6 mt-2 md:mt-4 pb-10 whitespace-nowrap animate-infinite-scroll">
+          {[...repeatedPartners, ...repeatedPartners].map((partner, index) => (
             <div
               key={`${partner.id}-${index}`}
               className="relative w-24 h-28 sm:w-28 sm:h-32 md:w-32 md:h-36 group cursor-pointer flex justify-center items-center flex-shrink-0"
             >
               <div className="absolute bottom-[-28px] sm:bottom-[-30px] md:bottom-[-32px] left-1/2 transform -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform duration-300 z-10">
                 <div
-                  className={`bg-white border-2 border-mainOrange text-mainOrange font-semibold py-0.5 sm:py-1 px-2 rounded-md text-center break-words w-fit shadow-md line-clamp-3
-                    ${partner.partner_name.length > 30
+                  className={`bg-white border-2 border-mainOrange text-mainOrange font-semibold py-0.5 sm:py-1 px-2 rounded-md text-center break-words w-fit shadow-md line-clamp-3 ${
+                    partner.partner_name.length > 30
                       ? "text-[10px] sm:text-xs md:text-xs"
                       : "text-xs sm:text-xs md:text-sm"
-                    }
-                    min-w-[130px]
-                  `}
+                  } min-w-[130px]`}
                 >
                   {partner.partner_name}
                 </div>

@@ -14,8 +14,19 @@ body {
   margin: 0;
 }
 
-.custom-scroll::-webkit-scrollbar {
-  width: 5px;
+@keyframes infinite-scroll {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-infinite-scroll {
+  display: flex;
+  width: max-content;
+  animation: infinite-scroll 60s linear infinite;
 }
 
 .custom-scroll::-webkit-scrollbar-thumb {

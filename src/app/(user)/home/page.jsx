@@ -64,11 +64,15 @@ const Home = () => {
         ]);
 
         const isYoutubeLink = (url) =>
-          /(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/.test(url);
+          /(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/.test(
+            url
+          );
 
         const extractYoutubeID = (url) => {
-          const match = url.match(/(?:youtube\.com\/(?:.*v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-          return match ? match[1] : '';
+          const match = url.match(
+            /(?:youtube\.com\/(?:.*v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/
+          );
+          return match ? match[1] : "";
         };
 
         setSlides(
@@ -230,12 +234,14 @@ const Home = () => {
             <button
               key={index}
               onClick={() => setCurrentSlide(index)}
-              className={`w-3 h-3 rounded-full border-2 flex items-center justify-center transition-all ${currentSlide === index ? "border-mainOrange" : "border-gray-400"
-                }`}
+              className={`w-3 h-3 rounded-full border-2 flex items-center justify-center transition-all ${
+                currentSlide === index ? "border-mainOrange" : "border-gray-400"
+              }`}
             >
               <div
-                className={`w-1 h-1 rounded-full ${currentSlide === index ? "bg-mainOrange" : "bg-transparent"
-                  }`}
+                className={`w-1 h-1 rounded-full ${
+                  currentSlide === index ? "bg-mainOrange" : "bg-transparent"
+                }`}
               ></div>
             </button>
           ))}
@@ -244,7 +250,10 @@ const Home = () => {
 
       <div
         ref={sectionRef}
-        className={'mx-auto bg-mainBlue p-10 shadow-xl transition-opacity duration-1000 ${isVisible ? "opacity-100" : "opacity-0" }'} >
+        className={
+          'mx-auto bg-mainBlue p-10 shadow-xl transition-opacity duration-1000 ${isVisible ? "opacity-100" : "opacity-0" }'
+        }
+      >
         <h1 className="text-3xl font-bold text-white">Empowering Tomorrow :</h1>
         <h2 className="text-2xl font-semibold text-white">
           Efortech’s Innovative Education Solutions
@@ -257,24 +266,28 @@ const Home = () => {
             src="/assets/foto2.png"
             alt="Image 1"
             className="shadow-xl z-10"
-            style={{ width: 'clamp(140px, 28vw, 50vw)' }}
+            style={{ width: "clamp(140px, 28vw, 50vw)" }}
           />
           <img
             src="/assets/gambar1.jpg"
             alt="Image 2"
             className="shadow-xl z-20"
             style={{
-              width: 'clamp(140px, 28vw, 50vw)',
-              marginTop: '4rem',
+              width: "clamp(140px, 28vw, 50vw)",
+              marginTop: "4rem",
             }}
           />
         </div>
 
         <div className="relative bg-orange-600 text-white p-6 w-full md:w-[65%] mt-0 lg:mt-32 md:mt-10 sm:mt-0">
           <div className="relative z-30">
-            <h2 className="text-xl md:text-3xl font-bold text-right">Efortech Solutions</h2>
+            <h2 className="text-xl md:text-3xl font-bold text-right">
+              Efortech Solutions
+            </h2>
             <p className="text-xs md:text-sm mt-3 pl-12 lg:pl-24 md:pl-10 sm:pl-16 text-right">
-              Offers training and certification programs focused on the implementation of the Industrial Internet of Things (IIoT) through the use of a Smart Integrated IIoT Training Kit.
+              Offers training and certification programs focused on the
+              implementation of the Industrial Internet of Things (IIoT) through
+              the use of a Smart Integrated IIoT Training Kit.
             </p>
           </div>
         </div>
@@ -308,16 +321,17 @@ const Home = () => {
         />
       </div>
 
-      <PartnerSection partnersData={partnersData} />
+      <div className="relative w-full max-w-6xl mx-auto px-4">
+        <PartnerSection partnersData={partnersData} />
+      </div>
 
       <div className="text-center px-4 py-4">
-
         <TopTrainingSection topCourses={topCourses} />
 
         <ArticleSection highlightArticles={highlightArticles} />
 
         <div className="flex flex-col-reverse md:flex-row items-center justify-between gap-10 md:gap-20 mt-10 px-4 md:px-16 mb-20">
-          <div className="w-full md:w-[50%] flex justify-center">
+          <div className="w-full md:w-[50%] flex justify-center overflow-hidden">
             <Swiper
               effect={"cards"}
               grabCursor={true}
@@ -399,7 +413,11 @@ const Home = () => {
             stroke="currentColor"
             className="w-6 h-6 text-mainOrange"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M5 15l7-7 7 7"
+            />
           </svg>
         </button>
       )}
