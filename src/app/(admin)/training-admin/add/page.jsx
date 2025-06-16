@@ -139,13 +139,13 @@ export default function AddTraining() {
           <LoadingSpinner />
         </div>
       ) : (
-        <div className="relative pt-4 px-4 sm:px-6 lg:px-8 max-w-[1440px] mx-auto min-h-screen">
+        <div className="relative pt-4 px-4 sm:px-6 lg:px-8 max-w-[1440px] mx-auto min-h-screen pb-8">
           <div className="flex flex-wrap justify-between items-center w-full max-w-[1440px] mx-auto mb-2 gap-4">
             <div className="flex flex-wrap justify-between items-center w-full max-w-[1440px] mx-auto mt-6 mb-4 gap-4">
               <PageTitle title="Add New Training" />
 
               <div className="flex flex-wrap items-center gap-3 sm:gap-4 w-full sm:w-auto">
-              
+
                 <SaveButton onClick={handleSubmit} disabled={!isFormValid} />
 
                 <DiscardButton onClick={() => setOpenDialog(true)} />
