@@ -156,7 +156,7 @@ const Home = () => {
         document.body.appendChild(tag);
       }
     } else {
-      timer = setTimeout(() => nextSlide(), 2000);
+      timer = setTimeout(() => nextSlide(), 5000);
     }
 
     return () => {
@@ -195,7 +195,7 @@ const Home = () => {
       <div className="relative w-full max-h-[90vh] flex items-center justify-center">
         <div className="w-full aspect-[21/9] relative overflow-hidden">
           <div
-            className="flex transition-transform duration-3000 ease-in-out"
+            className="flex transition-transform ease-in-out"
             style={{ transform: `translateX(-${currentSlide * 100}%)` }}
           >
             {slides.map((slide, index) => (
@@ -321,9 +321,7 @@ const Home = () => {
         />
       </div>
 
-      <div className="relative w-full max-w-6xl mx-auto px-4">
-        <PartnerSection partnersData={partnersData} />
-      </div>
+      <PartnerSection partnersData={partnersData} />
 
       <div className="text-center px-4 py-4">
         <TopTrainingSection topCourses={topCourses} />
