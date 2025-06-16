@@ -80,7 +80,6 @@ export default function EditTraining() {
                 setSkills(training.skills || []);
                 setImages(training.images || []);
             } catch (err) {
-                console.error("Error fetching training:", err);
                 setNotFound(true);
             } finally {
                 setIsLoading(false);
@@ -146,7 +145,6 @@ export default function EditTraining() {
             setShowSuccess(true);
             resetForm();
         } catch (err) {
-            console.error("❌ Update error:", err);
             setShowError(true);
         }
     };
@@ -241,10 +239,11 @@ export default function EditTraining() {
                         onOpenChange={(open) => setShowError(open)}
                         title="Update Failed"
                         messages={[
-                            "Something went wrong while updating the training.",
-                            "Please try again later or check your form."
+                            "Something went wrong while update the training.",
+                            "Please try again later or check your form. Make sure all required fields are filled with valid inputs.",
                         ]}
                         buttonText="Close"
+                        type="error"
                     />
                 </div>
             )}
