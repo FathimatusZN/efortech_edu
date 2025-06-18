@@ -6,6 +6,7 @@ export const ConfirmCertificateDialog = ({
     onClose,
     certificateId,
     certificate_number,
+    original_number,
     fullname,
     userId,
     certName,
