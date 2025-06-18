@@ -56,7 +56,7 @@ const CertificateTable = ({
                         <TableBody>
                             {paginatedData.map(item => (
                                 <TableRow key={item.certificate_id}>
-                                    <TableCell>{item.certificate_number}</TableCell>
+                                    <TableCell>{item.original_number || item.certificate_number}</TableCell>
                                     <TableCell>{item.fullname}</TableCell>
                                     <TableCell>{item.certificate_title}</TableCell>
                                     <TableCell>{item.issued_by}</TableCell>
