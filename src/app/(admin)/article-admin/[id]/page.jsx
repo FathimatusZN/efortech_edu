@@ -71,7 +71,6 @@ export default function EditArticle() {
                 setImages(article.images || []);
                 setSources(article.sources || []);
             } catch (err) {
-                console.error("❌ Error fetching article:", err);
                 setHasError("server");
             } finally {
                 setIsLoading(false);
@@ -111,7 +110,6 @@ export default function EditArticle() {
 
             setShowSuccess(true);
         } catch (err) {
-            console.error("❌ Update error:", err);
             toast.error("Failed to update article.");
         }
     };
@@ -162,7 +160,7 @@ export default function EditArticle() {
     // Main UI rendering the article editor form
     return (
         <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
-            <div className="relative pt-4 px-4 sm:px-6 lg:px-8 max-w-[1440px] mx-auto min-h-screen">
+            <div className="relative pt-4 pb-8 px-4 sm:px-6 lg:px-8 max-w-[1440px] mx-auto min-h-screen">
                 <div className="flex flex-wrap justify-between items-center w-full max-w-[1440px] mx-auto mb-2 gap-4">
                     <div className="flex flex-wrap justify-between items-center w-full max-w-[1440px] mx-auto mt-6 mb-4 gap-4">
                         <PageTitle title="Edit Article" />
@@ -278,6 +276,7 @@ export default function EditArticle() {
                     "Please try again later or check your form."
                 ]}
                 buttonText="Close"
+                type="error"
             />
         </ProtectedRoute>
     );

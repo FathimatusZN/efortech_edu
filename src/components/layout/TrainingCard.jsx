@@ -28,14 +28,12 @@ export default function TrainingCard({ training }) {
             onMouseEnter={() => setHovered(true)}
             onMouseLeave={() => setHovered(false)}
         >
-            {/* 🔥 Diskon */}
             {training.discount > 0 && (
                 <div className="absolute top-2 right-2 bg-red-500 text-white text-[11px] font-semibold px-2 py-[2px] rounded-full shadow-md animate-bounce z-20">
                     🔥 {Math.floor(training.discount)}% OFF
                 </div>
             )}
 
-            {/* Gambar */}
             <img
                 src={
                     training.images?.[0] ||
@@ -47,7 +45,6 @@ export default function TrainingCard({ training }) {
 
             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-transparent" />
 
-            {/* Nama training */}
             <h3
                 className="absolute left-4 right-4 text-white font-semibold text-lg bottom-4 z-10 transition-all duration-500"
                 style={{
@@ -57,7 +54,6 @@ export default function TrainingCard({ training }) {
                 {training.training_name}
             </h3>
 
-            {/* Deskripsi */}
             <p
                 ref={descriptionRef}
                 className={`absolute left-4 right-4 text-white text-sm transition-all duration-500 z-0 ${hovered ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"

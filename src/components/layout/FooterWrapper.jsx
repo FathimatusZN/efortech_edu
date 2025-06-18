@@ -7,7 +7,6 @@ import UserFooter from "@/components/user/footer";
 
 const FooterWrapper = () => {
     const { user } = useAuth();
-    console.log("User di Footer:", user);
 
     if (!user) {
         return <DefaultFooter />;

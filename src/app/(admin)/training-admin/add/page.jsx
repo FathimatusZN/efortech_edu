@@ -3,7 +3,11 @@ import { useState, useEffect, use } from "react";
 import { useAuth } from "@/app/context/AuthContext";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import TrainingForm from "@/components/admin/TrainingForm";
-import { PageTitle, SaveButton, DiscardButton } from "@/components/layout/InputField";
+import {
+  PageTitle,
+  SaveButton,
+  DiscardButton,
+} from "@/components/layout/InputField";
 import { useRouter } from "next/navigation";
 import ConfirmDialog from "@/components/admin/ConfirmDialog";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
@@ -14,7 +18,7 @@ export default function AddTraining() {
 
   const [isLoading, setIsLoading] = useState(false);
 
-  // State for managing field 
+  // State for managing field
   const [training_name, setTrainingname] = useState("");
   const [status, setStatus] = useState(1);
   const [description, setDescription] = useState("");
@@ -28,7 +32,15 @@ export default function AddTraining() {
   const [images, setImages] = useState([]);
 
   const [openDialog, setOpenDialog] = useState(false);
-  const isFormValid = training_name.trim() !== "" && description.trim() !== "" && level !== 0 && duration !== "" && training_fees !== "" && validity_period !== "" && term_condition !== "" && skills !== "";
+  const isFormValid =
+    training_name.trim() !== "" &&
+    description.trim() !== "" &&
+    level !== 0 &&
+    duration !== "" &&
+    training_fees !== "" &&
+    validity_period !== "" &&
+    term_condition !== "" &&
+    skills !== "";
   const { user } = useAuth();
 
   const [showSuccess, setShowSuccess] = useState(false);
@@ -50,11 +62,11 @@ export default function AddTraining() {
   };
 
   const handleSubmit = async () => {
-    console.log("🧪 Current user object:", user);
-
     try {
       const token = localStorage.getItem("token");
-      const cleanImages = images.filter((url) => typeof url === "string" && url.startsWith("http"));
+      const cleanImages = images.filter(
+        (url) => typeof url === "string" && url.startsWith("http")
+      );
 
       const payload = {
         training_name,
@@ -66,26 +78,37 @@ export default function AddTraining() {
         discount: parseInt(discount || "0"), // default 0
         validity_period: parseInt(validity_period),
         term_condition,
-        skills: skills.filter(skill => skill.trim() !== ""),
+        skills: skills.filter((skill) => skill.trim() !== ""),
         images: cleanImages,
         admin_id: user.user_id, // Add admin_id
       };
 
-      console.log("Payload sent to backend:", payload);
-
-      if (!training_name || !status || !description || !level || !duration || !training_fees || !validity_period || !term_condition || !skills) {
+      if (
+        !training_name ||
+        !status ||
+        !description ||
+        !level ||
+        !duration ||
+        !training_fees ||
+        !validity_period ||
+        !term_condition ||
+        !skills
+      ) {
         alert("Please fill in the required fields!");
         return;
       }
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/training`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/training`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        }
+      );
 
       if (!res.ok) throw new Error("Failed to create training");
 
@@ -94,7 +117,6 @@ export default function AddTraining() {
       setShowSuccess(true);
       resetForm();
     } catch (err) {
-      console.error("❌ Create error:", err);
       setShowError(true);
     }
   };
@@ -112,20 +134,19 @@ export default function AddTraining() {
   return (
     <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
       {isLoading ? (
-        <div className="text-center mt-10"><LoadingSpinner /></div>
+        <div className="text-center mt-10">
+          <LoadingSpinner />
+        </div>
       ) : (
-        <div className="relative pt-4 px-4 sm:px-6 lg:px-8 max-w-[1440px] mx-auto min-h-screen">
+        <div className="relative pt-4 px-4 sm:px-6 lg:px-8 max-w-[1440px] mx-auto min-h-screen pb-8">
           <div className="flex flex-wrap justify-between items-center w-full max-w-[1440px] mx-auto mb-2 gap-4">
             <div className="flex flex-wrap justify-between items-center w-full max-w-[1440px] mx-auto mt-6 mb-4 gap-4">
-              {/* Title */}
               <PageTitle title="Add New Training" />
 
-              {/* Save & Discard Button */}
               <div className="flex flex-wrap items-center gap-3 sm:gap-4 w-full sm:w-auto">
-                {/* Save Button */}
+
                 <SaveButton onClick={handleSubmit} disabled={!isFormValid} />
 
-                {/* Discard Button */}
                 <DiscardButton onClick={() => setOpenDialog(true)} />
               </div>
             </div>
@@ -138,7 +159,6 @@ export default function AddTraining() {
             onDiscard={handleDiscard}
           />
 
-          {/* Main Training Form */}
           <TrainingForm
             training_name={training_name}
             setTrainingname={setTrainingname}
@@ -176,10 +196,7 @@ export default function AddTraining() {
               }
             }}
             title="Training Updated!"
-            messages={[
-              "New training created!",
-              `ID: ${trainingId}`,
-            ]}
+            messages={["New training created!", `ID: ${trainingId}`]}
             buttonText="See Training"
             onButtonClick={() => {
               router.push(`/training-admin/${trainingId}`);
@@ -189,12 +206,13 @@ export default function AddTraining() {
           <SuccessDialog
             open={showError}
             onOpenChange={(open) => setShowError(open)}
-            title="Update Failed"
+            title="Create Failed"
             messages={[
               "Something went wrong while add the training.",
-              "Please try again later or check your form."
+              "Please try again later or check your form. Make sure all required fields are filled with valid inputs.",
             ]}
             buttonText="Close"
+            type="error"
           />
         </div>
       )}

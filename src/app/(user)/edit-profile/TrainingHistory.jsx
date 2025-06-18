@@ -110,7 +110,6 @@ export default function TrainingHistory({ userId }) {
     <>
       <h2 className="text-xl font-bold mt-8">History Training</h2>
 
-      {/* TAB */}
       <div className="flex gap-4 mt-2">
         {["All", "Upcoming", "Done"].map((tab) => (
           <button
@@ -126,7 +125,6 @@ export default function TrainingHistory({ userId }) {
         ))}
       </div>
 
-      {/* GRID */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
         {loading ? (
           <p className="col-span-full text-center py-10 text-gray-500">

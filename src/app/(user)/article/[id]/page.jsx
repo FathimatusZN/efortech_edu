@@ -51,7 +51,6 @@ export default function ArticleDetail({ params }) {
 
   return (
     <div className="max-w-screen w-full relative">
-      {/* Gambar Slider */}
       {article.images?.length > 0 && (
         <div className="relative">
           <Swiper
@@ -79,12 +78,10 @@ export default function ArticleDetail({ params }) {
         </div>
       )}
 
-      {/* Judul */}
       <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mt-6 text-center py-4 px-4 text-secondBlue">
         {article.title}
       </h1>
 
-      {/* Penulis & Tanggal Terbit */}
       <div className="flex flex-col sm:flex-row justify-between text-mainGrey text-sm sm:text-base px-4 sm:px-8 gap-2 sm:gap-0">
         <span>Written by: {article.author}</span>
         <span>
@@ -96,13 +93,11 @@ export default function ArticleDetail({ params }) {
         </span>
       </div>
 
-      {/* Deskripsi Artikel */}
       <div
         className="prose prose-sm sm:prose-base lg:prose-lg text-black text-justify pb-8 px-4 sm:px-8 md:px-16 mt-4 max-w-none"
         dangerouslySetInnerHTML={{ __html: article.content_body }}
       />
 
-      {/* Sumber */}
       {article.sources && article.sources.length > 0 && (
         <div className="border-t border-gray-300 py-4 px-4 sm:px-8">
           <div className="flex flex-wrap gap-2">
@@ -130,7 +125,6 @@ export default function ArticleDetail({ params }) {
         </div>
       )}
 
-      {/* Tags */}
       {article.tags && article.tags.length > 0 && (
         <div className="px-4 sm:px-8 pb-8 flex gap-2 flex-wrap">
           <span className="text-sm sm:text-md text-black">Tags:</span>

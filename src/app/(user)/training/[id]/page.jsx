@@ -84,7 +84,6 @@ const TrainingDetail = () => {
             setReviews(data.data);
             setIsReviewEmpty(false);
           }
-          console.log("Reviews:", data.data);
         } else {
           console.error("Failed to fetch reviews");
           setIsReviewEmpty(true);
@@ -162,7 +161,6 @@ const TrainingDetail = () => {
     <div className="overflow-x-hidden">
       <div className="mx-auto p-4 md:p-8 max-w-screen-xl">
         <div className="flex flex-col xl:flex-row gap-8">
-          {/* Image Slider */}
           <div className="relative w-full max-w-full xl:max-w-[650px] aspect-[4/3] flex-shrink-0 overflow-hidden rounded-lg shadow-md">
             {trainingData.images.map((img, index) => (
               <Image
@@ -196,7 +194,6 @@ const TrainingDetail = () => {
             </div>
           </div>
 
-          {/* Training Info */}
           <div className="flex-1 min-w-0">
             <h1 className="text-3xl font-bold text-blue-900 break-words">
               {trainingData.training_name}
@@ -330,7 +327,6 @@ const TrainingDetail = () => {
           </div>
         </div>
 
-        {/* Reviews */}
         <div className="mt-8 border-2 border-mainBlue p-6 rounded-lg shadow-md">
           <div className="flex flex-col md:flex-row md:justify-between items-start md:items-center">
             <h2 className="w-full md:w-auto">
@@ -342,7 +338,6 @@ const TrainingDetail = () => {
             </h2>
 
             <div className="flex gap-4 mt-4 md:mt-0 w-full md:w-auto">
-              {/* Sort Order Select */}
               <Select value={sortOrder} onValueChange={setSortOrder}>
                 <SelectTrigger className="w-full md:w-[180px]">
                   <SelectValue placeholder="Sort by" />
@@ -353,7 +348,6 @@ const TrainingDetail = () => {
                 </SelectContent>
               </Select>
 
-              {/* Filter Rating Select */}
               <Select
                 value={filterRating?.toString() || "all"}
                 onValueChange={(value) =>
@@ -405,7 +399,6 @@ const TrainingDetail = () => {
                     <p className="text-black text-sm">
                       {review.review_description}
                     </p>
-                    {/* Tampilkan tanggal review */}
                     <p className="text-sm text-gray-500 pt-2">
                       {new Date(review.review_date).toLocaleDateString(
                         "en-US",

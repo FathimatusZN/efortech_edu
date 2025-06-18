@@ -163,8 +163,8 @@ export const ValidationCertificateTable = ({
     setConfirmDialogOpen(true);
   };
 
-  const handleConfirm = (certificateId, status, notes) => {
-    onStatusChange(certificateId, status, notes);
+  const handleConfirm = async (certificateId, status, notes) => {
+    return await onStatusChange(certificateId, status, notes);
   };
 
   return (
@@ -190,7 +190,7 @@ export const ValidationCertificateTable = ({
           <TableBody>
             {paginatedData.map((item) => (
               <TableRow key={item.user_certificate_id}>
-                <TableCell>{item.certificate_number}</TableCell>
+                <TableCell>{item.original_number || item.certificate_number}</TableCell>
                 <TableCell>{item.fullname}</TableCell>
                 <TableCell>{item.cert_type}</TableCell>
                 <TableCell>{item.issuer}</TableCell>
@@ -211,7 +211,7 @@ export const ValidationCertificateTable = ({
           </TableBody>
         </Table>
       )}
-      {/* Pagination */}
+
       {!disablePagination && (
         <div className="flex justify-center mt-8">
           <Pagination>
@@ -273,6 +273,7 @@ export const ValidationCertificateTable = ({
         onClose={() => setConfirmDialogOpen(false)}
         certificateId={selectedItem?.user_certificate_id}
         certificate_number={selectedItem?.certificate_number}
+        original_number={selectedItem?.original_number}
         fullname={selectedItem?.fullname}
         userId={selectedItem?.user_id}
         certName={selectedItem?.cert_type}

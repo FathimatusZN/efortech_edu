@@ -78,7 +78,8 @@ const ArticleAdminPage = () => {
     }
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL
+        `${
+          process.env.NEXT_PUBLIC_API_BASE_URL
         }/api/articles/search?query=${encodeURIComponent(searchQuery)}`
       );
       const data = await response.json();
@@ -113,10 +114,10 @@ const ArticleAdminPage = () => {
 
   const filteredArticles = Array.isArray(articles)
     ? articles.filter((article) => {
-      return (
-        selectedCategory === "All" || article.category === selectedCategoryId
-      );
-    })
+        return (
+          selectedCategory === "All" || article.category === selectedCategoryId
+        );
+      })
     : [];
 
   const totalPages = Math.ceil(filteredArticles.length / PAGE_SIZE);
@@ -127,14 +128,10 @@ const ArticleAdminPage = () => {
 
   return (
     <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
-      <div className="relative pt-4 px-4 sm:px-6 lg:px-8 max-w-[1440px] mx-auto min-h-screen">
-        {/* Title & Actions */}
+      <div className="relative pt-4 pb-8 px-4 sm:px-6 lg:px-8 max-w-[1440px] mx-auto min-h-screen">
         <div className="flex flex-wrap justify-between items-center w-full max-w-[1440px] mx-auto mt-6 mb-6 gap-4">
           <h1 className="text-2xl sm:text-3xl font-bold">Articles</h1>
-
-          {/* Search & Add Button */}
           <div className="flex flex-wrap items-center gap-3 sm:gap-4 w-full sm:w-auto">
-            {/* Search */}
             <div className="relative flex w-full sm:w-[280px]">
               <input
                 type="text"
@@ -152,7 +149,6 @@ const ArticleAdminPage = () => {
               </button>
             </div>
 
-            {/* Category Filter */}
             <Select
               value={selectedCategory}
               onValueChange={(value) => {
@@ -172,7 +168,6 @@ const ArticleAdminPage = () => {
               </SelectContent>
             </Select>
 
-            {/* Add Button */}
             <button
               className="flex items-center gap-2 bg-lightBlue text-white px-4 py-2 sm:px-6 sm:py-2 rounded-lg shadow hover:bg-mainBlue"
               onClick={() => (window.location.href = "/add-article")}
@@ -183,7 +178,6 @@ const ArticleAdminPage = () => {
           </div>
         </div>
 
-        {/* Articles Grid & Pagination */}
         <div>
           {isLoading ? (
             // Loading spinner hanya di sini
@@ -259,9 +253,9 @@ const ArticleAdminPage = () => {
                 Showing{" "}
                 {filteredArticles.length > 0
                   ? `${(page - 1) * itemsPerPage + 1} - ${Math.min(
-                    page * itemsPerPage,
-                    filteredArticles.length
-                  )}`
+                      page * itemsPerPage,
+                      filteredArticles.length
+                    )}`
                   : 0}{" "}
                 of {filteredArticles.length} article
                 {filteredArticles.length !== 1 && "s"}

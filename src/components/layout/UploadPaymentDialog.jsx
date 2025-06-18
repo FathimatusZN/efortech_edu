@@ -29,7 +29,7 @@ export default function UploadPaymentDialog({
     setLoading(true);
 
     try {
-      // STEP 1: Upload file dulu
+      // Upload file
       const formData = new FormData();
       formData.append("files", file);
 
@@ -42,7 +42,6 @@ export default function UploadPaymentDialog({
       );
 
       const uploadResult = await uploadRes.json();
-      console.log("Upload result:", uploadResult);
 
       const fileUrl = uploadResult.data?.fileUrl;
 
@@ -50,7 +49,7 @@ export default function UploadPaymentDialog({
         throw new Error(uploadResult.message || "Gagal upload file.");
       }
 
-      // STEP 2: Simpan fileUrl ke endpoint save
+      // Simpan fileUrl ke endpoint save
       const saveRes = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/registration/save-payment`,
         {
@@ -66,7 +65,6 @@ export default function UploadPaymentDialog({
       );
 
       const saveResult = await saveRes.json();
-      console.log("Save result:", saveResult);
       if (!saveRes.ok) {
         throw new Error(
           saveResult.message || "Gagal menyimpan bukti pembayaran."

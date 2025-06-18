@@ -448,7 +448,6 @@ const RegistrationPage = () => {
               </div>
             )}
 
-            {/* ✅ Info muncul saat field readOnly diklik */}
             {showInfo && readOnly && (
               <p className="text-xs text-orange-600 mt-1">
                 This field can only be edited in your profile.
@@ -555,7 +554,6 @@ const RegistrationPage = () => {
               You can change this field if you are registering collectively with multiple participants.
             </p>
 
-            {/* Additional participant emails*/}
             {participantCount > 1 && (
               <div className="mt-6">
                 <label className="block text-black font-semibold mb-2">
@@ -601,7 +599,6 @@ const RegistrationPage = () => {
                           }, 1000);
                         }}
                       />
-                      {/* Icon hapus */}
                       <button
                         type="button"
                         onClick={() => {
@@ -630,7 +627,6 @@ const RegistrationPage = () => {
                         <Trash2 size={18} />
                       </button>
 
-                      {/* Icon check jika email valid */}
                       {email.trim() && emailValidation[id] && (
                         <Check
                           className="absolute top-1/2 right-10 transform -translate-y-1/2 text-green-500"
@@ -638,7 +634,7 @@ const RegistrationPage = () => {
                         />
                       )}
                     </div>
-                    {/* Error */}
+
                     {errors[id] && (
                       <p className="text-red-500 text-sm mt-1">{errors[id]}</p>
                     )}
@@ -647,7 +643,6 @@ const RegistrationPage = () => {
               </div>
             )}
 
-            {/* Terms */}
             <div className="mt-8 ml-0 sm:ml-6 flex items-start gap-2">
               <input
                 type="checkbox"

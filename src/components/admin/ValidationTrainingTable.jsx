@@ -161,7 +161,6 @@ export const ValidationTrainingTable = ({
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/certificate/${certificateId}`);
       const json = await res.json();
-      console.log("Certificate detail response:", json);
       if (json.status === "success" && json.data) {
         setSelectedCertificate(json.data);
         setShowCertificateDialog(true);
@@ -266,7 +265,7 @@ export const ValidationTrainingTable = ({
           </TableBody>
         </Table>
       )}
-      {/* Pagination */}
+ 
       {!disablePagination && (
         <div className="flex justify-center mt-8">
           <Pagination>

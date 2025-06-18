@@ -101,7 +101,6 @@ export default function CertificateValidation() {
         Certificate Validation
       </h1>
 
-      {/* Search Input */}
       <div className="relative flex items-center mb-4 max-w-md mx-auto">
         <input
           type="text"
@@ -116,12 +115,10 @@ export default function CertificateValidation() {
         <FaSearch className="absolute right-4 text-orange-500" />
       </div>
 
-      {/* Loading state */}
       {loading && searchTerm !== "" && (
         <div className="text-center mt-10">Loading...</div>
       )}
 
-      {/* No search term */}
       {searchTerm === "" && !loading && (
         <div className="text-center mt-10 min-h-screen">
           <img
@@ -135,7 +132,6 @@ export default function CertificateValidation() {
         </div>
       )}
 
-      {/* Search results */}
       {!loading && searchTerm !== "" && paginatedData.length > 0 && (
         <>
           <div className="overflow-x-auto mt-8">
@@ -154,7 +150,7 @@ export default function CertificateValidation() {
               <TableBody>
                 {paginatedData.map((item, index) => (
                   <TableRow key={index}>
-                    <TableCell>{item.certificate_number}</TableCell>
+                    <TableCell>{item.original_number || item.certificate_number}</TableCell>
                     <TableCell>{item.fullname}</TableCell>
                     <TableCell>
                       {formatDate(item.issued_date)}
@@ -191,7 +187,6 @@ export default function CertificateValidation() {
             </Table>
           </div>
 
-          {/* Pagination controls */}
           <div className="flex justify-center mt-6">
             <Pagination>
               <PaginationContent>
@@ -232,7 +227,6 @@ export default function CertificateValidation() {
             </Pagination>
           </div>
 
-          {/* Pagination info */}
           <div className="text-xs text-gray-600 text-center mt-2">
             Showing {(page - 1) * PAGE_SIZE + 1} to{" "}
             {Math.min(page * PAGE_SIZE, certificates.length)} of{" "}
@@ -241,7 +235,6 @@ export default function CertificateValidation() {
         </>
       )}
 
-      {/* Not found state */}
       {!loading && searchTerm !== "" && paginatedData.length === 0 && (
         <div className="text-center">
           <NotFound

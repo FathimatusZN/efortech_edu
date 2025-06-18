@@ -24,8 +24,6 @@ export default function UploadCertificatePage() {
         throw new Error(result.message || "Failed to submit certificate");
       }
 
-      console.log("Certificate uploaded successfully");
-
       setShowDialog(true);
     } catch (error) {
       console.error("Upload failed:", error.message);

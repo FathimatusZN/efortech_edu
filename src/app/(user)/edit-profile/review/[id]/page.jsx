@@ -105,7 +105,6 @@ export default function FeedbackForm() {
             setReviewData(result.data);
             setRating(result.data.score);
             setReview(result.data.review_description);
-            console.log("Review data:", result.data);
           } else {
             alert("Gagal mengambil review: " + result.message);
           }

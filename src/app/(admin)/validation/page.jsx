@@ -140,12 +140,11 @@ const ValidationPage = () => {
 
   return (
     <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
-      <div className="max-w-screen mx-auto px-4 sm:px-6 md:px-8 py-6 space-y-12">
-        <h1 className="text-xl md:text-2xl font-bold text-left mt-4">
+      <div className="max-w-screen mx-auto px-4 sm:px-6 md:px-8 py-6 space-y-6">
+        <h1 className="text-xl md:text-2xl font-bold text-left">
           Validation
         </h1>
 
-        {/* Training Registration Validation */}
         <div className="bg-white outline outline-3 outline-mainBlue rounded-2xl p-4 sm:p-6 shadow-[8px_8px_0px_0px_#157ab2]">
           <h2 className="text-lg md:text-xl font-semibold mb-4">
             Training Registration Validation
@@ -182,7 +181,6 @@ const ValidationPage = () => {
           </div>
         </div>
 
-        {/* Certificate Validation */}
         <div className="bg-white outline outline-3 outline-mainBlue rounded-2xl p-4 sm:p-6 shadow-[8px_8px_0px_0px_#157ab2]">
           <h2 className="text-lg md:text-xl font-semibold mb-4">
             Certificate Validation

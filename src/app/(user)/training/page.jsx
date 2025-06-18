@@ -124,7 +124,6 @@ export default function TrainingPage() {
         </div>
       </div>
 
-      {/* Conditional Rendering */}
       {isLoading ? (
         <div className="flex justify-center pt-8">
           <LoadingSpinner />

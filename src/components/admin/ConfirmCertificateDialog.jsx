@@ -6,6 +6,7 @@ export const ConfirmCertificateDialog = ({
     onClose,
     certificateId,
     certificate_number,
+    original_number,
     fullname,
     userId,
     certName,
@@ -32,7 +33,19 @@ export const ConfirmCertificateDialog = ({
         setErrors({});
 
         try {
-            // 1. Send Email
+            // 1. First update status
+            try {
+                await onConfirm(certificateId, status, notes);
+            } catch (err) {
+                // If update fails, show error and stop
+                setErrors((prev) => ({
+                    ...prev,
+                    general: err.message || "Failed to update certificate status",
+                }));
+                return; // STOP — don't continue to send email
+            }
+
+            // 2. If success, then send email
             const emailRes = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/email/send-upload-certificate`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -46,9 +59,6 @@ export const ConfirmCertificateDialog = ({
 
             const emailData = await emailRes.json();
             if (!emailRes.ok) throw new Error(emailData.message);
-
-            // 2. Callback update status
-            await onConfirm(certificateId, status, notes);
 
             onClose();
         } catch (err) {
@@ -114,28 +124,27 @@ export const ConfirmCertificateDialog = ({
                 <h2 className="text-lg font-semibold mb-4">Confirm Status Update</h2>
 
                 <div className="flex flex-col md:flex-row gap-6">
-                    {/* Left : Information and input field */}
                     <div className="md:w-1/2 w-full">
                         <table className="w-full text-sm mb-4">
                             <tbody>
                                 <tr>
-                                    <td className="pr-2 align-top text-gray-700 font-medium whitespace-nowrap font-semibold">Certificate ID</td>
+                                    <td className="pr-2 align-top text-gray-700 whitespace-nowrap font-semibold">Certificate ID</td>
                                     <td className="break-all whitespace-normal">{certificateId}</td>
                                 </tr>
                                 <tr>
-                                    <td className="pr-2 align-top text-gray-700 font-medium whitespace-nowrap font-semibold">Full Name</td>
+                                    <td className="pr-2 align-top text-gray-700 whitespace-nowrap font-semibold">Full Name</td>
                                     <td className="break-all whitespace-normal">{fullname}</td>
                                 </tr>
                                 <tr>
-                                    <td className="pr-2 align-top text-gray-700 font-medium whitespace-nowrap font-semibold">User ID</td>
+                                    <td className="pr-2 align-top text-gray-700 whitespace-nowrap font-semibold">User ID</td>
                                     <td className="break-all whitespace-normal">{userId}</td>
                                 </tr>
                                 <tr>
-                                    <td className="pr-2 align-top text-gray-700 font-medium whitespace-nowrap font-semibold">Certificate Name</td>
+                                    <td className="pr-2 align-top text-gray-700 whitespace-nowrap font-semibold">Certificate Name</td>
                                     <td className="break-all whitespace-normal">{certName}</td>
                                 </tr>
                                 <tr>
-                                    <td className="pr-2 align-top text-gray-700 font-medium whitespace-nowrap font-semibold">Selected Status</td>
+                                    <td className="pr-2 align-top text-gray-700 whitespace-nowrap font-semibold">Selected Status</td>
                                     <td className={`font-bold ${statusColor}`}>{statusText}</td>
                                 </tr>
                             </tbody>
@@ -150,9 +159,7 @@ export const ConfirmCertificateDialog = ({
                         />
                     </div>
 
-                    {/* Right : Button & Preview Email */}
                     <div className="md:w-1/2 w-full flex flex-col">
-                        {/* Preview Email Button */}
                         <div className="flex justify-end mb-4">
                             <Button
                                 onClick={fetchEmailPreview}
@@ -163,12 +170,10 @@ export const ConfirmCertificateDialog = ({
                             </Button>
                         </div>
 
-                        {/* Error preview */}
                         {errors.preview && (
                             <p className="text-red-500 text-sm mb-2">{errors.preview}</p>
                         )}
 
-                        {/* Preview Email */}
                         {emailPreviewHtml && (
                             <div
                                 className="p-4 border rounded bg-gray-50 max-h-60 overflow-auto text-sm mb-4"
@@ -176,7 +181,6 @@ export const ConfirmCertificateDialog = ({
                             />
                         )}
 
-                        {/* Tombol Cancel & Send */}
                         <div className="flex justify-end gap-2 mt-auto">
                             <Button
                                 variant="outline"
@@ -196,7 +200,6 @@ export const ConfirmCertificateDialog = ({
                             </Button>
                         </div>
 
-                        {/* General error */}
                         {errors.general && (
                             <p className="text-red-500 text-sm mt-2">{errors.general}</p>
                         )}

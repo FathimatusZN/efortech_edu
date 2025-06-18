@@ -19,7 +19,7 @@ export default function EditTraining() {
     const trainingId = params.id;
 
     const [isLoading, setIsLoading] = useState(true);
-    const [notFound, setNotFound] = useState(false); // 🔍 Flag for "Not Found" state
+    const [notFound, setNotFound] = useState(false);
 
     // Form fields state
     const [training_name, setTrainingname] = useState("");
@@ -56,7 +56,6 @@ export default function EditTraining() {
                 );
 
                 if (!response.ok) {
-                    // 🚨 If training is not found, show NotFound component
                     setNotFound(true);
                     return;
                 }
@@ -69,7 +68,6 @@ export default function EditTraining() {
                     return;
                 }
 
-                // 🧩 Populate form fields
                 setTrainingname(training.training_name);
                 setStatus(training.status);
                 setDescription(training.description);
@@ -82,7 +80,6 @@ export default function EditTraining() {
                 setSkills(training.skills || []);
                 setImages(training.images || []);
             } catch (err) {
-                console.error("Error fetching training:", err);
                 setNotFound(true);
             } finally {
                 setIsLoading(false);
@@ -148,7 +145,6 @@ export default function EditTraining() {
             setShowSuccess(true);
             resetForm();
         } catch (err) {
-            console.error("❌ Update error:", err);
             setShowError(true);
         }
     };
@@ -163,7 +159,6 @@ export default function EditTraining() {
         router.push(`/training-admin/${trainingId}`);
     };
 
-    // 🔴 If training not found, render NotFound component
     if (!isLoading && notFound) {
         return (
             <NotFound message="Oops! We couldn't find the training you're looking for." buttons={[{ text: "Back to Training Page", href: "/training-admin" }]} />
@@ -175,7 +170,7 @@ export default function EditTraining() {
             {isLoading ? (
                 <div className="text-center mt-10"><LoadingSpinner /></div>
             ) : (
-                <div className="relative pt-4 px-4 sm:px-6 lg:px-8 max-w-[1440px] mx-auto min-h-screen">
+                <div className="relative pt-4 px-4 sm:px-6 lg:px-8 max-w-[1440px] mx-auto min-h-screen pb-8">
                     <div className="flex flex-wrap justify-between items-center w-full mb-4 gap-4">
                         <PageTitle title="Edit Training" />
 
@@ -244,10 +239,11 @@ export default function EditTraining() {
                         onOpenChange={(open) => setShowError(open)}
                         title="Update Failed"
                         messages={[
-                            "Something went wrong while updating the training.",
-                            "Please try again later or check your form."
+                            "Something went wrong while update the training.",
+                            "Please try again later or check your form. Make sure all required fields are filled with valid inputs.",
                         ]}
                         buttonText="Close"
+                        type="error"
                     />
                 </div>
             )}

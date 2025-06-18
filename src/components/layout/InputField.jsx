@@ -208,7 +208,6 @@ const ImageUploader = ({ maxImages = 3, images, setImages, onImageUpload, upload
                 )}
             </div>
 
-            {/* Modal Preview with Delete Button */}
             {previewImage && (
                 <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50">
                     <div className="relative bg-white p-4 rounded-lg">
@@ -343,7 +342,6 @@ const SourcesInput = ({ sources, setSources }) => {
         <div>
             {sources.map((source, index) => (
                 <div key={index} className="flex items-center text-sm gap-2 mt-2">
-                    {/* Input untuk Preview Text */}
                     <input
                         type="text"
                         placeholder="Text Preview"
@@ -352,7 +350,6 @@ const SourcesInput = ({ sources, setSources }) => {
                         className="w-3/5 p-2 text-[14px] rounded-md shadow-[0px_4px_4px_rgba(21,122,178,0.25)]"
                     />
 
-                    {/* Input untuk Link */}
                     <div className="relative w-2/5">
                         <FaLink className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral3" />
                         <input
@@ -364,7 +361,6 @@ const SourcesInput = ({ sources, setSources }) => {
                         />
                     </div>
 
-                    {/* Tombol Hapus */}
                     <button
                         className="bg-error1 text-white p-1 rounded-full hover:bg-mainOrange transition"
                         onClick={() => removeSource(index)}
@@ -374,7 +370,6 @@ const SourcesInput = ({ sources, setSources }) => {
                 </div>
             ))}
 
-            {/* Tombol Tambah Source */}
             <div className="flex justify-end mt-4">
                 <button
                     onClick={addSource}
@@ -408,7 +403,6 @@ const SkillsInput = ({ skills, setSkills }) => {
         <div>
             {skills.map((skill, index) => (
                 <div key={index} className="flex items-center text-sm gap-2 mt-2">
-                    {/* Input untuk Skill */}
                     <input
                         type="text"
                         placeholder="Enter skill"
@@ -417,7 +411,6 @@ const SkillsInput = ({ skills, setSkills }) => {
                         className="w-full p-2 text-[14px] rounded-md shadow-[0px_4px_4px_rgba(21,122,178,0.25)]"
                     />
 
-                    {/* Tombol Hapus */}
                     <button
                         className="bg-error1 text-white p-1 rounded-full hover:bg-mainOrange transition"
                         onClick={() => removeSkill(index)}
@@ -427,7 +420,6 @@ const SkillsInput = ({ skills, setSkills }) => {
                 </div>
             ))}
 
-            {/* Tombol Tambah Skill */}
             <div className="flex justify-end mt-4">
                 <button
                     onClick={addSkill}

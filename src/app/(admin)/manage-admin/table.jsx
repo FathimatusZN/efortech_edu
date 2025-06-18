@@ -1,6 +1,3 @@
-// 📁 table.jsx
-// Path: src/app/(admin)/manage-admin/table.jsx
-
 import { ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 

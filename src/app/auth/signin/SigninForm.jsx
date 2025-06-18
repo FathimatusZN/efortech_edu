@@ -53,12 +53,10 @@ const SigninForm = () => {
         setLoading(true);
 
         try {
-            await login(email, password); // Login AuthContext
-            console.log("✅ Login success!");
+            await login(email, password);
 
             if (redirect) {
                 router.push(redirect);
-                console.log("Redirect path:", redirect);
             } else {
                 // Ambil user dari sessionStorage
                 const role = localStorage.getItem("role");

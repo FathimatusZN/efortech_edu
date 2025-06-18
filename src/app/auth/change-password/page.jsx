@@ -68,7 +68,6 @@ export default function ChangePasswordPage() {
               <h1 className="text-2xl font-bold text-[#333333] text-center">Change Password</h1>
             </div>
 
-            {/* Current Password */}
             <div className="space-y-1">
               <label className="text-lg font-semibold text-[#333333]">Current Password <span className="text-red-500">*</span></label>
               <div className="relative">
@@ -85,7 +84,6 @@ export default function ChangePasswordPage() {
               </div>
             </div>
 
-            {/* New Password */}
             <div className="space-y-1">
               <label className="text-lg font-semibold text-[#333333]">New Password <span className="text-red-500">*</span></label>
               <div className="relative">
@@ -102,7 +100,6 @@ export default function ChangePasswordPage() {
               </div>
             </div>
 
-            {/* Confirm New Password */}
             <div className="space-y-1">
               <label className="text-lg font-semibold text-[#333333]">Confirm Password <span className="text-red-500">*</span></label>
               <div className="relative">
@@ -119,11 +116,9 @@ export default function ChangePasswordPage() {
               </div>
             </div>
 
-            {/* Error & Success Messages */}
             {error && <p className="text-red-500 text-sm">{error}</p>}
             {success && <p className="text-green-500 text-sm">{success}</p>}
 
-            {/* Submit Button */}
             <div className="flex justify-center pt-4">
               <button type="submit" className="bg-[#ED7117] hover:bg-orange-600 text-white font-semibold rounded-[10px] w-[180px] h-[36px] transition">
                 Change Password
