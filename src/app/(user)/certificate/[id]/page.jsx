@@ -72,7 +72,7 @@ export default function CertificateDetailPage() {
               </div>
               <div>
                 <span>Certificate Number:</span>
-                <div className="font-semibold">{certificate.certificate_number}</div>
+                <div className="font-semibold">{certificate.original_number || certificate.certificate_number}</div>
               </div>
               <div>
                 <span>Issued Date:</span>
