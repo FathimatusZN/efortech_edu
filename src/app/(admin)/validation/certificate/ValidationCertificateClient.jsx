@@ -136,9 +136,8 @@ const ValidationCertificateClient = () => {
 
     setLoading(true);
     try {
-      const url = `${
-        process.env.NEXT_PUBLIC_API_BASE_URL
-      }${buildQueryParams()}`;
+      const url = `${process.env.NEXT_PUBLIC_API_BASE_URL
+        }${buildQueryParams()}`;
       const response = await fetch(url);
       if (!response.ok) throw new Error();
 
@@ -246,29 +245,30 @@ const ValidationCertificateClient = () => {
     status,
     notes = ""
   ) => {
-    try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/ucertificate/update-status`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            user_certificate_id,
-            status,
-            notes,
-            admin_id: adminId,
-          }),
-        }
-      );
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/ucertificate/update-status`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_certificate_id,
+          status,
+          notes,
+          admin_id: adminId,
+        }),
+      }
+    );
 
-      if (!res.ok) throw new Error("Failed to update status");
+    const data = await res.json();
 
-      toast.success("Status updated successfully");
-      fetchTabData(tab);
-    } catch (err) {
-      console.error(err);
-      toast.error("Error updating status");
+    if (!res.ok) {
+      throw new Error(data.message || "Failed to update status");
     }
+
+    toast.success("Status updated successfully");
+    fetchTabData(tab);
+
+    return data;
   };
 
   // Function to handle click outside the filter dropdown
@@ -384,8 +384,8 @@ const ValidationCertificateClient = () => {
                                     status: checked
                                       ? [...prevStatus, statusCode]
                                       : prevStatus.filter(
-                                          (s) => s !== statusCode
-                                        ),
+                                        (s) => s !== statusCode
+                                      ),
                                   },
                                 };
                               });
@@ -439,11 +439,10 @@ const ValidationCertificateClient = () => {
                           <button
                             key={field}
                             onClick={() => setTempSortField(field)}
-                            className={`w-full text-left px-2 py-1 rounded hover:bg-gray-100 text-sm ${
-                              tempSortField === field
-                                ? "bg-blue-100 font-semibold"
-                                : ""
-                            }`}
+                            className={`w-full text-left px-2 py-1 rounded hover:bg-gray-100 text-sm ${tempSortField === field
+                              ? "bg-blue-100 font-semibold"
+                              : ""
+                              }`}
                           >
                             {field
                               .replaceAll("_", " ")

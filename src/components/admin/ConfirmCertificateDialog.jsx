@@ -33,7 +33,19 @@ export const ConfirmCertificateDialog = ({
         setErrors({});
 
         try {
-            // 1. Send Email
+            // 1. First update status
+            try {
+                await onConfirm(certificateId, status, notes);
+            } catch (err) {
+                // If update fails, show error and stop
+                setErrors((prev) => ({
+                    ...prev,
+                    general: err.message || "Failed to update certificate status",
+                }));
+                return; // STOP — don't continue to send email
+            }
+
+            // 2. If success, then send email
             const emailRes = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/email/send-upload-certificate`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -47,9 +59,6 @@ export const ConfirmCertificateDialog = ({
 
             const emailData = await emailRes.json();
             if (!emailRes.ok) throw new Error(emailData.message);
-
-            // 2. Callback update status
-            await onConfirm(certificateId, status, notes);
 
             onClose();
         } catch (err) {

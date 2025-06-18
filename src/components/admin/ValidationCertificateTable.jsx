@@ -163,8 +163,8 @@ export const ValidationCertificateTable = ({
     setConfirmDialogOpen(true);
   };
 
-  const handleConfirm = (certificateId, status, notes) => {
-    onStatusChange(certificateId, status, notes);
+  const handleConfirm = async (certificateId, status, notes) => {
+    return await onStatusChange(certificateId, status, notes);
   };
 
   return (
