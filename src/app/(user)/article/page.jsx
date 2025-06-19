@@ -75,14 +75,13 @@ export default function ArticlePage() {
     setLoading(true);
     try {
       const res = await fetch(
-        `${
-          process.env.NEXT_PUBLIC_API_BASE_URL
+        `${process.env.NEXT_PUBLIC_API_BASE_URL
         }/api/articles/search?query=${encodeURIComponent(searchQuery)}`
       );
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
 
-      setArticles(data.data);
+      setArticles(Array.isArray(data.data) ? data.data : []);
       setPage(1);
     } catch (error) {
       console.error("Search error:", error);
@@ -156,14 +155,12 @@ export default function ArticlePage() {
             <button
               key={index}
               onClick={() => setCurrentSlide(index)}
-              className={`w-3 h-3 rounded-full border-2 flex items-center justify-center transition-all ${
-                currentSlide === index ? "border-mainOrange" : "border-gray-400"
-              }`}
+              className={`w-3 h-3 rounded-full border-2 flex items-center justify-center transition-all ${currentSlide === index ? "border-mainOrange" : "border-gray-400"
+                }`}
             >
               <div
-                className={`w-1 h-1 rounded-full ${
-                  currentSlide === index ? "bg-mainOrange" : "bg-transparent"
-                }`}
+                className={`w-1 h-1 rounded-full ${currentSlide === index ? "bg-mainOrange" : "bg-transparent"
+                  }`}
               ></div>
             </button>
           ))}
@@ -291,9 +288,9 @@ export default function ArticlePage() {
           Showing{" "}
           {filteredArticles.length > 0
             ? `${(page - 1) * itemsPerPage + 1} - ${Math.min(
-                page * itemsPerPage,
-                filteredArticles.length
-              )}`
+              page * itemsPerPage,
+              filteredArticles.length
+            )}`
             : 0}{" "}
           of {filteredArticles.length} article
           {filteredArticles.length !== 1 && "s"}
