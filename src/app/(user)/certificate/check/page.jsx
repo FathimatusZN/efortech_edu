@@ -150,7 +150,7 @@ export default function CertificateValidation() {
               <TableBody>
                 {paginatedData.map((item, index) => (
                   <TableRow key={index}>
-                    <TableCell>{item.certificate_number}</TableCell>
+                    <TableCell>{item.original_number || item.certificate_number}</TableCell>
                     <TableCell>{item.fullname}</TableCell>
                     <TableCell>
                       {formatDate(item.issued_date)}

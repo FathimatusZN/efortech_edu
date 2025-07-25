@@ -117,7 +117,6 @@ export default function AddTraining() {
       setShowSuccess(true);
       resetForm();
     } catch (err) {
-      console.error("❌ Create error:", err);
       setShowError(true);
     }
   };
@@ -207,12 +206,13 @@ export default function AddTraining() {
           <SuccessDialog
             open={showError}
             onOpenChange={(open) => setShowError(open)}
-            title="Update Failed"
+            title="Create Failed"
             messages={[
               "Something went wrong while add the training.",
-              "Please try again later or check your form.",
+              "Please try again later or check your form. Make sure all required fields are filled with valid inputs.",
             ]}
             buttonText="Close"
+            type="error"
           />
         </div>
       )}

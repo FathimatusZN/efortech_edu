@@ -14,6 +14,7 @@ export default function TrainingHistoryCard({
   status,
   hasReview = false,
   hasCertificate = false,
+  attendanceStatus = null,
 }) {
   const router = useRouter();
 
@@ -127,7 +128,7 @@ export default function TrainingHistoryCard({
               variant="orange"
               className="w-full"
               onClick={handleUploadCertificate}
-              disabled={isCertificateUploaded || !hasCertificate}
+              disabled={isCertificateUploaded || !attendanceStatus}
             >
               {isCertificateUploaded
                 ? "Certificate Uploaded"
@@ -211,6 +212,7 @@ export default function TrainingHistoryCard({
       <UploadCertificateDialog
         open={isUploadCertDialogOpen}
         onOpenChange={setIsUploadCertDialogOpen}
+        registrationParticipantId={registrationParticipantId}
         registrationId={registrationId}
         onSuccess={() => {
           setIsCertificateUploaded(true);
