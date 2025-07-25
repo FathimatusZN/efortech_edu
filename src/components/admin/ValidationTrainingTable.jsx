@@ -14,6 +14,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import CertificateDetailDialog from "@/components/admin/CertificateDetailDialog";
+import { AdvantechCertificateDetailDialog } from "@/components/admin/AdvantechCertificateDetailDialog";
 const PAGE_SIZE = 10;
 
 // Status labels mapped to status codes
@@ -53,7 +54,9 @@ export const ValidationTrainingTable = ({
   const paginatedData = data.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
   const [selectedCertificate, setSelectedCertificate] = useState(null);
   const [showCertificateDialog, setShowCertificateDialog] = useState(false);
-
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [isDialogOpen, setDialogOpen] = useState(false);
+    
   // Render attendance buttons or status
   const renderAttendanceColumn = (item) => {
     const id = item.registration_participant_id;
@@ -157,6 +160,26 @@ export const ValidationTrainingTable = ({
     );
   };
 
+  const renderAdvantechCertificateColumn = (item) => {
+  const certUrl = item.advantech_cert;
+
+  if (certUrl) {
+    return (
+      <Button
+        className="bg-white text-black hover:bg-lightBlue hover:text-white transition duration-300 ease-in-out py-2 px-4 rounded-md"
+        onClick={() => {
+        setSelectedItem(item);
+        setDialogOpen(true);
+        }}>
+        Preview
+      </Button>
+    );
+  }
+
+  return <span className="text-red-500 italic">Not Found</span>;
+};
+
+
   const handleOpenCertificateDetail = async (certificateId) => {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/certificate/${certificateId}`);
@@ -197,6 +220,7 @@ export const ValidationTrainingTable = ({
               ) : (
                 <>
                   <TableHead>Attendance</TableHead>
+                  <TableHead>Advantech Certificate</TableHead>
                   <TableHead>Certificate</TableHead>
                 </>
               )}
@@ -257,6 +281,7 @@ export const ValidationTrainingTable = ({
                 ) : (
                   <>
                     <TableCell>{renderAttendanceColumn(item)}</TableCell>
+                    <TableCell>{renderAdvantechCertificateColumn(item)}</TableCell>
                     <TableCell>{renderCertificateUploadColumn(item)}</TableCell>
                   </>
                 )}
@@ -321,6 +346,11 @@ export const ValidationTrainingTable = ({
           onClose={() => setShowCertificateDialog(false)}
         />
       )}
+        <AdvantechCertificateDetailDialog
+          open={isDialogOpen}
+          onClose={() => setDialogOpen(false)}
+          item={selectedItem}
+        />
     </div>
   );
 };
