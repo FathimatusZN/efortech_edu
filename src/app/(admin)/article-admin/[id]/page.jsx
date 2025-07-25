@@ -71,7 +71,6 @@ export default function EditArticle() {
                 setImages(article.images || []);
                 setSources(article.sources || []);
             } catch (err) {
-                console.error("❌ Error fetching article:", err);
                 setHasError("server");
             } finally {
                 setIsLoading(false);
@@ -111,7 +110,6 @@ export default function EditArticle() {
 
             setShowSuccess(true);
         } catch (err) {
-            console.error("❌ Update error:", err);
             toast.error("Failed to update article.");
         }
     };
@@ -278,6 +276,7 @@ export default function EditArticle() {
                     "Please try again later or check your form."
                 ]}
                 buttonText="Close"
+                type="error"
             />
         </ProtectedRoute>
     );

@@ -36,7 +36,7 @@ const CertificateDetailDialog = ({ open, onClose, data }) => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="flex flex-col gap-y-2 text-sm">
-                        <InfoRow label="Certificate Number" value={data.certificate_number} />
+                        <InfoRow label="Certificate Number" value={data.original_number || data.certificate_number} />
                         <InfoRow label="Certificate ID" value={data.certificate_id} />
                         <InfoRow label="Issued Date" value={formatDate(data.issued_date)} />
                         <InfoRow label="Expired Date" value={formatDate(data.expired_date)} />
