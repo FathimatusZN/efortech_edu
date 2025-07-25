@@ -2,6 +2,7 @@
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { toast } from "react-hot-toast";
 
 export default function UploadCertificateDialog({
   open,
@@ -17,6 +18,13 @@ export default function UploadCertificateDialog({
   const handleFileChange = async (e) => {
     const selectedFile = e.target.files[0];
     if (!selectedFile) return;
+
+    // Check if the file is a PDF
+    if (selectedFile.type !== "application/pdf") {
+      toast.error("Only PDF files are allowed.");
+      e.target.value = "";
+      return;
+    }
 
     setFile(selectedFile);
     setIsUploading(true);
@@ -41,7 +49,7 @@ export default function UploadCertificateDialog({
         uploadData.status !== "success" ||
         !uploadData.data?.fileUrl
       ) {
-        alert(uploadData.message || "Upload gagal.");
+        toast.error(uploadData.message || "Upload failed.");
         setFile(null);
         return;
       }
@@ -49,7 +57,7 @@ export default function UploadCertificateDialog({
       setFileUrl(uploadData.data.fileUrl);
     } catch (err) {
       console.error("Upload error:", err);
-      alert("Terjadi kesalahan saat upload file.");
+      toast.error("Something went wrong while uploading the file.");
       setFile(null);
     } finally {
       setIsUploading(false);
@@ -58,7 +66,7 @@ export default function UploadCertificateDialog({
 
   const handleSubmit = async () => {
     if (!fileUrl) {
-      alert("File belum berhasil diupload.");
+      toast.error("File URL is not set. Please upload a file first.");
       return;
     }
 
@@ -80,16 +88,17 @@ export default function UploadCertificateDialog({
       const updateData = await updateRes.json();
 
       if (!updateRes.ok) {
-        alert(updateData.message || "Gagal menyimpan sertifikat.");
+        toast.error(updateData.message || "Failed to save certificate.");
         return;
       }
 
       // success
       onSuccess?.();
       onOpenChange(false);
+      toast.success("Certificate uploaded successfully.");
     } catch (err) {
       console.error("Update error:", err);
-      alert("Gagal mengupdate data sertifikat.");
+      toast.error("Failed to save certificate. Please try again.");
     }
   };
 
@@ -97,7 +106,7 @@ export default function UploadCertificateDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogTitle>Upload Sertifikat Advantech</DialogTitle>
-        <input type="file" onChange={handleFileChange} disabled={isUploading} />
+        <input type="file" accept="application/pdf" onChange={handleFileChange} disabled={isUploading} />
         <Button
           className="mt-4 w-full bg-mainOrange text-white"
           onClick={handleSubmit}
