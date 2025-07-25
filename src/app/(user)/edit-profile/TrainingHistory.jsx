@@ -37,6 +37,7 @@ export default function TrainingHistory({ userId }) {
               has_review,
               email,
               user_photo,
+              attendance_status,
             } = participant;
 
             let trainingImages = [];
@@ -73,6 +74,7 @@ export default function TrainingHistory({ userId }) {
               userPhoto: user_photo,
               images: trainingImages,
               isCompleted: status === 4,
+              attendanceStatus: attendance_status,
             };
           })
         );

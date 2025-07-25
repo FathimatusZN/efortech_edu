@@ -7,6 +7,7 @@ export default function UploadCertificateDialog({
   open,
   onOpenChange,
   registrationParticipantId,
+  registrationId,
   onSuccess,
 }) {
   const [file, setFile] = useState(null);
@@ -35,14 +36,17 @@ export default function UploadCertificateDialog({
 
       const uploadData = await uploadRes.json();
 
-      if (!uploadRes.ok || uploadData.status !== "success" || !uploadData.data?.fileUrl) {
+      if (
+        !uploadRes.ok ||
+        uploadData.status !== "success" ||
+        !uploadData.data?.fileUrl
+      ) {
         alert(uploadData.message || "Upload gagal.");
         setFile(null);
         return;
       }
 
       setFileUrl(uploadData.data.fileUrl);
-
     } catch (err) {
       console.error("Upload error:", err);
       alert("Terjadi kesalahan saat upload file.");
