@@ -1,6 +1,6 @@
 "use client";
 import { Dialog, DialogContent, DialogTitle, DialogHeader } from "@/components/ui/dialog";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "react-hot-toast";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
@@ -31,7 +31,6 @@ export default function UploadCertificateDialog({
     setFile(selectedFile);
     setIsUploading(true);
     setFileUrl(null);
-    setIsPreviewLoading(true);
 
     const formData = new FormData();
     formData.append("files", selectedFile);
@@ -59,6 +58,7 @@ export default function UploadCertificateDialog({
       }
 
       setFileUrl(uploadData.data.fileUrl);
+      setIsPreviewLoading(true);
     } catch (err) {
       console.error("Upload error:", err);
       toast.error("Something went wrong while uploading the file.");
@@ -105,9 +105,25 @@ export default function UploadCertificateDialog({
     }
   };
 
+  const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    if (!open) {
+      setFile(null);
+      setFileUrl(null);
+      setIsConfirmed(false);
+      setIsUploading(false);
+      setIsPreviewLoading(true);
+
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  }, [open]);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[90vw] max-h-[90vh] overflow-y-auto w-[95vw] sm:w-[90vw] p-4 sm:p-6 rounded-md">
+      <DialogContent className="max-w-[90vw] md:max-w-[80vw] lg:max-w-[60vw] max-h-[90vh] overflow-y-auto w-[95vw] sm:w-[90vw] p-4 sm:p-6 rounded-md">
         <DialogHeader>
           <DialogTitle className="text-base sm:text-lg md:text-xl">
             Upload Advantech Certificate
@@ -115,6 +131,7 @@ export default function UploadCertificateDialog({
         </DialogHeader>
 
         <input
+          ref={fileInputRef}
           type="file"
           accept="application/pdf"
           onChange={handleFileChange}
@@ -139,7 +156,7 @@ export default function UploadCertificateDialog({
             </div>
 
             {/* Checkbox warning */}
-            <div className="mt-4 space-y-2 text-xs sm:text-sm md:text-base">
+            <div className="mt-4 space-y-2 text-xs sm:text-sm md:text-md">
               <div className="flex items-start gap-2">
                 <input
                   type="checkbox"
