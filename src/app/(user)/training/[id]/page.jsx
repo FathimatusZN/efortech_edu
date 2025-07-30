@@ -141,8 +141,8 @@ const TrainingDetail = () => {
 
   const averageRating = validScores.length
     ? (
-        validScores.reduce((acc, score) => acc + score, 0) / validScores.length
-      ).toFixed(2)
+      validScores.reduce((acc, score) => acc + score, 0) / validScores.length
+    ).toFixed(2)
     : "0.00";
 
   const sortedReviews = reviews
@@ -168,9 +168,8 @@ const TrainingDetail = () => {
                 src={img}
                 alt={`Slide ${index + 1}`}
                 fill
-                className={`object-cover transition-opacity duration-1000 ${
-                  currentSlide === index ? "opacity-100" : "opacity-0"
-                }`}
+                className={`object-cover transition-opacity duration-1000 ${currentSlide === index ? "opacity-100" : "opacity-0"
+                  }`}
               />
             ))}
             <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
@@ -226,8 +225,8 @@ const TrainingDetail = () => {
                   {trainingData.level === 1
                     ? "Beginner"
                     : trainingData.level === 2
-                    ? "Intermediate"
-                    : "Advanced"}
+                      ? "Intermediate"
+                      : "Advanced"}
                 </p>
               </div>
               <div>
@@ -236,9 +235,8 @@ const TrainingDetail = () => {
                 </p>
                 <p className="text-sm text-black font-semibold">
                   {trainingData.validity_period
-                    ? `${trainingData.validity_period} ${
-                        trainingData.validity_period > 1 ? "Months" : "Month"
-                      }`
+                    ? `${trainingData.validity_period} ${trainingData.validity_period > 1 ? "Months" : "Month"
+                    }`
                     : "N/A"}
                 </p>
               </div>
@@ -279,7 +277,7 @@ const TrainingDetail = () => {
             <div className="mt-4 max-w-full">
               <p className="text-lg text-mainOrange font-bold">Description</p>
               <div className="max-h-40 overflow-hidden hover:overflow-y-auto custom-scroll pr-2">
-                <p className="text-xs text-black leading-relaxed text-justify">
+                <p className="text-xs text-black leading-relaxed text-justify whitespace-pre-line">
                   {trainingData.description}
                 </p>
 
@@ -316,8 +314,8 @@ const TrainingDetail = () => {
               </button>
               <button
                 onClick={() =>
-                  (window.location.href =
-                    "mailto:info@efortechsolutions.com?subject=Question%20about%20Training%20Registration%20at%20Efortech&body=Dear%20Efortech%20Team,%0D%0A%0D%0AI%20hope%20this%20message%20finds%20you%20well.%0D%0A%0D%0AI%20would%20like%20to%20ask%20for%20further%20information%20regarding%20the%20training%20registration.%20Could%20you%20please%20provide%20more%20details%20about%20the%20process%20or%20requirements?%0D%0A%0D%0AThank%20you%20in%20advance%20for%20your%20assistance.%0D%0A%0D%0ABest%20regards,%0D%0A[Your%20Name]")
+                (window.location.href =
+                  "mailto:info@efortechsolutions.com?subject=Question%20about%20Training%20Registration%20at%20Efortech&body=Dear%20Efortech%20Team,%0D%0A%0D%0AI%20hope%20this%20message%20finds%20you%20well.%0D%0A%0D%0AI%20would%20like%20to%20ask%20for%20further%20information%20regarding%20the%20training%20registration.%20Could%20you%20please%20provide%20more%20details%20about%20the%20process%20or%20requirements?%0D%0A%0D%0AThank%20you%20in%20advance%20for%20your%20assistance.%0D%0A%0D%0ABest%20regards,%0D%0A[Your%20Name]")
                 }
                 className="px-6 py-1 border-2 border-mainOrange text-mainOrange font-semibold rounded-lg w-full md:w-[300px] transition duration-300 ease-in-out hover:bg-mainOrange hover:text-white active:scale-95"
               >

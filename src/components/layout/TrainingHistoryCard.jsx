@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import UploadPaymentDialog from "./UploadPaymentDialog";
+import UploadCertificateDialog from "./UploadCertificateDialog";
 
 export default function TrainingHistoryCard({
   registrationId,
@@ -13,8 +14,16 @@ export default function TrainingHistoryCard({
   status,
   hasReview = false,
   hasCertificate = false,
+  attendanceStatus = null,
 }) {
   const router = useRouter();
+
+  const [isCertificateUploaded, setIsCertificateUploaded] = useState(false);
+  const [isUploadCertDialogOpen, setIsUploadCertDialogOpen] = useState(false);
+
+  const handleUploadCertificate = () => {
+    setIsUploadCertDialogOpen(true);
+  };
 
   const [currentSlide, setCurrentSlide] = useState(0);
 
@@ -114,7 +123,17 @@ export default function TrainingHistoryCard({
 
       case "completed":
         return (
-          <div className="flex flex-col items-center w-full gap-3 mt-4">
+          <div className="flex flex-col items-center w-full gap-2">
+            <Button
+              variant="orange"
+              className="w-full"
+              onClick={handleUploadCertificate}
+              disabled={isCertificateUploaded || !attendanceStatus}
+            >
+              {isCertificateUploaded
+                ? "Certificate Uploaded"
+                : "Upload Advantech Certificate"}
+            </Button>
             <Button
               variant="ghost"
               onClick={handleWriteReview}
@@ -144,8 +163,8 @@ export default function TrainingHistoryCard({
   };
 
   return (
-    <div className="bg-white w-full max-w-[5000px] max-h-[433px] border-2 border-mainBlue rounded-xl shadow-lg hover:shadow-xl transition-all overflow-hidden">
-      <div className="relative w-full h-[200px] overflow-hidden">
+    <div className="bg-white w-full max-w-[5000px] max-h-[520px] border-2 border-mainBlue rounded-xl shadow-lg hover:shadow-xl transition-all overflow-hidden">
+      <div className="relative w-full h-[240px] overflow-hidden">
         {images.map((img, index) => (
           <img
             key={index}
@@ -156,7 +175,7 @@ export default function TrainingHistoryCard({
           />
         ))}
 
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 flex space-x-2">
           {images.map((_, index) => (
             <button
               key={index}
@@ -174,7 +193,9 @@ export default function TrainingHistoryCard({
       </div>
 
       <div className="p-4 text-center">
-        <h2 className="text-lg font-semibold text-blue-900 my-3">{trainingName}</h2>
+        <h2 className="text-lg font-semibold text-blue-900 my-3 line-clamp-2 break-words">
+          {trainingName}
+        </h2>
 
         {renderButtons()}
       </div>
@@ -183,6 +204,17 @@ export default function TrainingHistoryCard({
         open={isUploadDialogOpen}
         onOpenChange={setIsUploadDialogOpen}
         registrationId={registrationId}
+      />
+
+      <UploadCertificateDialog
+        open={isUploadCertDialogOpen}
+        onOpenChange={setIsUploadCertDialogOpen}
+        registrationParticipantId={registrationParticipantId}
+        registrationId={registrationId}
+        onSuccess={() => {
+          setIsCertificateUploaded(true);
+          setIsUploadCertDialogOpen(false);
+        }}
       />
     </div>
   );

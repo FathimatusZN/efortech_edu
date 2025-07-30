@@ -25,6 +25,11 @@ export default function TrainingHistory({ userId }) {
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         const result = await res.json();
 
+        if (!Array.isArray(result.data)) {
+          setTrainings([]);
+          return;
+        }
+
         const transformed = await Promise.all(
           result.data.map(async (participant) => {
             const {
@@ -34,9 +39,11 @@ export default function TrainingHistory({ userId }) {
               training_date,
               status,
               certificate_id,
+              has_certificate,
               has_review,
               email,
               user_photo,
+              attendance_status,
             } = participant;
 
             let trainingImages = [];
@@ -66,13 +73,14 @@ export default function TrainingHistory({ userId }) {
               trainingName: training_name,
               trainingDate: training_date,
               status: statusMap[status] || "unknown",
-              hasCertificate: certificate_id !== null,
+              hasCertificate: has_certificate,
               hasReview: has_review,
               certificateId: certificate_id,
               email,
               userPhoto: user_photo,
               images: trainingImages,
               isCompleted: status === 4,
+              attendanceStatus: attendance_status,
             };
           })
         );
