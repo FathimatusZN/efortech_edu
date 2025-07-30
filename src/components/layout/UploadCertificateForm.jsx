@@ -134,6 +134,11 @@ export default function UploadUCertificateForm({
       }
     }
 
+    // Space validation for certificate_number
+    if (formData.certificate_number.includes(" ")) {
+      newErrors.certificate_number = "Certificate number must not contain spaces.";
+    }
+
     if (Object.keys(newErrors).length) {
       setErrors(newErrors);
       return;
