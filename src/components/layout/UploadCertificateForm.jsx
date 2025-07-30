@@ -122,12 +122,23 @@ export default function UploadUCertificateForm({
       newErrors.certFile = "PDF file is required";
     }
 
+    // Date validation
+    if (formData.issued_date && formData.expired_date) {
+      const issued = new Date(formData.issued_date);
+      const expired = new Date(formData.expired_date);
+
+      if (issued.getTime() === expired.getTime()) {
+        newErrors.expired_date = "Issued and expired dates cannot be the same.";
+      } else if (issued > expired) {
+        newErrors.expired_date = "Expired date must be after issued date.";
+      }
+    }
+
     if (Object.keys(newErrors).length) {
       setErrors(newErrors);
       return;
     }
 
-    // Base payload
     const payload = {
       fullname: formData.fullname,
       cert_type: formData.cert_type,
@@ -238,9 +249,8 @@ export default function UploadUCertificateForm({
                     src={`https://docs.google.com/gview?url=${encodeURIComponent(
                       certPreviewUrl
                     )}&embedded=true`}
-                    className={`w-full h-full border rounded ${
-                      previewLoading ? "invisible" : "visible"
-                    }`}
+                    className={`w-full h-full border rounded ${previewLoading ? "invisible" : "visible"
+                      }`}
                     frameBorder="0"
                     title="Certificate Preview"
                     onLoad={() => setPreviewLoading(false)}
