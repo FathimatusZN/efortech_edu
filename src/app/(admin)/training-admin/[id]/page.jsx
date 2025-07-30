@@ -122,7 +122,7 @@ export default function TrainingDetailPage() {
                 }
               />
               <VerticalDivider />
-              <InfoItem label="Tanggal Pelaksanaan" value="Working Hours (by Request)" />
+              <InfoItem label="Available Date" value="Working Hours (by Request)" />
               <VerticalDivider />
               <InfoItem
                 label="Duration"
@@ -160,7 +160,7 @@ export default function TrainingDetailPage() {
 
         <div className="mt-10 space-y-6 px-4">
           <div>
-            <h2 className="text-xl sm:text-2xl text-mainOrange font-bold mb-1">About</h2>
+            <h2 className="text-xl sm:text-2xl text-mainOrange font-bold mb-1">Description</h2>
             <p className="text-black text-sm whitespace-pre-line">{training.description}</p>
           </div>
 
