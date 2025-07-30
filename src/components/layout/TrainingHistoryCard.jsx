@@ -132,7 +132,7 @@ export default function TrainingHistoryCard({
             >
               {isCertificateUploaded
                 ? "Certificate Uploaded"
-                : "Upload Sertifikat Advantech"}
+                : "Upload Advantech Certificate"}
             </Button>
             <Button
               variant="ghost"
@@ -163,32 +163,29 @@ export default function TrainingHistoryCard({
   };
 
   return (
-    <div className="bg-white w-full max-w-[5000px] max-h-[433px] border-2 border-mainBlue rounded-xl shadow-lg hover:shadow-xl transition-all overflow-hidden">
-      <div className="relative w-full h-[200px] overflow-hidden">
+    <div className="bg-white w-full max-w-[5000px] max-h-[520px] border-2 border-mainBlue rounded-xl shadow-lg hover:shadow-xl transition-all overflow-hidden">
+      <div className="relative w-full h-[240px] overflow-hidden">
         {images.map((img, index) => (
           <img
             key={index}
             src={img}
             alt={`Slide ${index + 1}`}
-            className={`absolute transition-opacity duration-1000 w-full h-full object-cover ${
-              currentSlide === index ? "opacity-100" : "opacity-0"
-            }`}
+            className={`absolute transition-opacity duration-1000 w-full h-full object-cover ${currentSlide === index ? "opacity-100" : "opacity-0"
+              }`}
           />
         ))}
 
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 flex space-x-2">
           {images.map((_, index) => (
             <button
               key={index}
               onClick={() => setCurrentSlide(index)}
-              className={`w-3 h-3 rounded-full border-2 flex justify-center items-center transition-all ${
-                currentSlide === index ? "border-mainOrange" : "border-gray-400"
-              }`}
+              className={`w-3 h-3 rounded-full border-2 flex justify-center items-center transition-all ${currentSlide === index ? "border-mainOrange" : "border-gray-400"
+                }`}
             >
               <div
-                className={`w-1 h-1 rounded-full items-center ${
-                  currentSlide === index ? "bg-mainOrange" : "bg-transparent"
-                }`}
+                className={`w-1 h-1 rounded-full items-center ${currentSlide === index ? "bg-mainOrange" : "bg-transparent"
+                  }`}
               ></div>
             </button>
           ))}
@@ -196,7 +193,7 @@ export default function TrainingHistoryCard({
       </div>
 
       <div className="p-4 text-center">
-        <h2 className="text-lg font-semibold text-blue-900 my-3">
+        <h2 className="text-lg font-semibold text-blue-900 my-3 line-clamp-2 break-words">
           {trainingName}
         </h2>
 
