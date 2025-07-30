@@ -25,6 +25,11 @@ export default function TrainingHistory({ userId }) {
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         const result = await res.json();
 
+        if (!Array.isArray(result.data)) {
+          setTrainings([]);
+          return;
+        }
+
         const transformed = await Promise.all(
           result.data.map(async (participant) => {
             const {
