@@ -83,4 +83,48 @@ const ConfirmDialogAdmin = ({ open, data, onCancel, onConfirm }) => {
     );
 }
 
-export { ConfirmDialog, ConfirmDialogAdmin };
+const ArchiveDialog = ({ open, data, id, title, onCancel, onConfirm }) => {
+    return (
+        <Dialog open={open} onOpenChange={onCancel}>
+            <DialogContent className="space-y-4">
+                <DialogHeader>
+                    <DialogTitle className="text-lg font-semibold text-yellow-600">
+                        🗃️ Archive Confirmation
+                    </DialogTitle>
+                </DialogHeader>
+
+                <p className="text-sm text-muted-foreground">
+                    Are you sure you want to archive this{' '}
+                    <span className="font-medium text-mainBlue">{data}</span> data?
+                </p>
+
+                <table className="text-sm w-full table-auto">
+                    <tbody>
+                        <tr>
+                            <td className="text-lightBlue w-20 align-top">ID</td>
+                            <td className="text-black font-medium">: {id}</td>
+                        </tr>
+                        <tr>
+                            <td className="text-lightBlue w-20 align-top">Title</td>
+                            <td className="text-black font-medium">: {title}</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <DialogFooter className="flex justify-end gap-2 pt-4">
+                    <Button variant="ghost" onClick={onCancel}>
+                        Cancel
+                    </Button>
+                    <Button
+                        className="bg-yellow-600 hover:bg-yellow-700 text-white"
+                        onClick={onConfirm}
+                    >
+                        Yes, Archive
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+};
+
+export { ConfirmDialog, ConfirmDialogAdmin, ArchiveDialog };
