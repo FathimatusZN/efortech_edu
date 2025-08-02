@@ -5,10 +5,10 @@ import { useParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { FaEdit, FaTrash } from "react-icons/fa";
+import { FaEdit, FaTrash, FaArchive } from "react-icons/fa";
 import { NotFound } from "../../../../components/ui/ErrorPage";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
-import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { ArchiveDialog } from "@/components/ui/ConfirmDialog";
 import { toast } from "react-hot-toast";
 
 export default function TrainingDetailPage() {
@@ -96,8 +96,8 @@ export default function TrainingDetailPage() {
               className="px-4 py-1 bg-red-600 hover:bg-red-700"
               onClick={confirmDelete}
             >
-              <FaTrash className="text-sm mr-2" />
-              Delete
+              <FaArchive className="text-sm mr-2" />
+              Archive
             </Button>
           </div>
         </div>
@@ -208,7 +208,7 @@ export default function TrainingDetailPage() {
 
         </div>
 
-        <ConfirmDialog
+        <ArchiveDialog
           open={confirmOpen}
           data="Training"
           id={training.training_id}
