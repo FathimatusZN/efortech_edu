@@ -98,8 +98,7 @@ const Home = () => {
         setTopCourses((courseJson.data || []).slice(0, 3));
         setHighlightArticles((articleJson.data || []).slice(0, 6));
 
-        // const reviews = (reviewJson.data || []).sort(() => Math.random() - 0.5);
-        const reviews = [];
+        const reviews = (reviewJson.data || []).sort(() => Math.random() - 0.5);
         const cards = reviews.map((rev) => ({
           user: rev.fullname,
           avatar: rev.user_photo || "/default-avatar.jpg",
