@@ -62,9 +62,11 @@ export default function TopTrainingSection({ topCourses }) {
                 <h3 className="font-semibold text-lg mb-2 text-left">
                   {course.training_name}
                 </h3>
-                <p className="text-sm italic text-gray-500 text-left">
-                  Graduates: {course.graduates.toLocaleString()} Mentees
-                </p>
+                {course.graduates > 0 && (
+                  <p className="text-sm italic text-gray-500 text-left">
+                    Graduates: {course.graduates.toLocaleString()} Mentees
+                  </p>
+                )}
 
                 {/* Spacer untuk dorong harga ke bawah */}
                 <div className="mt-auto">
