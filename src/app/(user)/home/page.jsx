@@ -322,7 +322,9 @@ const Home = () => {
       <PartnerSection partnersData={partnersData} />
 
       <div className="text-center px-4 py-4">
-        <TopTrainingSection topCourses={topCourses} />
+        {topCourses.length > 0 && (
+          <TopTrainingSection topCourses={topCourses} />
+        )}
 
         <ArticleSection highlightArticles={highlightArticles} />
 
