@@ -98,7 +98,8 @@ const Home = () => {
         setTopCourses((courseJson.data || []).slice(0, 3));
         setHighlightArticles((articleJson.data || []).slice(0, 6));
 
-        const reviews = (reviewJson.data || []).sort(() => Math.random() - 0.5);
+        // const reviews = (reviewJson.data || []).sort(() => Math.random() - 0.5);
+        const reviews = [];
         const cards = reviews.map((rev) => ({
           user: rev.fullname,
           avatar: rev.user_photo || "/default-avatar.jpg",
@@ -234,14 +235,12 @@ const Home = () => {
             <button
               key={index}
               onClick={() => setCurrentSlide(index)}
-              className={`w-3 h-3 rounded-full border-2 flex items-center justify-center transition-all ${
-                currentSlide === index ? "border-mainOrange" : "border-gray-400"
-              }`}
+              className={`w-3 h-3 rounded-full border-2 flex items-center justify-center transition-all ${currentSlide === index ? "border-mainOrange" : "border-gray-400"
+                }`}
             >
               <div
-                className={`w-1 h-1 rounded-full ${
-                  currentSlide === index ? "bg-mainOrange" : "bg-transparent"
-                }`}
+                className={`w-1 h-1 rounded-full ${currentSlide === index ? "bg-mainOrange" : "bg-transparent"
+                  }`}
               ></div>
             </button>
           ))}
@@ -328,73 +327,73 @@ const Home = () => {
 
         <ArticleSection highlightArticles={highlightArticles} />
 
-        <div className="flex flex-col-reverse md:flex-row items-center justify-between gap-10 md:gap-20 mt-10 px-4 md:px-16 mb-20">
-          <div className="w-full md:w-[50%] flex justify-center overflow-hidden">
-            <Swiper
-              effect={"cards"}
-              grabCursor={true}
-              modules={[EffectCards]}
-              className="w-[280px] sm:w-[300px] h-[420px] overflow-visible"
-              cardsEffect={{
-                perSlideRotate: 0,
-                perSlideOffset: 10,
-                slideShadows: false,
-              }}
-            >
-              {reviewCards.map((card, idx) => (
-                <SwiperSlide key={card.id}>
-                  <div
-                    className="text-white text-center p-6 rounded-[20px] h-full flex flex-col items-center justify-start"
-                    style={{
-                      backgroundColor: idx % 2 === 0 ? "#014AAD" : "#F26B1D",
-                    }}
-                  >
-                    <img
-                      src={card.avatar}
-                      alt={card.user}
-                      className="w-36 h-36 rounded-full object-cover aspect-square"
-                    />
-                    <div className="flex flex-col items-center mt-2 gap-2">
-                      <h3 className="text-xl font-bold mt-2">{card.user}</h3>
-                      <p className="text-xs text-center text-white/80">
-                        {card.courseTitle}
-                      </p>
-                      <hr className="w-48 border-t-1 border-white/70" />
-                      <div className="flex space-x-1 text-xl tracking-tight">
-                        {Array.from({ length: 5 }).map((_, i) => (
-                          <span
-                            key={i}
-                            className={
-                              i < card.rating ? "text-yellow-400" : "text-white"
-                            }
-                          >
-                            {i < card.rating ? "★" : "☆"}
-                          </span>
-                        ))}
+        {reviewCards.length > 0 && (
+          <div className="flex flex-col-reverse md:flex-row items-center justify-between gap-10 md:gap-20 mt-10 px-4 md:px-16 mb-20">
+            <div className="w-full md:w-[50%] flex justify-center overflow-hidden">
+              <Swiper
+                effect={"cards"}
+                grabCursor={true}
+                modules={[EffectCards]}
+                className="w-[280px] sm:w-[300px] h-[420px] overflow-visible"
+                cardsEffect={{
+                  perSlideRotate: 0,
+                  perSlideOffset: 10,
+                  slideShadows: false,
+                }}
+              >
+                {reviewCards.map((card, idx) => (
+                  <SwiperSlide key={card.id}>
+                    <div
+                      className="text-white text-center p-6 rounded-[20px] h-full flex flex-col items-center justify-start"
+                      style={{
+                        backgroundColor: idx % 2 === 0 ? "#014AAD" : "#F26B1D",
+                      }}
+                    >
+                      <img
+                        src={card.avatar}
+                        alt={card.user}
+                        className="w-36 h-36 rounded-full object-cover aspect-square"
+                      />
+                      <div className="flex flex-col items-center mt-2 gap-2">
+                        <h3 className="text-xl font-bold mt-2">{card.user}</h3>
+                        <p className="text-xs text-center text-white/80">
+                          {card.courseTitle}
+                        </p>
+                        <hr className="w-48 border-t-1 border-white/70" />
+                        <div className="flex space-x-1 text-xl tracking-tight">
+                          {Array.from({ length: 5 }).map((_, i) => (
+                            <span
+                              key={i}
+                              className={i < card.rating ? "text-yellow-400" : "text-white"}
+                            >
+                              {i < card.rating ? "★" : "☆"}
+                            </span>
+                          ))}
+                        </div>
+                        <p className="text-xs bg-white text-black px-4 py-2 rounded-md leading-relaxed text-center w-50">
+                          “
+                          {card.comment.length > 120
+                            ? card.comment.slice(0, 120) + "..."
+                            : card.comment}
+                          ”
+                        </p>
                       </div>
-                      <p className="text-xs bg-white text-black px-4 py-2 rounded-md leading-relaxed text-center w-50">
-                        “
-                        {card.comment.length > 120
-                          ? card.comment.slice(0, 120) + "..."
-                          : card.comment}
-                        ”
-                      </p>
                     </div>
-                  </div>
-                </SwiperSlide>
-              ))}
-            </Swiper>
-          </div>
+                  </SwiperSlide>
+                ))}
+              </Swiper>
+            </div>
 
-          <div className="w-full md:w-[50%] text-center md:text-left">
-            <h2 className="text-xl md:text-3xl font-bold text-black">
-              What They Say?
-            </h2>
-            <p className="text-mainOrange text-sm md:text-lg font-semibold md:pl-8 mt-2">
-              About this program
-            </p>
+            <div className="w-full md:w-[50%] text-center md:text-left">
+              <h2 className="text-xl md:text-3xl font-bold text-black">
+                What They Say?
+              </h2>
+              <p className="text-mainOrange text-sm md:text-lg font-semibold md:pl-8 mt-2">
+                About this program
+              </p>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {showScrollTop && (
