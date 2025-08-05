@@ -326,7 +326,9 @@ const Home = () => {
           <TopTrainingSection topCourses={topCourses} />
         )}
 
-        <ArticleSection highlightArticles={highlightArticles} />
+        {highlightArticles.length > 0 && (
+          <ArticleSection highlightArticles={highlightArticles} />
+        )}
 
         {reviewCards.length > 0 && (
           <div className="flex flex-col-reverse md:flex-row items-center justify-between gap-10 md:gap-20 mt-10 px-4 md:px-16 mb-20">
