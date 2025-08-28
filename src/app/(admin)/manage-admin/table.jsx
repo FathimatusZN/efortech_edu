@@ -1,7 +1,7 @@
 import { ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export const getAdminColumns = (handleEdit) => [
+export const getAdminColumns = (handleEdit, handleDetail) => [
     {
         id: "select",
         header: ({ table }) => (
@@ -34,17 +34,12 @@ export const getAdminColumns = (handleEdit) => [
         )
     },
     {
-        accessorKey: "last_updated",
-        header: ({ column }) => (
-            <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-                Last Updated <ArrowUpDown className="ml-2 h-4 w-4" />
-            </Button>
-        ),
-        sortingFn: (rowA, rowB, columnId) => {
-            const dateA = parseCustomDate(rowA.getValue(columnId));
-            const dateB = parseCustomDate(rowB.getValue(columnId));
-            return dateA - dateB;
-        }
+        accessorKey: "phone_number",
+        header: "Number",
+        cell: ({ row }) => {
+            const value = row.getValue("phone_number");
+            return value && value.trim() !== "" ? value : "-";
+        },
     },
     {
         accessorKey: "last_login",
@@ -65,25 +60,36 @@ export const getAdminColumns = (handleEdit) => [
     },
     {
         accessorKey: "role_name",
-        header: ({ column }) => (
-            <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-                Role <ArrowUpDown className="ml-2 h-4 w-4" />
-            </Button>
-        ),
+        header: "Role",
+        enableSorting: false,
         filterFn: (row, columnId, filterValue) => {
             return row.getValue(columnId) === filterValue;
         }
     },
     {
         accessorKey: "status",
-        header: ({ column }) => (
-            <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>Status <ArrowUpDown className="ml-2 h-4 w-4" /></Button>
-        ),
+        header: "Status",
+        enableSorting: false,
         cell: ({ row }) => (
             <span className={`text-sm font-medium ${row.original.status === "Active" ? "text-green-600" : "text-red-500"}`}>
                 {row.original.status}
             </span>
         ),
+    },
+    {
+        id: "detail",
+        header: "Detail",
+        cell: ({ row }) => {
+            return (
+                <Button
+                    variant="lightBlue"
+                    size="sm"
+                    onClick={() => handleDetail(row.original)}
+                >
+                    Detail
+                </Button>
+            );
+        }
     },
     {
         id: "action",
@@ -92,7 +98,7 @@ export const getAdminColumns = (handleEdit) => [
             const isInactive = row.original.status !== "Active";
             return (
                 <Button
-                    variant="outline"
+                    variant="mainBlue"
                     size="sm"
                     onClick={() => !isInactive && handleEdit(row.original)}
                     disabled={isInactive}
