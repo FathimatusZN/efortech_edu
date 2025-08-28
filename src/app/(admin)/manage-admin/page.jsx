@@ -15,6 +15,7 @@ import { AddAdminDialog, EditAdminDialog } from "@/components/admin/ManageAdminD
 import { getAdminColumns } from "./table";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { ConfirmDialogAdmin } from "@/components/ui/ConfirmDialog";
+import DetailAdminDialog from "@/components/admin/DetailAdminDialog";
 
 export default function ManageAdmin() {
     const [adminData, setAdminData] = useState([]);
@@ -44,6 +45,13 @@ export default function ManageAdmin() {
         message: "",
         onConfirm: () => { },
     });
+    const [detailOpen, setDetailOpen] = useState(false);
+    const [detailData, setDetailData] = useState(null);
+
+    const handleDetail = (admin) => {
+        setDetailData(admin);
+        setDetailOpen(true);
+    };
 
     useEffect(() => {
         refreshData();
@@ -55,7 +63,7 @@ export default function ManageAdmin() {
         setEditDialogOpen(true);
     };
 
-    const columns = getAdminColumns(handleEdit);
+    const columns = getAdminColumns(handleEdit, handleDetail);
 
     const table = useReactTable({
         data: adminData,
@@ -271,6 +279,7 @@ export default function ManageAdmin() {
         setDeleteError("");
     };
 
+
     return (
         <ProtectedRoute allowedRoles={["superadmin"]}>
             <div className="relative pt-4 pb-8 px-4 sm:px-6 lg:px-8 max-w-[1440px] mx-auto min-h-screen">
@@ -469,6 +478,12 @@ export default function ManageAdmin() {
                     data={"Admin"}
                     onCancel={() => setConfirmDialogOpen(false)}
                     onConfirm={confirmDialogData.onConfirm}
+                />
+
+                <DetailAdminDialog
+                    open={detailOpen}
+                    setOpen={setDetailOpen}
+                    admin={detailData}
                 />
 
             </div>
