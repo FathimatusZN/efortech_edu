@@ -9,6 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { useEffect, useState } from "react";
+import EditCertificateDialog from "./EditCertificateDialog";
 
 const formatDate = (isoString) => {
     const date = new Date(isoString);
@@ -16,9 +17,10 @@ const formatDate = (isoString) => {
     return date.toLocaleString("en-US", options).replace(",", ",");
 };
 
-const CertificateDetailDialog = ({ open, onClose, data }) => {
+const CertificateDetailDialog = ({ open, onClose, data, onUpdated }) => {
     const [isPreviewLoading, setIsPreviewLoading] = useState(true);
     const isPDF = data.cert_file?.endsWith(".pdf");
+    const [editOpen, setEditOpen] = useState(false);
 
     // Reset loading state setiap kali file berubah atau dialog dibuka
     useEffect(() => {
@@ -74,9 +76,21 @@ const CertificateDetailDialog = ({ open, onClose, data }) => {
                     )}
                 </div>
 
-                <DialogFooter className="pt-4">
-                    <Button onClick={onClose} className="bg-mainOrange text-white">Close</Button>
+                <DialogFooter className="pt-4 flex justify-between">
+                    <Button onClick={() => setEditOpen(true)} variant="outline">
+                        Edit
+                    </Button>
+                    <Button onClick={onClose} className="bg-mainOrange text-white">
+                        Close
+                    </Button>
                 </DialogFooter>
+
+                <EditCertificateDialog
+                    open={editOpen}
+                    setOpen={setEditOpen}
+                    certificate={data}
+                    onUpdated={onUpdated}
+                />
             </DialogContent>
         </Dialog>
     );
