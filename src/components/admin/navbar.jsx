@@ -345,17 +345,6 @@ const AdminNavbar = () => {
                 <li>
                   <button
                     onClick={() => {
-                      router.push("/manage-user");
-                    }}
-                    className="block px-2 py-1 hover:bg-gray-100 rounded w-full text-left"
-                  >
-                    Manage User
-                  </button>
-                </li>
-
-                <li>
-                  <button
-                    onClick={() => {
                       router.push("/manage-home");
                     }}
                     className="block px-2 py-1 hover:bg-gray-100 rounded w-full text-left"
@@ -375,6 +364,17 @@ const AdminNavbar = () => {
                     </Link>
                   </li>
                 )}
+
+                <li>
+                  <button
+                    onClick={() => {
+                      router.push("/manage-user");
+                    }}
+                    className="block px-2 py-1 hover:bg-gray-100 rounded w-full text-left"
+                  >
+                    Manage User
+                  </button>
+                </li>
 
                 {navLinks
                   .filter((link) => link.name !== "Validation")
