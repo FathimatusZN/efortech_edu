@@ -23,10 +23,6 @@ export default function ManageUser() {
     const [selectedRows, setSelectedRows] = useState({});
     const [searchQuery, setSearchQuery] = useState("");
     const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
-    const [email, setEmail] = useState("");
-    const [loading, setLoading] = useState(false);
-    const [role, setRole] = useState("");
-    const [emailError, setEmailError] = useState("");
     const [isTableLoading, setIsTableLoading] = useState(true);
     const debounceRef = useRef(null);
     const [detailOpen, setDetailOpen] = useState(false);
