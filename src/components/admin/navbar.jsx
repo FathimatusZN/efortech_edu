@@ -139,28 +139,25 @@ const AdminNavbar = () => {
               >
                 {link.submenu ? (
                   <button
-                    className={`flex items-center focus:outline-none hover:text-mainOrange ${
-                      isActive
-                        ? "text-mainOrange font-semibold"
-                        : "text-mainBlue"
-                    }`}
+                    className={`flex items-center focus:outline-none hover:text-mainOrange ${isActive
+                      ? "text-mainOrange font-semibold"
+                      : "text-mainBlue"
+                      }`}
                   >
                     {link.name}
                     <ChevronDown
                       size={16}
-                      className={`ml-1 transition-transform duration-200 ${
-                        isDropdownOpen ? "rotate-180" : ""
-                      }`}
+                      className={`ml-1 transition-transform duration-200 ${isDropdownOpen ? "rotate-180" : ""
+                        }`}
                     />
                   </button>
                 ) : (
                   <Link
                     href={link.path}
-                    className={`flex items-center hover:text-mainOrange ${
-                      isActive
-                        ? "text-mainOrange font-semibold"
-                        : "text-mainBlue"
-                    }`}
+                    className={`flex items-center hover:text-mainOrange ${isActive
+                      ? "text-mainOrange font-semibold"
+                      : "text-mainBlue"
+                      }`}
                     onClick={closeAllMenus}
                   >
                     {link.name}
@@ -169,9 +166,8 @@ const AdminNavbar = () => {
 
                 {link.submenu && (
                   <div
-                    className={`absolute z-10 bg-white border rounded shadow-lg mt-2 transition-all duration-150 ${
-                      isDropdownOpen ? "block" : "hidden"
-                    }`}
+                    className={`absolute z-10 bg-white border rounded shadow-lg mt-2 transition-all duration-150 ${isDropdownOpen ? "block" : "hidden"
+                      }`}
                   >
                     <ul className="py-2 w-60 text-mainBlue font-normal">
                       <li>
@@ -188,11 +184,10 @@ const AdminNavbar = () => {
                           <Link
                             href={sub.path}
                             onClick={closeAllMenus}
-                            className={`block px-4 py-2 hover:bg-gray-100 ${
-                              router.pathname === sub.path
-                                ? "font-semibold text-mainOrange"
-                                : ""
-                            }`}
+                            className={`block px-4 py-2 hover:bg-gray-100 ${router.pathname === sub.path
+                              ? "font-semibold text-mainOrange"
+                              : ""
+                              }`}
                           >
                             {sub.name}
                           </Link>
@@ -232,6 +227,16 @@ const AdminNavbar = () => {
                       </Link>
                     </li>
                   )}
+                  <li>
+                    <button
+                      onClick={() => {
+                        router.push("/manage-user");
+                      }}
+                      className="block px-4 py-2 text-mainBlue hover:bg-gray-100 w-full text-left"
+                    >
+                      Manage User
+                    </button>
+                  </li>
                   <li>
                     <button
                       onClick={() => {
@@ -360,6 +365,17 @@ const AdminNavbar = () => {
                   </li>
                 )}
 
+                <li>
+                  <button
+                    onClick={() => {
+                      router.push("/manage-user");
+                    }}
+                    className="block px-2 py-1 hover:bg-gray-100 rounded w-full text-left"
+                  >
+                    Manage User
+                  </button>
+                </li>
+
                 {navLinks
                   .filter((link) => link.name !== "Validation")
                   .map((link, index) => (
@@ -381,9 +397,8 @@ const AdminNavbar = () => {
                   >
                     <span>Validation</span>
                     <svg
-                      className={`w-4 h-4 transform transition-transform ${
-                        menuState.validation ? "rotate-180" : ""
-                      }`}
+                      className={`w-4 h-4 transform transition-transform ${menuState.validation ? "rotate-180" : ""
+                        }`}
                       fill="none"
                       stroke="currentColor"
                       strokeWidth="2"

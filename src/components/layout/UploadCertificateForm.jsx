@@ -348,6 +348,9 @@ export default function UploadUCertificateForm({
               onChange={handleChange}
               placeholder="Based on the Certificate File"
             />
+            <p className="text-xs text-gray-500">
+              Fill with "-" if not available
+            </p>
             {errors.certificate_number && (
               <p className="text-sm text-red-500">
                 {errors.certificate_number}

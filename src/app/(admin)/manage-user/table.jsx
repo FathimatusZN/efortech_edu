@@ -1,26 +1,7 @@
 import { ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export const getAdminColumns = (handleEdit, handleDetail) => [
-    {
-        id: "select",
-        header: ({ table }) => (
-            <input
-                type="checkbox"
-                checked={table.getIsAllPageRowsSelected()}
-                onChange={table.getToggleAllPageRowsSelectedHandler()}
-            />
-        ),
-        cell: ({ row }) => (
-            <input
-                type="checkbox"
-                checked={row.getIsSelected()}
-                onChange={row.getToggleSelectedHandler()}
-            />
-        ),
-        enableSorting: false,
-        enableColumnFilter: false,
-    },
+export const getUserColumns = (handleDetail) => [
     {
         accessorKey: "fullname",
         header: ({ column }) => (
@@ -42,6 +23,22 @@ export const getAdminColumns = (handleEdit, handleDetail) => [
         },
     },
     {
+        accessorKey: "institution",
+        header: "Institution",
+        cell: ({ row }) => {
+            const value = row.getValue("institution");
+            return value && value.trim() !== "" ? value : "-";
+        },
+    },
+    {
+        accessorKey: "role_desc",
+        header: "Role",
+        enableSorting: false,
+        filterFn: (row, columnId, filterValue) => {
+            return row.getValue(columnId) === filterValue;
+        }
+    },
+    {
         accessorKey: "last_login",
         header: ({ column }) => (
             <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
@@ -59,24 +56,6 @@ export const getAdminColumns = (handleEdit, handleDetail) => [
         }
     },
     {
-        accessorKey: "role_name",
-        header: "Role",
-        enableSorting: false,
-        filterFn: (row, columnId, filterValue) => {
-            return row.getValue(columnId) === filterValue;
-        }
-    },
-    {
-        accessorKey: "status",
-        header: "Status",
-        enableSorting: false,
-        cell: ({ row }) => (
-            <span className={`text-sm font-medium ${row.original.status === "Active" ? "text-green-600" : "text-red-500"}`}>
-                {row.original.status}
-            </span>
-        ),
-    },
-    {
         id: "detail",
         header: "Detail",
         cell: ({ row }) => {
@@ -87,23 +66,6 @@ export const getAdminColumns = (handleEdit, handleDetail) => [
                     onClick={() => handleDetail(row.original)}
                 >
                     Detail
-                </Button>
-            );
-        }
-    },
-    {
-        id: "action",
-        header: "Action",
-        cell: ({ row }) => {
-            const isInactive = row.original.status !== "Active";
-            return (
-                <Button
-                    variant="mainBlue"
-                    size="sm"
-                    onClick={() => !isInactive && handleEdit(row.original)}
-                    disabled={isInactive}
-                >
-                    Edit
                 </Button>
             );
         }
