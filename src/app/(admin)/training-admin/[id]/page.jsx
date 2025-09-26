@@ -122,7 +122,7 @@ export default function TrainingDetailPage() {
                 }
               />
               <VerticalDivider />
-              <InfoItem label="Available Date" value="Working Hours (by Request)" />
+              <InfoItem label="Available Date" value={`${training.available_date}`} />
               <VerticalDivider />
               <InfoItem
                 label="Duration"

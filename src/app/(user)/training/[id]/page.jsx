@@ -272,7 +272,7 @@ const TrainingDetail = () => {
                   Available Date
                 </p>
                 <p className="text-sm text-black font-semibold">
-                  Working Hours (by request)
+                  {trainingData.available_date}
                 </p>
               </div>
             </div>
