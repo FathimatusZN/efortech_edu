@@ -78,7 +78,20 @@ export default function TopTrainingSection({ topCourses }) {
                           {formatCurrency(course.training_fees)}
                         </span>
                       )}
-                      <span>{formatCurrency(discountedPrice)}</span>
+
+                      {
+                        course.training_fees == 0 ? (
+                          <span className=" font-semibold text-md">
+                            {formatCurrency(0)}{" "}
+                            <span className="font-extrabold animate-pulse text-orange-600">
+                              (Free!)
+                            </span>
+                          </span>
+                        ) : (
+                          <span>{formatCurrency(discountedPrice)}</span>
+                        )
+                      }
+
                     </div>
                     <Link href={`/training/${course.training_id}`}>
                       <Button variant="orange" size="sm">
@@ -92,6 +105,6 @@ export default function TopTrainingSection({ topCourses }) {
           );
         })}
       </div>
-    </div>
+    </div >
   );
 }
