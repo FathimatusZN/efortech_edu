@@ -21,7 +21,7 @@ import {
 import { NotFound } from "../../../../components/ui/ErrorPage";
 import { Button } from "@/components/ui/button";
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 50;
 
 const formatDate = (isoString) => {
   if (!isoString) return "No Expiry Date";
@@ -199,17 +199,34 @@ export default function CertificateValidation() {
                     }
                   />
                 </PaginationItem>
-                {[...Array(totalPages)].map((_, i) => (
-                  <PaginationItem key={i}>
-                    <PaginationLink
-                      href="#"
-                      isActive={page === i + 1}
-                      onClick={() => setPage(i + 1)}
-                    >
-                      {i + 1}
-                    </PaginationLink>
-                  </PaginationItem>
-                ))}
+                {(() => {
+                  const maxVisible = 5; 
+                  let start = Math.max(1, page - Math.floor(maxVisible / 2));
+                  let end = start + maxVisible - 1;
+
+                  if (end > totalPages) {
+                    end = totalPages;
+                    start = Math.max(1, end - maxVisible + 1);
+                  }
+
+                  return Array.from({ length: end - start + 1 }, (_, i) => {
+                    const pageNum = start + i;
+                    return (
+                      <PaginationItem key={pageNum}>
+                        <PaginationLink
+                          href="#"
+                          isActive={page === pageNum}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setPage(pageNum);
+                          }}
+                        >
+                          {pageNum}
+                        </PaginationLink>
+                      </PaginationItem>
+                    );
+                  });
+                })()}
                 <PaginationItem>
                   <PaginationNext
                     href="#"
