@@ -31,7 +31,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 50;
 
 export default function PartnerTable({ partner = [], onDeletePartner, onEditPartner }) {
   const [page, setPage] = useState(1);
@@ -178,20 +178,40 @@ export default function PartnerTable({ partner = [], onDeletePartner, onEditPart
                     className={page === 1 ? 'pointer-events-none opacity-50' : ''}
                   />
                 </PaginationItem>
-                {Array.from({ length: totalPages }, (_, i) => (
-                  <PaginationItem key={i}>
+
+                {(() => {
+                  const pageCount = table.getPageCount();
+                  const currentPage = table.getState().pagination.pageIndex;
+                  const maxVisible = 5;
+
+                  let startPage = Math.max(  
+                  0,
+                  Math.min(
+                  currentPage - Math.floor(maxVisible / 2),
+                  pageCount - maxVisible
+                    )
+                  );
+                  let endPage = Math.min(pageCount, startPage + maxVisible);
+
+                  return Array.from({ length: endPage - startPage }, (_, i) => {
+                  const page = startPage + i;
+                  return (
+                  <PaginationItem key={page}>
                     <PaginationLink
                       href="#"
-                      isActive={page === i + 1}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setPage(i + 1);
-                      }}
+                      isActive={currentPage === page}
+                      onClick={e => {
+                      e.preventDefault();
+                      table.setPageIndex(page);
+                    }}
                     >
-                      {i + 1}
+                    {page + 1}
                     </PaginationLink>
                   </PaginationItem>
-                ))}
+                  );
+                  });
+                })()}
+
                 <PaginationItem>
                   <PaginationNext
                     href="#"

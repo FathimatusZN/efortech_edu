@@ -22,7 +22,7 @@ export default function ManageUser() {
     const [columnFilters, setColumnFilters] = useState([]);
     const [selectedRows, setSelectedRows] = useState({});
     const [searchQuery, setSearchQuery] = useState("");
-    const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
+    const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 50 });
     const [isTableLoading, setIsTableLoading] = useState(true);
     const debounceRef = useRef(null);
     const [detailOpen, setDetailOpen] = useState(false);
@@ -252,20 +252,38 @@ export default function ManageUser() {
                             />
                         </PaginationItem>
 
-                        {Array.from({ length: table.getPageCount() }).map((_, i) => (
-                            <PaginationItem key={i}>
-                                <PaginationLink
+                        {(() => {
+                            const pageCount = table.getPageCount();
+                            const currentPage = table.getState().pagination.pageIndex;
+                            const maxVisible = 5;
+
+                            let startPage = Math.max(
+                                0,
+                                Math.min(
+                                currentPage - Math.floor(maxVisible / 2),
+                                pageCount - maxVisible
+                                )
+                            );
+                            let endPage = Math.min(pageCount, startPage + maxVisible);
+
+                            return Array.from({ length: endPage - startPage }, (_, i) => {
+                                const page = startPage + i;
+                                return (
+                                <PaginationItem key={page}>
+                                    <PaginationLink
                                     href="#"
-                                    isActive={table.getState().pagination.pageIndex === i}
+                                    isActive={currentPage === page}
                                     onClick={e => {
                                         e.preventDefault();
-                                        table.setPageIndex(i);
+                                        table.setPageIndex(page);
                                     }}
-                                >
-                                    {i + 1}
-                                </PaginationLink>
-                            </PaginationItem>
-                        ))}
+                                    >
+                                    {page + 1}
+                                    </PaginationLink>
+                                </PaginationItem>
+                                );
+                            });
+                         })()}
 
                         <PaginationItem>
                             <PaginationNext

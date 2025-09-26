@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/pagination";
 import CertificateDetailDialog from "@/components/admin/CertificateDetailDialog";
 import { AdvantechCertificateDetailDialog } from "@/components/admin/AdvantechCertificateDetailDialog";
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 50;
 
 // Status labels mapped to status codes
 const STATUS_LABELS = {
@@ -56,7 +56,7 @@ export const ValidationTrainingTable = ({
   const [showCertificateDialog, setShowCertificateDialog] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [isDialogOpen, setDialogOpen] = useState(false);
-    
+
   // Render attendance buttons or status
   const renderAttendanceColumn = (item) => {
     const id = item.registration_participant_id;
@@ -161,23 +161,23 @@ export const ValidationTrainingTable = ({
   };
 
   const renderAdvantechCertificateColumn = (item) => {
-  const certUrl = item.advantech_cert;
+    const certUrl = item.advantech_cert;
 
-  if (certUrl) {
-    return (
-      <Button
-        className="bg-white text-black hover:bg-lightBlue hover:text-white transition duration-300 ease-in-out py-2 px-4 rounded-md"
-        onClick={() => {
-        setSelectedItem(item);
-        setDialogOpen(true);
-        }}>
-        Preview
-      </Button>
-    );
-  }
+    if (certUrl) {
+      return (
+        <Button
+          className="bg-white text-black hover:bg-lightBlue hover:text-white transition duration-300 ease-in-out py-2 px-4 rounded-md"
+          onClick={() => {
+            setSelectedItem(item);
+            setDialogOpen(true);
+          }}>
+          Preview
+        </Button>
+      );
+    }
 
-  return <span className="text-red-500 italic">Not Found</span>;
-};
+    return <span className="text-red-500 italic">Not Found</span>;
+  };
 
 
   const handleOpenCertificateDetail = async (certificateId) => {
@@ -290,11 +290,12 @@ export const ValidationTrainingTable = ({
           </TableBody>
         </Table>
       )}
- 
+
       {!disablePagination && (
         <div className="flex justify-center mt-8">
-          <Pagination>
+          <Pagination className="flex justify-center mt-4">
             <PaginationContent className="gap-2">
+              {/* Previous button */}
               <PaginationItem>
                 <PaginationPrevious
                   href="#"
@@ -305,20 +306,36 @@ export const ValidationTrainingTable = ({
                   className={page === 1 ? "pointer-events-none opacity-50" : ""}
                 />
               </PaginationItem>
-              {Array.from({ length: totalPages }, (_, i) => (
-                <PaginationItem key={i}>
-                  <PaginationLink
-                    href="#"
-                    isActive={page === i + 1}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setPage(i + 1);
-                    }}
-                  >
-                    {i + 1}
-                  </PaginationLink>
-                </PaginationItem>
-              ))}
+
+              {/* Page numbers with maxVisible */}
+              {(() => {
+                const maxVisible = 5;
+                let startPage = Math.max(
+                  1,
+                  Math.min(page - Math.floor(maxVisible / 2), totalPages - maxVisible + 1)
+                );
+                let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+
+                return Array.from({ length: endPage - startPage + 1 }, (_, i) => {
+                  const pageNum = startPage + i;
+                  return (
+                    <PaginationItem key={pageNum}>
+                      <PaginationLink
+                        href="#"
+                        isActive={page === pageNum}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setPage(pageNum);
+                        }}
+                      >
+                        {pageNum}
+                      </PaginationLink>
+                    </PaginationItem>
+                  );
+                });
+              })()}
+
+              {/* Next button */}
               <PaginationItem>
                 <PaginationNext
                   href="#"
@@ -346,11 +363,11 @@ export const ValidationTrainingTable = ({
           onClose={() => setShowCertificateDialog(false)}
         />
       )}
-        <AdvantechCertificateDetailDialog
-          open={isDialogOpen}
-          onClose={() => setDialogOpen(false)}
-          item={selectedItem}
-        />
+      <AdvantechCertificateDetailDialog
+        open={isDialogOpen}
+        onClose={() => setDialogOpen(false)}
+        item={selectedItem}
+      />
     </div>
   );
 };

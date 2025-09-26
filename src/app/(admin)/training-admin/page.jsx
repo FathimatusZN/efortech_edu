@@ -262,16 +262,33 @@ export default function TrainingPage() {
                 />
               </PaginationItem>
 
-              {Array.from({ length: totalPages }).map((_, index) => (
-                <PaginationItem key={index}>
-                  <PaginationLink
-                    isActive={currentPage === index + 1}
-                    onClick={() => handlePageChange(index + 1)}
-                  >
-                    {index + 1}
-                  </PaginationLink>
-                </PaginationItem>
-              ))}
+              {(() => {
+                const maxVisible = 5;
+                let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+                let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+
+                if (endPage - startPage < maxVisible - 1) {
+                  startPage = Math.max(1, endPage - maxVisible + 1);
+                }
+
+                return Array.from({ length: endPage - startPage + 1 }, (_, i) => {
+                  const pageNumber = startPage + i;
+                  return (
+                    <PaginationItem key={pageNumber}>
+                      <PaginationLink
+                        href="#"
+                        isActive={currentPage === pageNumber}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handlePageChange(pageNumber);
+                        }}
+                      >
+                        {pageNumber}
+                      </PaginationLink>
+                    </PaginationItem>
+                  );
+                });
+              })()}
 
               <PaginationItem>
                 <PaginationNext

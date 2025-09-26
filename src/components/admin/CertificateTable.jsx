@@ -13,7 +13,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { UserCertificateDetailDialog } from "@/components/admin/UserCertificateDetailDialog";
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 50;
 
 const formatDate = (dateStr) => new Date(dateStr).toLocaleDateString("en-US", {
     day: "2-digit",
@@ -86,48 +86,66 @@ const CertificateTable = ({
                     </Table>
                 </div>
             )}
+
             {!disablePagination && (
-                <div className="flex justify-center mt-8">
-                    <Pagination>
-                        <PaginationContent className="gap-2">
-                            <PaginationItem>
-                                <PaginationPrevious
-                                    href="#"
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        setPage((prev) => Math.max(prev - 1, 1));
-                                    }}
-                                    className={page === 1 ? "pointer-events-none opacity-50" : ""}
-                                />
-                            </PaginationItem>
-                            {Array.from({ length: totalPages }, (_, i) => (
-                                <PaginationItem key={i}>
-                                    <PaginationLink
-                                        href="#"
-                                        isActive={page === i + 1}
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            setPage(i + 1);
-                                        }}
-                                    >
-                                        {i + 1}
-                                    </PaginationLink>
-                                </PaginationItem>
-                            ))}
-                            <PaginationItem>
-                                <PaginationNext
-                                    href="#"
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        setPage((prev) => Math.min(prev + 1, totalPages));
-                                    }}
-                                    className={page === totalPages ? "pointer-events-none opacity-50" : ""}
-                                />
-                            </PaginationItem>
-                        </PaginationContent>
-                    </Pagination>
-                </div>
+            <div className="flex justify-center mt-8">
+                <Pagination>
+                <PaginationContent className="gap-2">
+                    <PaginationItem>
+                    <PaginationPrevious
+                        href="#"
+                        onClick={(e) => {
+                        e.preventDefault();
+                        setPage((prev) => Math.max(prev - 1, 1));
+                        }}
+                        className={page === 1 ? "pointer-events-none opacity-50" : ""}
+                    />
+                    </PaginationItem>
+
+                    {(() => {
+                    const maxVisible = 5; 
+                    let start = Math.max(1, page - Math.floor(maxVisible / 2));
+                    let end = start + maxVisible - 1;
+
+                    if (end > totalPages) {
+                        end = totalPages;
+                        start = Math.max(1, end - maxVisible + 1);
+                    }
+
+                    return Array.from({ length: end - start + 1 }, (_, i) => {
+                        const pageNum = start + i;
+                        return (
+                        <PaginationItem key={pageNum}>
+                            <PaginationLink
+                            href="#"
+                            isActive={page === pageNum}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                setPage(pageNum);
+                            }}
+                            >
+                            {pageNum}
+                            </PaginationLink>
+                        </PaginationItem>
+                        );
+                    });
+                    })()}
+
+                    <PaginationItem>
+                    <PaginationNext
+                        href="#"
+                        onClick={(e) => {
+                        e.preventDefault();
+                        setPage((prev) => Math.min(prev + 1, totalPages));
+                        }}
+                        className={page === totalPages ? "pointer-events-none opacity-50" : ""}
+                    />
+                    </PaginationItem>
+                </PaginationContent>
+                </Pagination>
+            </div>
             )}
+
             {!disablePagination && (
                 <div className="text-xs text-gray-600 text-center mt-2">
                     Showing {(page - 1) * PAGE_SIZE + 1} to{" "}

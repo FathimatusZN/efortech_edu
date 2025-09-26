@@ -20,6 +20,8 @@ export default function TrainingForm({
   setDiscount,
   validity_period,
   setValidityperiod,
+  available_date,
+  setAvailableDate,
   term_condition,
   setTermcondition,
   skills,
@@ -176,6 +178,18 @@ export default function TrainingForm({
             </div>
           </div>
         </div>
+      </div>
+
+      <div className="w-full mt-4">
+        <label className="block text-sm font-semibold mb-1">
+          Available Date
+        </label>
+        <input
+          type="text"
+          value={available_date}
+          onChange={(e) => setAvailableDate(e.target.value)}
+          className="mt-2 w-full border border-mainBlue px-3 py-2 rounded-md text-sm font-normal focus:outline-none focus:border-mainBlue"
+        />
       </div>
 
       <div className="w-full mt-4">

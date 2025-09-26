@@ -201,23 +201,26 @@ const TrainingDetail = () => {
               {trainingData.discount && trainingData.discount > 0 ? (
                 <>
                   <p className="text-lg line-through text-gray-500 font-semibold">
-                    Rp{" "}
-                    {parseInt(trainingData.training_fees).toLocaleString(
-                      "id-ID"
-                    )}
+                    Rp {parseInt(trainingData.training_fees).toLocaleString("id-ID")}
                   </p>
                   <p className="text-xl text-mainOrange font-bold">
-                    Rp{" "}
-                    {parseInt(trainingData.final_price).toLocaleString("id-ID")}
+                    Rp {parseInt(trainingData.final_price).toLocaleString("id-ID")}
                   </p>
                 </>
+              ) : trainingData.training_fees == 0 ? (
+                <p className="text-xl text-black font-semibold">
+                  Rp 0,00{" "}
+                  <span className="font-extrabold animate-pulse text-orange-600">
+                    (Free!)
+                  </span>
+                </p>
               ) : (
                 <p className="text-xl text-black font-semibold">
-                  Rp{" "}
-                  {parseInt(trainingData.training_fees).toLocaleString("id-ID")}
+                  Rp {parseInt(trainingData.training_fees).toLocaleString("id-ID")}
                 </p>
               )}
             </div>
+
             <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
               <div>
                 <p className="text-lg text-mainOrange font-bold">Level</p>
@@ -269,7 +272,7 @@ const TrainingDetail = () => {
                   Available Date
                 </p>
                 <p className="text-sm text-black font-semibold">
-                  Working Hours (by request)
+                  {trainingData.available_date}
                 </p>
               </div>
             </div>
