@@ -30,6 +30,7 @@ export default function AddTraining() {
   const [term_condition, setTermcondition] = useState("");
   const [skills, setSkills] = useState([""]);
   const [images, setImages] = useState([]);
+  const [available_date, setAvailableDate] = useState("Working Hours (by request)");
 
   const [openDialog, setOpenDialog] = useState(false);
   const isFormValid =
@@ -59,6 +60,7 @@ export default function AddTraining() {
     setTermcondition("");
     setSkills([]);
     setImages([]);
+    setAvailableDate("Working Hours (by request)");
   };
 
   const handleSubmit = async () => {
@@ -81,6 +83,7 @@ export default function AddTraining() {
         skills: skills.filter((skill) => skill.trim() !== ""),
         images: cleanImages,
         admin_id: user.user_id, // Add admin_id
+        available_date,
       };
 
       if (
@@ -176,6 +179,8 @@ export default function AddTraining() {
             setDiscount={setDiscount}
             validity_period={validity_period}
             setValidityperiod={setValidityperiod}
+            available_date={available_date}
+            setAvailableDate={setAvailableDate}
             term_condition={term_condition}
             setTermcondition={setTermcondition}
             skills={skills}
