@@ -20,7 +20,7 @@ import {
 import { UserCertificateDetailDialog } from "./UserCertificateDetailDialog";
 import { ConfirmCertificateDialog } from "./ConfirmCertificateDialog";
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 50;
 
 // Status labels mapped to status codes
 const STATUS_LABELS = {
@@ -214,8 +214,9 @@ export const ValidationCertificateTable = ({
 
       {!disablePagination && (
         <div className="flex justify-center mt-8">
-          <Pagination>
+          <Pagination className="flex justify-center mt-4">
             <PaginationContent className="gap-2">
+              {/* Previous button */}
               <PaginationItem>
                 <PaginationPrevious
                   href="#"
@@ -226,20 +227,36 @@ export const ValidationCertificateTable = ({
                   className={page === 1 ? "pointer-events-none opacity-50" : ""}
                 />
               </PaginationItem>
-              {Array.from({ length: totalPages }, (_, i) => (
-                <PaginationItem key={i}>
-                  <PaginationLink
-                    href="#"
-                    isActive={page === i + 1}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setPage(i + 1);
-                    }}
-                  >
-                    {i + 1}
-                  </PaginationLink>
-                </PaginationItem>
-              ))}
+
+              {/* Page numbers with maxVisible */}
+              {(() => {
+                const maxVisible = 5;
+                let startPage = Math.max(
+                  1,
+                  Math.min(page - Math.floor(maxVisible / 2), totalPages - maxVisible + 1)
+                );
+                let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+
+                return Array.from({ length: endPage - startPage + 1 }, (_, i) => {
+                  const pageNum = startPage + i;
+                  return (
+                    <PaginationItem key={pageNum}>
+                      <PaginationLink
+                        href="#"
+                        isActive={page === pageNum}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setPage(pageNum);
+                        }}
+                      >
+                        {pageNum}
+                      </PaginationLink>
+                    </PaginationItem>
+                  );
+                });
+              })()}
+
+              {/* Next button */}
               <PaginationItem>
                 <PaginationNext
                   href="#"
