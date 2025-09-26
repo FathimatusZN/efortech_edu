@@ -64,7 +64,6 @@ export default function ArticleSection({ highlightArticles }) {
                   </h3>
                   <div className="flex justify-between items-center mb-4 text-sm text-muted-foreground">
                     <p>Category: {getCategoryLabel(article.category)}</p>
-                    <p>Views: {article.views}</p>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {article.tags?.map((tag, tagIdx) => (
