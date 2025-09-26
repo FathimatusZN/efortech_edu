@@ -219,22 +219,41 @@ const ArticleAdminPage = () => {
                             e.preventDefault();
                             setPage((prev) => Math.max(prev - 1, 1));
                           }}
+                          disabled={page === 1}
                         />
                       </PaginationItem>
-                      {Array.from({ length: totalPages }, (_, i) => (
-                        <PaginationItem key={i}>
-                          <PaginationLink
-                            href="#"
-                            isActive={page === i + 1}
-                            onClick={(e) => {
-                              e.preventDefault();
-                              setPage(i + 1);
-                            }}
-                          >
-                            {i + 1}
-                          </PaginationLink>
-                        </PaginationItem>
-                      ))}
+
+                      {(() => {
+                        const maxVisible = 5;
+                        let startPage = Math.max(1, page - Math.floor(maxVisible / 2));
+                        let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+
+                        if (endPage - startPage < maxVisible - 1) {
+                          startPage = Math.max(1, endPage - maxVisible + 1);
+                        }
+
+                        return Array.from(
+                          { length: endPage - startPage + 1 },
+                          (_, i) => {
+                            const pageNumber = startPage + i;
+                            return (
+                              <PaginationItem key={pageNumber}>
+                                <PaginationLink
+                                  href="#"
+                                  isActive={page === pageNumber}
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    setPage(pageNumber);
+                                  }}
+                                >
+                                  {pageNumber}
+                                </PaginationLink>
+                              </PaginationItem>
+                            );
+                          }
+                        );
+                      })()}
+
                       <PaginationItem>
                         <PaginationNext
                           href="#"
@@ -242,6 +261,7 @@ const ArticleAdminPage = () => {
                             e.preventDefault();
                             setPage((prev) => Math.min(prev + 1, totalPages));
                           }}
+                          disabled={page === totalPages}
                         />
                       </PaginationItem>
                     </PaginationContent>

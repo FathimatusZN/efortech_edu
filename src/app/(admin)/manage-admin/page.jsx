@@ -23,7 +23,7 @@ export default function ManageAdmin() {
     const [columnFilters, setColumnFilters] = useState([]);
     const [selectedRows, setSelectedRows] = useState({});
     const [searchQuery, setSearchQuery] = useState("");
-    const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
+    const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 50 });
     const [addNew, setAddNew] = useState(false);
     const [editDialogOpen, setEditDialogOpen] = useState(false);
     const [email, setEmail] = useState("");
@@ -439,20 +439,38 @@ export default function ManageAdmin() {
                             />
                         </PaginationItem>
 
-                        {Array.from({ length: table.getPageCount() }).map((_, i) => (
-                            <PaginationItem key={i}>
-                                <PaginationLink
-                                    href="#"
-                                    isActive={table.getState().pagination.pageIndex === i}
-                                    onClick={e => {
-                                        e.preventDefault();
-                                        table.setPageIndex(i);
-                                    }}
+                        {(() => {
+                            const pageCount = table.getPageCount();
+                            const currentPage = table.getState().pagination.pageIndex;
+                            const maxVisible = 5;
+                        
+                            let startPage = Math.max(
+                            0,
+                            Math.min(
+                            currentPage - Math.floor(maxVisible / 2),
+                            pageCount - maxVisible
+                            )
+                        );
+                        let endPage = Math.min(pageCount, startPage + maxVisible);
+                        
+                        return Array.from({ length: endPage - startPage }, (_, i) => {
+                        const page = startPage + i;
+                        return (
+                            <PaginationItem key={page}>
+                            <PaginationLink
+                                href="#"
+                                isActive={currentPage === page}
+                                onClick={e => {
+                                e.preventDefault();
+                                table.setPageIndex(page);
+                                }}
                                 >
-                                    {i + 1}
+                                {page + 1}
                                 </PaginationLink>
                             </PaginationItem>
-                        ))}
+                            );
+                        });
+                        })()}
 
                         <PaginationItem>
                             <PaginationNext
