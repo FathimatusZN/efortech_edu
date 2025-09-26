@@ -41,7 +41,7 @@ export default function ArticlePage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
-  const itemsPerPage = 9;
+  const itemsPerPage = 12;
 
   useEffect(() => {
     fetchArticles();
@@ -256,20 +256,33 @@ export default function ArticlePage() {
                 }}
               />
             </PaginationItem>
-            {Array.from({ length: totalPages }, (_, i) => (
-              <PaginationItem key={i}>
-                <PaginationLink
-                  href="#"
-                  isActive={page === i + 1}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setPage(i + 1);
-                  }}
-                >
-                  {i + 1}
-                </PaginationLink>
-              </PaginationItem>
-            ))}
+            {(() => {
+              const maxVisible = 5;
+              let startPage = Math.max(
+                1,
+                Math.min(page - Math.floor(maxVisible / 2), totalPages - maxVisible + 1)
+              );
+              let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+
+              return Array.from({ length: endPage - startPage + 1 }, (_, i) => {
+                const pageNum = startPage + i;
+                return (
+                  <PaginationItem key={pageNum}>
+                    <PaginationLink
+                      href="#"
+                      isActive={page === pageNum}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setPage(pageNum);
+                      }}
+                    >
+                      {pageNum}
+                    </PaginationLink>
+                  </PaginationItem>
+                );
+              });
+            })()}
+
             <PaginationItem>
               <PaginationNext
                 href="#"
