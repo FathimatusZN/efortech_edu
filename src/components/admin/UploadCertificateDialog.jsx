@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Copy, Check } from "lucide-react";
 import {
     Dialog,
     DialogContent,
@@ -28,6 +29,7 @@ export function UploadCertificateDialog({
     const [emailPreviewLoading, setEmailPreviewLoading] = useState(false);
     const [emailPreviewFetched, setEmailPreviewFetched] = useState(false);
     const [pdfLoading, setPdfLoading] = useState(false);
+    const [copied, setCopied] = useState(false);
 
     const resetForm = () => {
         setCertificateNumber("");
@@ -43,6 +45,13 @@ export function UploadCertificateDialog({
     useEffect(() => {
         if (!open) resetForm();
     }, [open]);
+
+    useEffect(() => {
+        if (copied) {
+            const timer = setTimeout(() => setCopied(false), 2000);
+            return () => clearTimeout(timer);
+        }
+    }, [copied]);
 
     const handleFileChange = async (e) => {
         const file = e.target.files[0];
@@ -222,10 +231,30 @@ export function UploadCertificateDialog({
 
                             <div className="flex-1">
                                 <Label>Certificate Number</Label>
-                                <Input value={participant?.certificate_number || ""} disabled />
-                                {errors.certificateNumber && (
-                                    <p className="text-red-500 text-sm">{errors.certificateNumber}</p>
-                                )}
+                                <div className="flex gap-2 items-center relative">
+                                    <Input value={participant?.certificate_number || ""} disabled />
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="icon"
+                                        onClick={async () => {
+                                            if (participant?.certificate_number) {
+                                                await navigator.clipboard.writeText(participant.certificate_number);
+                                                setCopied(true); // trigger notif
+                                            }
+                                        }}
+                                        title="Copy Certificate Number"
+                                    >
+                                        {copied ? <Check size={16} className="text-green-600" /> : <Copy size={16} />}
+                                    </Button>
+
+                                    {/* popup notif sekilas */}
+                                    {copied && (
+                                        <span className="absolute top-full mt-1 text-xs text-green-600 bg-green-50 border border-green-200 px-2 py-1 rounded shadow">
+                                            Copied!
+                                        </span>
+                                    )}
+                                </div>
                             </div>
                         </div>
 

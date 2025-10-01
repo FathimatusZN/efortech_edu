@@ -63,6 +63,9 @@ export const getAdminColumns = (handleEdit, handleDetail) => [
         header: "Role",
         enableSorting: false,
         filterFn: (row, columnId, filterValue) => {
+            if (Array.isArray(filterValue)) {
+                return filterValue.includes(row.getValue(columnId));
+            }
             return row.getValue(columnId) === filterValue;
         }
     },
