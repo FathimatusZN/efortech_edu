@@ -41,7 +41,7 @@ const CertificateDetailDialog = ({ open, onClose, data, onUpdated }) => {
                         <InfoRow label="Certificate Number" value={data.original_number || data.certificate_number} />
                         <InfoRow label="Certificate ID" value={data.certificate_id} />
                         <InfoRow label="Issued Date" value={formatDate(data.issued_date)} />
-                        <InfoRow label="Expired Date" value={formatDate(data.expired_date)} />
+                        <InfoRow label="Expired Date" value={data.expired_date ? formatDate(data.expired_date) : "No Expiry Date"} />
                         <InfoRow label="Validity Status" value={data.status_certificate} />
                         <InfoRow label="Training" value={data.training_name} />
                         <InfoRow label="Participant" value={data.fullname} />
