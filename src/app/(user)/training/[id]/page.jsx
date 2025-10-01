@@ -240,7 +240,7 @@ const TrainingDetail = () => {
                   {trainingData.validity_period
                     ? `${trainingData.validity_period} ${trainingData.validity_period > 1 ? "Months" : "Month"
                     }`
-                    : "N/A"}
+                    : "No Expiry Date"}
                 </p>
               </div>
             </div>
