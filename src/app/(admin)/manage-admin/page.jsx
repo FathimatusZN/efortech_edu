@@ -54,6 +54,14 @@ export default function ManageAdmin() {
     };
 
     useEffect(() => {
+        // Default filter: Admin & Superadmin
+        setColumnFilters([
+            { id: "role_name", value: "Admin" },
+            { id: "role_name", value: "Superadmin" }
+        ]);
+    }, []);
+
+    useEffect(() => {
         refreshData();
     }, []);
 
@@ -351,22 +359,31 @@ export default function ManageAdmin() {
                         )}
 
                         <Select
-                            defaultValue="all"
+                            defaultValue="admin-superadmin"
                             onValueChange={(value) => {
                                 if (value === "all") setColumnFilters([]);
-                                else setColumnFilters([{ id: "role_name", value }]);
+                                else if (value === "admin-superadmin") {
+                                    setColumnFilters([
+                                        { id: "role_name", value: "Admin" },
+                                        { id: "role_name", value: "Superadmin" }
+                                    ]);
+                                } else {
+                                    setColumnFilters([{ id: "role_name", value }]);
+                                }
                             }}
                         >
-                            <SelectTrigger className="w-[130px] bg-mainBlue text-white border-none">
+                            <SelectTrigger className="w-[200px] bg-mainBlue text-white border-none">
                                 <SelectValue placeholder="Filter Role" />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="all">All Roles</SelectItem>
+                                <SelectItem value="admin-superadmin">Admin & Superadmin</SelectItem>
                                 <SelectItem value="Admin">Admin</SelectItem>
                                 <SelectItem value="Superadmin">Superadmin</SelectItem>
                                 <SelectItem value="User">User (Inactive Admin)</SelectItem>
                             </SelectContent>
                         </Select>
+
                     </div>
                 </div>
 
@@ -443,33 +460,33 @@ export default function ManageAdmin() {
                             const pageCount = table.getPageCount();
                             const currentPage = table.getState().pagination.pageIndex;
                             const maxVisible = 5;
-                        
+
                             let startPage = Math.max(
-                            0,
-                            Math.min(
-                            currentPage - Math.floor(maxVisible / 2),
-                            pageCount - maxVisible
-                            )
-                        );
-                        let endPage = Math.min(pageCount, startPage + maxVisible);
-                        
-                        return Array.from({ length: endPage - startPage }, (_, i) => {
-                        const page = startPage + i;
-                        return (
-                            <PaginationItem key={page}>
-                            <PaginationLink
-                                href="#"
-                                isActive={currentPage === page}
-                                onClick={e => {
-                                e.preventDefault();
-                                table.setPageIndex(page);
-                                }}
-                                >
-                                {page + 1}
-                                </PaginationLink>
-                            </PaginationItem>
+                                0,
+                                Math.min(
+                                    currentPage - Math.floor(maxVisible / 2),
+                                    pageCount - maxVisible
+                                )
                             );
-                        });
+                            let endPage = Math.min(pageCount, startPage + maxVisible);
+
+                            return Array.from({ length: endPage - startPage }, (_, i) => {
+                                const page = startPage + i;
+                                return (
+                                    <PaginationItem key={page}>
+                                        <PaginationLink
+                                            href="#"
+                                            isActive={currentPage === page}
+                                            onClick={e => {
+                                                e.preventDefault();
+                                                table.setPageIndex(page);
+                                            }}
+                                        >
+                                            {page + 1}
+                                        </PaginationLink>
+                                    </PaginationItem>
+                                );
+                            });
                         })()}
 
                         <PaginationItem>
