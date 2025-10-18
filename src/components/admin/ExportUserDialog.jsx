@@ -34,8 +34,11 @@ export default function ExportUserDialog({ open, onClose }) {
     try {
       const currentUser = auth.currentUser;
       if (!currentUser) throw new Error("User not logged in");
+
+      // Get Firebase ID token
       const token = await getIdToken(currentUser);
 
+      // Build URL dengan query params
       let url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/export/users`;
       const params = new URLSearchParams();
 
@@ -50,30 +53,24 @@ export default function ExportUserDialog({ open, onClose }) {
 
       if (params.toString()) url += `?${params.toString()}`;
 
-      console.log("Export URL:", url);
-
+      // Fetch data dengan Bearer token
       const res = await fetch(url, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      console.log("Export response:", res.status);
-
       if (!res.ok) {
-      const errData = await res.json().catch(() => null);
-      const errMsg = errData?.message || "Export failed. Please try again.";
-      toast.error(errMsg);
-      return;
-    }
+        const errData = await res.json().catch(() => null);
+        throw new Error(errData?.message || "Export failed. Please try again.");
+      }
 
+      // Download file
       const blob = await res.blob();
       const contentDisposition = res.headers.get("Content-Disposition");
       let filename = "user_data.xlsx";
 
       if (contentDisposition) {
         const match = contentDisposition.match(/filename="?([^"]+)"?/);
-        if (match && match[1]) {
-          filename = match[1];
-        }
+        if (match && match[1]) filename = match[1];
       }
 
       const link = document.createElement("a");
@@ -87,11 +84,12 @@ export default function ExportUserDialog({ open, onClose }) {
       toast.success("User data exported successfully.");
       onClose();
 
-        } catch (error) {
-      console.error("Export failed:", error);
-      toast.error(error.message  || "Export failed. Please try again.");
+    } catch (err) {
+      console.error("Export failed:", err);
+      toast.error(err.message || "Export failed. Please try again.");
     }
   };
+
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
@@ -136,17 +134,17 @@ export default function ExportUserDialog({ open, onClose }) {
           <Label className="text-sm block mb-2">Roles</Label>
           <div className="flex flex-wrap gap-3">
             {roles.map((role) => (
-            <div key={role.value} className="flex items-center space-x-2">
-              <Checkbox
-                id={role.value}
-                checked={selectedRoles.includes(role.value)}
-                onCheckedChange={() => toggleRole(role.value)}
-              />
-              <Label htmlFor={role.value} className="text-sm capitalize">
-                {role.label}
-              </Label>
-            </div>
-          ))}
+              <div key={role.value} className="flex items-center space-x-2">
+                <Checkbox
+                  id={role.value}
+                  checked={selectedRoles.includes(role.value)}
+                  onCheckedChange={() => toggleRole(role.value)}
+                />
+                <Label htmlFor={role.value} className="text-sm capitalize">
+                  {role.label}
+                </Label>
+              </div>
+            ))}
           </div>
         </div>
 
