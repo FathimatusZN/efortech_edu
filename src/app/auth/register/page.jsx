@@ -15,6 +15,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { SuccessDialog } from "@/components/ui/SuccessDialog";
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 
 const RegisterPage = () => {
   const [fullName, setFullName] = useState("");
@@ -23,6 +24,11 @@ const RegisterPage = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [institution, setInstitution] = useState("");
+  const [phone, setPhone] = useState("");
+  const [gender, setGender] = useState("");
+  const [birthDate, setBirthDate] = useState("");
+
   const [loading, setLoading] = useState(false);
   const [loading2, setLoading2] = useState("");
   const [dialogMessage, setDialogMessage] = useState("");
@@ -94,6 +100,41 @@ const RegisterPage = () => {
         setFailedDialog(true);
         return;
       }
+
+      const auth = getAuth();
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const token = await userCredential.user.getIdToken();
+
+      // 3️⃣ Simpan data tambahan ke edit-profile
+      const editRes = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user/edit-profile`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            fullname: fullName,
+            institution,
+            phone_number: phone,
+            gender,
+            birthdate: birthDate,
+            user_photo: null,
+          }),
+        }
+      );
+
+      if (!editRes.ok) {
+        console.warn("⚠️ Failed to update extra profile data");
+      }
+
+      // 4️⃣ Logout biar user harus login manual lagi
+      await auth.signOut();
 
       setDialogMessage("Registration successful! Redirecting to Sign In...");
       setSuccessDialog(true);
@@ -311,6 +352,63 @@ const RegisterPage = () => {
                     </div>
                   </div>
 
+                  <div>
+                    <label className="font-semibold">
+                      Institution <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Enter your institution"
+                      className={inputClass("")}
+                      value={institution}
+                      onChange={(e) => setInstitution(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="font-semibold">
+                      Phone Number <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Enter your phone number"
+                      className={inputClass("")}
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="font-semibold">
+                      Gender <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      className={inputClass("")}
+                      value={gender}
+                      onChange={(e) => setGender(e.target.value)}
+                      required
+                    >
+                      <option value="">Select Gender</option>
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="font-semibold">
+                      Birthdate <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="date"
+                      className={inputClass("")}
+                      value={birthDate}
+                      onChange={(e) => setBirthDate(e.target.value)}
+                      required
+                    />
+                  </div>
+
                   <div className="flex justify-center pt-10 md:pt-14 lg:pt-16 xl:pt-20">
                     <Button
                       type="submit"
@@ -328,8 +426,9 @@ const RegisterPage = () => {
                   <p className="text-gray-500 text-center text-xs md:text-sm lg:text-base xl:text-lg">
                     Already have an account?{" "}
                     <span
-                      className={`text-[#ED7117] font-semibold hover:underline cursor-pointer ${loading ? "pointer-events-none opacity-50" : ""
-                        }`}
+                      className={`text-[#ED7117] font-semibold hover:underline cursor-pointer ${
+                        loading ? "pointer-events-none opacity-50" : ""
+                      }`}
                       onClick={handleRedirectToSignIn}
                     >
                       Sign In

@@ -237,7 +237,7 @@ export default function FeedbackForm() {
             onOpenChange={(open) => {
               setIsDialogOpen(open);
               if (!open && certificateNumber) {
-                router.push(`/certificate/${certificateNumber}`);
+                router.push(`/edit-profile`);
               }
             }}
             title="Thank You!"
