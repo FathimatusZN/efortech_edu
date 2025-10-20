@@ -27,7 +27,7 @@ export default function ExportNeedToProcessDialog({ open, onClose }) {
   useEffect(() => {
     const fetchTrainings = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/training`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/training?status=all`);
         const data = await res.json();
         setTrainingList(data?.data || []);
       } catch (error) {
@@ -49,74 +49,74 @@ export default function ExportNeedToProcessDialog({ open, onClose }) {
   };
 
   const handleExport = async (type) => {
-  try {
-    const currentUser = auth.currentUser;
-    if (!currentUser) throw new Error("User not logged in");
-    const token = await getIdToken(currentUser);
+    try {
+      const currentUser = auth.currentUser;
+      if (!currentUser) throw new Error("User not logged in");
+      const token = await getIdToken(currentUser);
 
-    let url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/export/registrations/needprocess`;
+      let url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/export/registrations/needprocess`;
 
-    let res;
-    if (type === "all") {
-    // Untuk Export All, jangan kirim query apapun
-      res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
-    } else {
-      const params = new URLSearchParams();
-      params.append("tab", "needprocess");
+      let res;
+      if (type === "all") {
+        // Untuk Export All, jangan kirim query apapun
+        res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+      } else {
+        const params = new URLSearchParams();
+        params.append("tab", "needprocess");
 
-      // ✅ Mapping dateType biar sesuai backend
-      const mappedDateType =
-        dateType === "registration" ? "registration_date" : "training_date";
-      params.append("dateType", mappedDateType);
+        // ✅ Mapping dateType biar sesuai backend
+        const mappedDateType =
+          dateType === "registration" ? "registration_date" : "training_date";
+        params.append("dateType", mappedDateType);
 
-      if (startDate) params.append("start", `${startDate}T00:00:00Z`);
-      if (endDate) params.append("end", `${endDate}T23:59:59Z`);
-      if (selectedStatus.length > 0)
-        params.append("statuses", selectedStatus.join(","));
-      if (selectedTraining) params.append("training_id", selectedTraining);
+        if (startDate) params.append("start", `${startDate}T00:00:00Z`);
+        if (endDate) params.append("end", `${endDate}T23:59:59Z`);
+        if (selectedStatus.length > 0)
+          params.append("statuses", selectedStatus.join(","));
+        if (selectedTraining) params.append("training_id", selectedTraining);
 
-      if (params.toString()) url += `?${params.toString()}`;
+        if (params.toString()) url += `?${params.toString()}`;
 
-      res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
-    }
-
-    if (!res.ok) {
-  const errData = await res.json().catch(() => null);
-  const errMsg = errData?.message || "Export failed.";
-
-  // Kalau pesan dari backend "No data available to export"
-  if (errMsg.toLowerCase().includes("no data")) {
-    toast.error("No data available to export.");
-  } else {
-    toast.error(errMsg);
-  }
-
-  return;
-}
-    const blob = await res.blob();
-    const contentDisposition = res.headers.get("Content-Disposition");
-    let fileName = "exported_data.xlsx";
-
-    // 📂 kalau backend kirim header "Content-Disposition: attachment; filename=xxx.xlsx"
-    if (contentDisposition && contentDisposition.includes("filename=")) {
-      const match = contentDisposition.match(/filename="?([^"]+)"?/);
-      if (match && match[1]) fileName = match[1];
-    }
-
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = fileName;
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    URL.revokeObjectURL(link.href);
-
-    toast.success("Training data exported successfully.");
-      } catch (error) {
-        console.error(error);
-        toast.error("Export failed. Please try again.");
+        res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
       }
-};
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => null);
+        const errMsg = errData?.message || "Export failed.";
+
+        // Kalau pesan dari backend "No data available to export"
+        if (errMsg.toLowerCase().includes("no data")) {
+          toast.error("No data available to export.");
+        } else {
+          toast.error(errMsg);
+        }
+
+        return;
+      }
+      const blob = await res.blob();
+      const contentDisposition = res.headers.get("Content-Disposition");
+      let fileName = "exported_data.xlsx";
+
+      // 📂 kalau backend kirim header "Content-Disposition: attachment; filename=xxx.xlsx"
+      if (contentDisposition && contentDisposition.includes("filename=")) {
+        const match = contentDisposition.match(/filename="?([^"]+)"?/);
+        if (match && match[1]) fileName = match[1];
+      }
+
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(link.href);
+
+      toast.success("Training data exported successfully.");
+    } catch (error) {
+      console.error(error);
+      toast.error("Export failed. Please try again.");
+    }
+  };
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
@@ -131,26 +131,26 @@ export default function ExportNeedToProcessDialog({ open, onClose }) {
           <Label className="text-sm block mb-2">Date Type</Label>
           <div className="flex gap-4">
             <label className="flex items-center gap-2">
-                <input
+              <input
                 type="radio"
                 name="dateType"
                 value="registration"
                 checked={dateType === "registration"}
                 onChange={(e) => setDateType(e.target.value)}
-                />
-                Registration Date
+              />
+              Registration Date
             </label>
             <label className="flex items-center gap-2">
-                <input
+              <input
                 type="radio"
                 name="dateType"
                 value="training"
                 checked={dateType === "training"}
                 onChange={(e) => setDateType(e.target.value)}
-                />
-                Training Date
+              />
+              Training Date
             </label>
-        </div>
+          </div>
         </div>
 
         {/* Date Range */}
@@ -228,24 +228,24 @@ export default function ExportNeedToProcessDialog({ open, onClose }) {
           </Button>
 
           <Button
-                variant="outline"
-                onClick={() => {
-                setSelectedTraining("");
-                setSelectedStatus([]);
-                setDateType("registration");
-                setStartDate("");
-                setEndDate("");
-                }}
-            >
-                Clear Filter
-            </Button>
+            variant="outline"
+            onClick={() => {
+              setSelectedTraining("");
+              setSelectedStatus([]);
+              setDateType("registration");
+              setStartDate("");
+              setEndDate("");
+            }}
+          >
+            Clear Filter
+          </Button>
 
           <Button
             onClick={() => handleExport("custom")}
             variant={
               (startDate && endDate) ||
-              selectedStatus.length > 0 ||
-              selectedTraining
+                selectedStatus.length > 0 ||
+                selectedTraining
                 ? "orange"
                 : "outline"
             }
