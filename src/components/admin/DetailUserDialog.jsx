@@ -22,10 +22,20 @@ export default function DetailUserDialog({ open, setOpen, user }) {
         });
     };
 
+    const roleMapping = {
+        1: "Teacher / Lecturer",
+        2: "Student",
+        3: "University Student",
+        4: "Professional",
+        5: "Others",
+    };
+
     const rows = [
         { label: "Email", value: user.email },
         { label: "Phone Number", value: user.phone_number || "-" },
         { label: "Institution", value: user.institution || "-" },
+        { label: "Role", value: roleMapping[user.role_id] || user.role || "-" },
+        { label: "Position", value: user.position || "-" },
         { label: "Gender", value: user.gender === 1 ? "Male" : user.gender === 2 ? "Female" : "-" },
         { label: "Birthdate", value: formatDate(user.birthdate) },
         { label: "Created Date", value: formatDate(user.created_at) },
