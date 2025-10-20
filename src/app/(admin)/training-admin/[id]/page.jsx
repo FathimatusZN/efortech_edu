@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { FaEdit, FaTrash, FaArchive } from "react-icons/fa";
 import { NotFound } from "../../../../components/ui/ErrorPage";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
-import { ArchiveDialog } from "@/components/ui/ConfirmDialog";
+import { ArchiveDialog, DeleteTrainingDialog } from "@/components/ui/ConfirmDialog";
 import { toast } from "react-hot-toast";
 
 export default function TrainingDetailPage() {
@@ -19,6 +19,10 @@ export default function TrainingDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [deleteMessage, setDeleteMessage] = useState("");
+  const [relationStatus, setRelationStatus] = useState(null);
+  const [deleteSummary, setDeleteSummary] = useState(null);
 
   useEffect(() => {
     const fetchTraining = async () => {
@@ -29,9 +33,7 @@ export default function TrainingDetailPage() {
         if (res.ok) {
           setTraining(data.data);
         } else {
-          return <NotFound
-            message={"No training found."} buttons={[]}
-          />
+          setError("No training found.");
         }
       } catch (err) {
         setError("Failed to fetch training data");
@@ -43,9 +45,25 @@ export default function TrainingDetailPage() {
     fetchTraining();
   }, [id]);
 
-  if (loading) return <div className="p-6 md:p-8 item-center"><LoadingSpinner /></div>;
-  if (error) return <div className="p-6 md:p-8 text-red-500">{error}</div>;
-  if (!training) return <NotFound message={"We couldn't find the training you're looking for."} buttons={[{ text: "Back to Training Page", href: "/training-admin" }]} />;
+  if (loading)
+    return <div className="p-6 md:p-8 item-center"><LoadingSpinner /></div>;
+
+  if (error)
+    return (
+      <div className="p-6 md:p-8 text-red-500">
+        {error.includes("No training found") ? (
+          <NotFound
+            message={"We couldn't find the training you're looking for."}
+            buttons={[{ text: "Back to Training Page", href: "/training-admin" }]}
+          />
+        ) : (
+          error
+        )}
+      </div>
+    );
+
+  if (!training)
+    return <NotFound message={"We couldn't find the training you're looking for."} buttons={[{ text: "Back to Training Page", href: "/training-admin" }]} />;
 
   const confirmDelete = () => {
     setConfirmOpen(true);
@@ -73,6 +91,46 @@ export default function TrainingDetailPage() {
     }
   };
 
+  const handleCheckDeleteRelations = async () => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/training/check-relations/${training.training_id}`);
+      const data = await res.json();
+
+      if (res.ok) {
+        setRelationStatus(data.data.relation_status);
+        setDeleteMessage(data.data.message);
+        setDeleteSummary(data.data.summary); // <-- tambahkan ini
+        setDeleteConfirmOpen(true);
+      } else {
+        toast.error(data.message || "Failed to check training relations.");
+      }
+    } catch (err) {
+      toast.error("Error checking training relations.");
+      console.error(err);
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/training/delete-with-relations/${training.training_id}`, {
+        method: "DELETE",
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        toast.success("Training deleted successfully.");
+        router.push("/training-admin");
+      } else {
+        toast.error(data.message || "Failed to delete training.");
+      }
+    } catch (error) {
+      toast.error("Error occurred while deleting training.");
+      console.error(error);
+    } finally {
+      setDeleteConfirmOpen(false);
+    }
+  };
 
   return (
     <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
@@ -90,14 +148,24 @@ export default function TrainingDetailPage() {
               <FaEdit className="text-sm mr-2" />
               Edit
             </Button>
+
+            <Button
+              variant="orange"
+              size="sm"
+              className="px-4 py-1"
+              onClick={confirmDelete} >
+              <FaArchive className="text-sm mr-2" />
+              Archive
+            </Button>
+
             <Button
               variant="destructive"
               size="sm"
               className="px-4 py-1 bg-red-600 hover:bg-red-700"
-              onClick={confirmDelete}
+              onClick={handleCheckDeleteRelations}
             >
-              <FaArchive className="text-sm mr-2" />
-              Archive
+              <FaTrash className="text-sm mr-2" />
+              Delete
             </Button>
           </div>
         </div>
@@ -215,6 +283,18 @@ export default function TrainingDetailPage() {
           title={training.training_name}
           onCancel={() => setConfirmOpen(false)}
           onConfirm={handleDelete}
+        />
+
+        <DeleteTrainingDialog
+          open={deleteConfirmOpen}
+          onCancel={() => setDeleteConfirmOpen(false)}
+          onConfirm={handleConfirmDelete}
+          relationStatus={relationStatus}
+          message={deleteMessage}
+          data="Training"
+          id={training.training_id}
+          title={training.training_name}
+          summary={deleteSummary}
         />
       </div>
     </ProtectedRoute>
