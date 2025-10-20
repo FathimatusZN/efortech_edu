@@ -40,10 +40,12 @@ export default function TrainingCard({ training }) {
                     "https://img.freepik.com/free-vector/no-data-concept-illustration_114360-536.jpg"
                 }
                 alt={training.training_name}
-                className="w-full h-full object-cover transition-all duration-500 ease-in-out group-hover:blur-sm"
+                className="w-full h-full object-cover transition-all duration-500 ease-in-out group-hover:blur-[0.5px]"
             />
 
-            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-transparent" />
+            <div
+                className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/40 to-transparent group-hover:from-black/80 group-hover:via-black/80 group-hover:to-transparent transition-all duration-500 "
+            />
 
             <h3
                 className="absolute left-4 right-4 text-white font-semibold text-lg bottom-4 z-10 transition-all duration-500"
@@ -56,12 +58,15 @@ export default function TrainingCard({ training }) {
 
             <p
                 ref={descriptionRef}
-                className={`absolute left-4 right-4 text-white text-sm transition-all duration-500 z-0 ${hovered ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"
+                className={`absolute left-4 right-4 text-white text-sm transition-all duration-500 z-0 ${hovered
+                    ? "opacity-100 translate-y-0"
+                    : "opacity-0 translate-y-4 pointer-events-none"
                     }`}
                 style={{ bottom: "1rem" }}
             >
                 {getShortDescription(training.description, 300)}
             </p>
         </div>
+
     );
 }
