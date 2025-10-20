@@ -28,6 +28,8 @@ const RegisterPage = () => {
   const [phone, setPhone] = useState("");
   const [gender, setGender] = useState("");
   const [birthDate, setBirthDate] = useState("");
+  const [role, setRole] = useState("");
+  const [position, setPosition] = useState("");
 
   const [loading, setLoading] = useState(false);
   const [loading2, setLoading2] = useState("");
@@ -107,9 +109,9 @@ const RegisterPage = () => {
         email,
         password
       );
-      const token = await userCredential.user.getIdToken();
+      await new Promise((r) => setTimeout(r, 800));
+      const token = await userCredential.user.getIdToken(true);
 
-      // 3️⃣ Simpan data tambahan ke edit-profile
       const editRes = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user/edit-profile`,
         {
@@ -125,15 +127,18 @@ const RegisterPage = () => {
             gender,
             birthdate: birthDate,
             user_photo: null,
+            role: parseInt(role) || 0,
+            position,
           }),
         }
       );
 
+      const editData = await editRes.json().catch(() => ({}));
+      console.log("🧾 Edit profile response:", editRes.status, editData);
+
       if (!editRes.ok) {
         console.warn("⚠️ Failed to update extra profile data");
       }
-
-      // 4️⃣ Logout biar user harus login manual lagi
       await auth.signOut();
 
       setDialogMessage("Registration successful! Redirecting to Sign In...");
@@ -353,7 +358,7 @@ const RegisterPage = () => {
                   </div>
 
                   <div>
-                    <label className="font-semibold">
+                    <label className="text-base md:text-lg lg:text-xl xl:text-2xl font-semibold text-black flex items-center">
                       Institution <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -367,7 +372,7 @@ const RegisterPage = () => {
                   </div>
 
                   <div>
-                    <label className="font-semibold">
+                    <label className="text-base md:text-lg lg:text-xl xl:text-2xl font-semibold text-black flex items-center">
                       Phone Number <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -381,7 +386,7 @@ const RegisterPage = () => {
                   </div>
 
                   <div>
-                    <label className="font-semibold">
+                    <label className="text-base md:text-lg lg:text-xl xl:text-2xl font-semibold text-black flex items-center">
                       Gender <span className="text-red-500">*</span>
                     </label>
                     <select
@@ -397,7 +402,7 @@ const RegisterPage = () => {
                   </div>
 
                   <div>
-                    <label className="font-semibold">
+                    <label className="text-base md:text-lg lg:text-xl xl:text-2xl font-semibold text-black flex items-center">
                       Birthdate <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -407,6 +412,52 @@ const RegisterPage = () => {
                       onChange={(e) => setBirthDate(e.target.value)}
                       required
                     />
+                  </div>
+
+                  <div>
+                    <label className="text-base md:text-lg lg:text-xl xl:text-2xl font-semibold text-black flex items-center">
+                      Role <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      className={inputClass("")}
+                      value={role}
+                      onChange={(e) => setRole(e.target.value)}
+                      required
+                    >
+                      <option value="">Select your role</option>
+                      <option value="Teacher/Lecturer">
+                        Teacher / Lecturer
+                      </option>
+                      <option value="Student">Student</option>
+                      <option value="University Student">
+                        University Student
+                      </option>
+                      <option value="Professional">Professional</option>
+                      <option value="Others">Others</option>
+                    </select>
+                  </div>
+
+                  <div className="relative">
+                    <label className="text-base md:text-lg lg:text-xl xl:text-2xl font-semibold text-black flex items-center">
+                      Position <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Enter your position"
+                      className={inputClass("")}
+                      value={position}
+                      onChange={(e) => setPosition(e.target.value)}
+                      required
+                    />
+                    {/* Tooltip */}
+                    <div className="absolute right-3 top-9 text-gray-400 cursor-help group">
+                      ⓘ
+                      <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover:block w-max max-w-sm bg-gray-800 text-white text-xs rounded p-2 shadow-lg z-50 whitespace-pre-line">
+                        {
+                          "Example:\nHead of Electrical Engineering Study Program\nDean of Faculty of Engineering\nIndustrial Engineering Student"
+                        }
+                      </div>
+                    </div>
                   </div>
 
                   <div className="flex justify-center pt-10 md:pt-14 lg:pt-16 xl:pt-20">
