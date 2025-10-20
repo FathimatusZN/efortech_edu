@@ -9,9 +9,31 @@ import "swiper/css/pagination";
 import PartnerSection from "@/components/home/partner_home";
 import TopTrainingSection from "@/components/home/training_home";
 import ArticleSection from "@/components/home/article_home";
+import { useAuth } from "@/app/context/AuthContext";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 
 const Home = () => {
   const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+  //handle pop up
+  const { user, loading } = useAuth();
+  const router = useRouter();
+  const [showAuthPopup, setShowAuthPopup] = useState(false);
+
+  useEffect(() => {
+    if (!loading && !user) {
+      // Jika belum login, tampilkan popup
+      setTimeout(() => setShowAuthPopup(true), 1500);
+    }
+  }, [loading, user]);
 
   // Data states
   const [slides, setSlides] = useState([]);
@@ -234,12 +256,14 @@ const Home = () => {
             <button
               key={index}
               onClick={() => setCurrentSlide(index)}
-              className={`w-3 h-3 rounded-full border-2 flex items-center justify-center transition-all ${currentSlide === index ? "border-mainOrange" : "border-gray-400"
-                }`}
+              className={`w-3 h-3 rounded-full border-2 flex items-center justify-center transition-all ${
+                currentSlide === index ? "border-mainOrange" : "border-gray-400"
+              }`}
             >
               <div
-                className={`w-1 h-1 rounded-full ${currentSlide === index ? "bg-mainOrange" : "bg-transparent"
-                  }`}
+                className={`w-1 h-1 rounded-full ${
+                  currentSlide === index ? "bg-mainOrange" : "bg-transparent"
+                }`}
               ></div>
             </button>
           ))}
@@ -367,7 +391,11 @@ const Home = () => {
                           {Array.from({ length: 5 }).map((_, i) => (
                             <span
                               key={i}
-                              className={i < card.rating ? "text-yellow-400" : "text-white"}
+                              className={
+                                i < card.rating
+                                  ? "text-yellow-400"
+                                  : "text-white"
+                              }
                             >
                               {i < card.rating ? "★" : "☆"}
                             </span>
@@ -420,6 +448,53 @@ const Home = () => {
             />
           </svg>
         </button>
+      )}
+
+      {showAuthPopup && (
+        <Dialog open={showAuthPopup} onOpenChange={setShowAuthPopup}>
+          <DialogContent className="sm:max-w-[900px] h-[400px] w-full p-0 overflow-hidden rounded-2xl shadow-xl focus:outline-none border-0">
+            <div className="flex flex-col sm:flex-row w-full">
+              {/* Gambar kiri */}
+              <div className="sm:w-1/2 w-full h-96 sm:h-auto">
+                <img
+                  src="/assets/popup_image.jpg"
+                  alt="Popup"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+
+              {/* Konten kanan */}
+              <div className="sm:w-1/2 w-full bg-white p-8 flex flex-col justify-center items-center text-center sm:text-left gap-4">
+                <DialogTitle className="text-4xl sm:text-5xl font-extrabold text-mainBlue font-sans">
+                  Sign up now to join the community!
+                </DialogTitle>
+                <p className="text-gray-700 text-base sm:text-lg">
+                  Join now to access exclusive training, track your progress,
+                  and upload your certificates effortlessly.
+                </p>
+
+                <div className="flex gap-4 w-full mt-4">
+                  <Button
+                    variant="orange" 
+                    size="lg"
+                    className="w-1/2 py-3"
+                    onClick={() => router.push("/auth/register")}
+                  >
+                    Sign Up
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="w-1/2 py-3"
+                    onClick={() => router.push("/auth/signin")}
+                  >
+                    Login
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );
