@@ -316,10 +316,29 @@ const TrainingDetail = () => {
                 Enroll Now
               </button>
               <button
-                onClick={() =>
-                (window.location.href =
-                  "mailto:info@efortechsolutions.com?subject=Question%20about%20Training%20Registration%20at%20Efortech&body=Dear%20Efortech%20Team,%0D%0A%0D%0AI%20hope%20this%20message%20finds%20you%20well.%0D%0A%0D%0AI%20would%20like%20to%20ask%20for%20further%20information%20regarding%20the%20training%20registration.%20Could%20you%20please%20provide%20more%20details%20about%20the%20process%20or%20requirements?%0D%0A%0D%0AThank%20you%20in%20advance%20for%20your%20assistance.%0D%0A%0D%0ABest%20regards,%0D%0A[Your%20Name]")
-                }
+                onClick={() => {
+                  const subject = encodeURIComponent(
+                    `Inquiry about Training Registration - ${trainingData.training_name}`
+                  );
+
+                  const body = encodeURIComponent(
+                    `Dear Efortech Team,\n\n` +
+                    `I hope this message finds you well.\n\n` +
+                    `I'm reaching out to ask for further information regarding the training registration process.\n\n` +
+                    `Here are the training details:\n` +
+                    `• Training ID   : ${trainingData.training_id}\n` +
+                    `• Training Name : ${trainingData.training_name}\n\n` +
+                    `Could you please provide more details about the registration process, requirements, or any additional steps?\n` +
+                    `[* Feel free to adjust or rephrase this part to match your preferred tone or context.]\n\n` +
+                    `Thank you very much for your time and assistance.\n` +
+                    `Looking forward to your reply.\n\n` +
+                    `Best regards,\n` +
+                    `[Your Name]\n` +
+                    `[Your Contact Information (optional)]`
+                  );
+
+                  window.location.href = `mailto:info@efortechsolutions.com?subject=${subject}&body=${body}`;
+                }}
                 className="px-6 py-1 border-2 border-mainOrange text-mainOrange font-semibold rounded-lg w-full md:w-[300px] transition duration-300 ease-in-out hover:bg-mainOrange hover:text-white active:scale-95"
               >
                 Ask by Email
