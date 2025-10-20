@@ -58,14 +58,17 @@ export default function ExportNeedToProcessDialog({ open, onClose }) {
 
     let res;
     if (type === "all") {
-
-      res = await fetch(url, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+    // Untuk Export All, jangan kirim query apapun
+      res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
     } else {
       const params = new URLSearchParams();
       params.append("tab", "needprocess");
-      params.append("dateType", dateType);
+
+      // ✅ Mapping dateType biar sesuai backend
+      const mappedDateType =
+        dateType === "registration" ? "registration_date" : "training_date";
+      params.append("dateType", mappedDateType);
+
       if (startDate) params.append("start", `${startDate}T00:00:00Z`);
       if (endDate) params.append("end", `${endDate}T23:59:59Z`);
       if (selectedStatus.length > 0)
@@ -73,18 +76,23 @@ export default function ExportNeedToProcessDialog({ open, onClose }) {
       if (selectedTraining) params.append("training_id", selectedTraining);
 
       if (params.toString()) url += `?${params.toString()}`;
-      res = await fetch(url, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+
+      res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
     }
 
     if (!res.ok) {
-      const errData = await res.json().catch(() => null);
-      const errMsg = errData?.message || "Export failed.";
-      window.alert(errMsg);
-      return;
-    }
+  const errData = await res.json().catch(() => null);
+  const errMsg = errData?.message || "Export failed.";
 
+  // Kalau pesan dari backend "No data available to export"
+  if (errMsg.toLowerCase().includes("no data")) {
+    toast.error("No data available to export.");
+  } else {
+    toast.error(errMsg);
+  }
+
+  return;
+}
     const blob = await res.blob();
     const contentDisposition = res.headers.get("Content-Disposition");
     let fileName = "exported_data.xlsx";
