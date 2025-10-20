@@ -54,10 +54,8 @@ export default function ManageAdmin() {
     };
 
     useEffect(() => {
-        // Default filter: Admin & Superadmin
         setColumnFilters([
-            { id: "role_name", value: "Admin" },
-            { id: "role_name", value: "Superadmin" }
+            { id: "role_name", value: ["Admin", "Superadmin"] }
         ]);
     }, []);
 
@@ -363,11 +361,9 @@ export default function ManageAdmin() {
                             onValueChange={(value) => {
                                 if (value === "all") setColumnFilters([]);
                                 else if (value === "admin-superadmin") {
-                                    setColumnFilters([
-                                        { id: "role_name", value: "Admin" },
-                                        { id: "role_name", value: "Superadmin" }
-                                    ]);
-                                } else {
+                                    setColumnFilters([{ id: "role_name", value: ["Admin", "Superadmin"] }]);
+                                }
+                                else {
                                     setColumnFilters([{ id: "role_name", value }]);
                                 }
                             }}
