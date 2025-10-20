@@ -9,9 +9,11 @@ import { AdditionalParticipantDialog } from "@/components/admin/AdditionalPartic
 import { UploadCertificateDialog } from "@/components/admin/UploadCertificateDialog";
 import { FaSearch } from "react-icons/fa";
 import { Checkbox } from "@/components/ui/checkbox";
+import {Button} from "@/components/ui/button";
 import { FaFilter } from "react-icons/fa";
 import { useRouter, useSearchParams } from "next/navigation";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import ExportNeedToProcessDialog from "@/components/admin/ExportNeedToProcessDialog";
 
 const ValidationTrainingClient = () => {
   const searchParams = useSearchParams();
@@ -52,6 +54,7 @@ const ValidationTrainingClient = () => {
     null: "Not Marked",
   };
 
+  const [exportOpen, setExportOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("");
   const [sortOrder, setSortOrder] = useState("ASC");
@@ -507,6 +510,8 @@ const ValidationTrainingClient = () => {
                   )}
                 </div>
 
+                <div className="flex justify-between gap-4">
+
                 {/* Sort Dropdown */}
                 <div className="relative" ref={sortRef}>
                   <button
@@ -587,6 +592,17 @@ const ValidationTrainingClient = () => {
                     </div>
                   )}
                 </div>
+
+                {/* Button Export Data */}
+                <Button
+                  variant="orange"
+                  onClick={() => setExportOpen(true)}
+                  className="flex items-center"
+                >
+                  <i className="fa-solid fa-file-export"></i>Export Data
+                </Button>
+                </div>
+
               </div>
             </div>
             <div className="border-t border-gray-200 mt-2" />
@@ -691,6 +707,11 @@ const ValidationTrainingClient = () => {
               </div>
             </div>
           </div>
+
+          <ExportNeedToProcessDialog
+            open={exportOpen}
+            onClose={() => setExportOpen(false)}
+          />
         </Tabs>
       </div>
     </ProtectedRoute>
