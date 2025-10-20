@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { auth } from "@/app/firebase/config";
+import { onAuthStateChanged } from "firebase/auth";
 import { getIdToken } from "firebase/auth";
 import { NotFound } from "../../../../components/ui/ErrorPage";
 import {
@@ -14,6 +15,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { AlertTriangle } from "lucide-react";
 
 const TrainingDetail = () => {
   const { id } = useParams();
@@ -29,15 +40,19 @@ const TrainingDetail = () => {
   const [reviews, setReviews] = useState([]);
   const [isReviewEmpty, setIsReviewEmpty] = useState(false);
 
+  const [showRegisteredDialog, setShowRegisteredDialog] = useState(false);
+  const [registrationInfo, setRegistrationInfo] = useState(null);
+
   useEffect(() => {
-    const fetchUser = async () => {
-      const currentUser = auth.currentUser;
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
         const token = await getIdToken(currentUser);
         setUser(currentUser);
+      } else {
+        setUser(null);
       }
-    };
-    fetchUser();
+    });
+    return () => unsubscribe();
   }, []);
 
   useEffect(() => {
@@ -106,12 +121,36 @@ const TrainingDetail = () => {
     }
   }, [trainingData?.images?.length]);
 
-  const handleEnrollClick = () => {
+  const handleEnrollClick = async () => {
+    if (user === undefined) return;
     if (!user) {
-      // Redirect to login page if not logged in
       router.push(`/auth/signin?redirect=/training/${id}/registration`);
-    } else {
-      // If logged in, proceed to registration page
+      return;
+    }
+
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/registration/check/${user.uid}/${id}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      const data = await res.json();
+      console.log("Check registration response:", data);
+
+      const isRegistered = data?.data?.isRegistered === true;
+
+      if (isRegistered) {
+        setRegistrationInfo(data.data);
+        setShowRegisteredDialog(true);
+        return;
+      }
+
+      router.push(`/training/${id}/registration`);
+    } catch (err) {
+      console.error("Check registration error:", err);
       router.push(`/training/${id}/registration`);
     }
   };
@@ -315,6 +354,105 @@ const TrainingDetail = () => {
               >
                 Enroll Now
               </button>
+              <Dialog open={showRegisteredDialog} onOpenChange={setShowRegisteredDialog}>
+                <DialogContent
+                  className="w-[90vw] max-w-[600px] max-h-[90vh] overflow-y-auto rounded-xl shadow-lg p-6 "
+                >
+                  <DialogHeader className="text-center">
+                    <div className="flex justify-center mb-2">
+                      <AlertTriangle className="text-orange-500 w-10 h-10" />
+                    </div>
+                    <DialogTitle className="text-xl font-bold text-mainOrange">
+                      Already Registered
+                    </DialogTitle>
+                    <DialogDescription className="text-gray-600">
+                      You have already registered for this training. Below are your registration details:
+                    </DialogDescription>
+                  </DialogHeader>
+
+                  {registrationInfo && (
+                    <div className="overflow-x-auto mt-4">
+                      <table className="min-w-full border border-gray-200 text-sm text-left text-gray-700 rounded-lg overflow-hidden">
+                        <tbody>
+                          <tr className="border-b border-gray-200">
+                            <td className="px-4 py-2 font-semibold bg-gray-50 w-1/3">Training</td>
+                            <td className="px-4 py-2">{registrationInfo.training_name}</td>
+                          </tr>
+                          <tr className="border-b border-gray-200">
+                            <td className="px-4 py-2 font-semibold bg-gray-50">Registration Date</td>
+                            <td className="px-4 py-2">
+                              {new Date(registrationInfo.registration_date).toLocaleDateString("en-US", {
+                                year: "numeric",
+                                month: "short",
+                                day: "numeric",
+                              })}
+                            </td>
+                          </tr>
+                          <tr className="border-b border-gray-200">
+                            <td className="px-4 py-2 font-semibold bg-gray-50">Training Date</td>
+                            <td className="px-4 py-2">
+                              {new Date(registrationInfo.training_date).toLocaleDateString("en-US", {
+                                year: "numeric",
+                                month: "short",
+                                day: "numeric",
+                              })}
+                            </td>
+                          </tr>
+                          <tr className="border-b border-gray-200">
+                            <td className="px-4 py-2 font-semibold bg-gray-50">Status</td>
+                            <td
+                              className={`px-4 py-2 font-semibold ${registrationInfo.status_label === "Done"
+                                ? "text-green-600"
+                                : registrationInfo.status_label === "Cancelled"
+                                  ? "text-red-600"
+                                  : "text-blue-600"
+                                }`}
+                            >
+                              {registrationInfo.status_label}
+                            </td>
+                          </tr>
+                          <tr className="border-b border-gray-200">
+                            <td className="px-4 py-2 font-semibold bg-gray-50">Registration ID</td>
+                            <td className="px-4 py-2">{registrationInfo.registration_id}</td>
+                          </tr>
+                          <tr>
+                            <td className="px-4 py-2 font-semibold bg-gray-50">Participant ID</td>
+                            <td className="px-4 py-2">{registrationInfo.registration_participant_id}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+
+                  <p className="text-xs text-gray-500 mt-4 text-justify">
+                    If there was a mistake in your previous registration and you need to register again,
+                    please contact us at{" "}
+                    <a
+                      href="mailto:info@efortechsolutions.com"
+                      className="text-mainOrange font-semibold hover:underline"
+                    >
+                      info@efortechsolutions.com
+                    </a>.
+                  </p>
+
+                  <DialogFooter className="mt-6 flex justify-center gap-4">
+                    <Button
+                      onClick={() => {
+                        setShowRegisteredDialog(false);
+                        router.push("/edit-profile");
+                      }}
+                      className="bg-mainOrange text-white hover:bg-orange-600"
+                    >
+                      View My Training
+                    </Button>
+                    <Button variant="outline" onClick={() => setShowRegisteredDialog(false)}>
+                      Back to Detail
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+
+
               <button
                 onClick={() => {
                   const subject = encodeURIComponent(
