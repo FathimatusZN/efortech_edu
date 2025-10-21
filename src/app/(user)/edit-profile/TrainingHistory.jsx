@@ -47,6 +47,7 @@ export default function TrainingHistory({ userId }) {
             } = participant;
 
             let trainingImages = [];
+            let trainingIdFromReg = null;
 
             // Ambil training_id dari registration untuk ambil gambar
             try {
@@ -54,11 +55,11 @@ export default function TrainingHistory({ userId }) {
                 `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/registration/${registration_id}`
               );
               const regData = await regRes.json();
-              const training_id = regData?.data?.training_id;
+              trainingIdFromReg = regData?.data?.training_id;
 
-              if (training_id) {
+              if (trainingIdFromReg) {
                 const trainingRes = await fetch(
-                  `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/training/id/${training_id}`
+                  `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/training/id/${trainingIdFromReg}`
                 );
                 const trainingDetail = await trainingRes.json();
                 trainingImages = trainingDetail?.data?.images || [];
@@ -70,6 +71,7 @@ export default function TrainingHistory({ userId }) {
             return {
               registrationParticipantId: registration_participant_id,
               registrationId: registration_id,
+              trainingId: trainingIdFromReg,
               trainingName: training_name,
               trainingDate: training_date,
               status: statusMap[status] || "unknown",
@@ -108,7 +110,9 @@ export default function TrainingHistory({ userId }) {
             (c.status === "validated" && !c.isCompleted)
         );
       case "Done":
-        return trainings.filter((c) => c.status === "completed" && c.isCompleted);
+        return trainings.filter(
+          (c) => c.status === "completed" && c.isCompleted
+        );
       default:
         return trainings;
     }
@@ -123,10 +127,11 @@ export default function TrainingHistory({ userId }) {
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2 font-medium ${activeTab === tab
-              ? "text-mainOrange border-b-2 border-mainOrange"
-              : "text-gray-600"
-              }`}
+            className={`px-4 py-2 font-medium ${
+              activeTab === tab
+                ? "text-mainOrange border-b-2 border-mainOrange"
+                : "text-gray-600"
+            }`}
           >
             {tab}
           </button>

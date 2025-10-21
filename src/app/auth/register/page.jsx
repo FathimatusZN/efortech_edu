@@ -373,6 +373,52 @@ const RegisterPage = () => {
 
                   <div>
                     <label className="text-base md:text-lg lg:text-xl xl:text-2xl font-semibold text-black flex items-center">
+                      Role <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      className={inputClass("")}
+                      value={role}
+                      onChange={(e) => setRole(e.target.value)}
+                      required
+                    >
+                      <option value="">Select your role</option>
+                      <option value="Teacher/Lecturer">
+                        Teacher / Lecturer
+                      </option>
+                      <option value="Student">Student</option>
+                      <option value="University Student">
+                        University Student
+                      </option>
+                      <option value="Professional">Professional</option>
+                      <option value="Others">Others</option>
+                    </select>
+                  </div>
+
+                  <div className="relative flex flex-col">
+                    <label className="text-base md:text-lg lg:text-xl xl:text-2xl font-semibold text-black flex items-center">
+                      Position <span className="text-red-500">*</span>
+                      {/* Tooltip icon */}
+                      <div className="relative group ml-2 flex-shrink-0 cursor-help text-sm">
+                        ⓘ
+                        <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover:block
+                      w-fit min-w-[250px] max-w-[400px] bg-gray-800 text-white text-xs rounded p-2 shadow-lg z-50
+                      whitespace-pre-line break-words">
+                          {"Example:\n• Head of Electrical Engineering Study Program\n• Dean of Faculty of Engineering\n• Industrial Engineering Student\n• Director at PT. XYZ\n• Marketing Division at PT. XYZ"}
+                        </div>
+                      </div>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Enter your position"
+                      className={inputClass("")}
+                      value={position}
+                      onChange={(e) => setPosition(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-base md:text-lg lg:text-xl xl:text-2xl font-semibold text-black flex items-center">
                       Phone Number <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -414,52 +460,6 @@ const RegisterPage = () => {
                     />
                   </div>
 
-                  <div>
-                    <label className="text-base md:text-lg lg:text-xl xl:text-2xl font-semibold text-black flex items-center">
-                      Role <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      className={inputClass("")}
-                      value={role}
-                      onChange={(e) => setRole(e.target.value)}
-                      required
-                    >
-                      <option value="">Select your role</option>
-                      <option value="Teacher/Lecturer">
-                        Teacher / Lecturer
-                      </option>
-                      <option value="Student">Student</option>
-                      <option value="University Student">
-                        University Student
-                      </option>
-                      <option value="Professional">Professional</option>
-                      <option value="Others">Others</option>
-                    </select>
-                  </div>
-
-                  <div className="relative">
-                    <label className="text-base md:text-lg lg:text-xl xl:text-2xl font-semibold text-black flex items-center">
-                      Position <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Enter your position"
-                      className={inputClass("")}
-                      value={position}
-                      onChange={(e) => setPosition(e.target.value)}
-                      required
-                    />
-                    {/* Tooltip */}
-                    <div className="absolute right-3 top-9 text-gray-400 cursor-help group">
-                      ⓘ
-                      <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover:block w-max max-w-sm bg-gray-800 text-white text-xs rounded p-2 shadow-lg z-50 whitespace-pre-line">
-                        {
-                          "Example:\nHead of Electrical Engineering Study Program\nDean of Faculty of Engineering\nIndustrial Engineering Student"
-                        }
-                      </div>
-                    </div>
-                  </div>
-
                   <div className="flex justify-center pt-10 md:pt-14 lg:pt-16 xl:pt-20">
                     <Button
                       type="submit"
@@ -477,9 +477,8 @@ const RegisterPage = () => {
                   <p className="text-gray-500 text-center text-xs md:text-sm lg:text-base xl:text-lg">
                     Already have an account?{" "}
                     <span
-                      className={`text-[#ED7117] font-semibold hover:underline cursor-pointer ${
-                        loading ? "pointer-events-none opacity-50" : ""
-                      }`}
+                      className={`text-[#ED7117] font-semibold hover:underline cursor-pointer ${loading ? "pointer-events-none opacity-50" : ""
+                        }`}
                       onClick={handleRedirectToSignIn}
                     >
                       Sign In

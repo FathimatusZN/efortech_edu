@@ -127,4 +127,119 @@ const ArchiveDialog = ({ open, data, id, title, onCancel, onConfirm }) => {
     );
 };
 
-export { ConfirmDialog, ConfirmDialogAdmin, ArchiveDialog };
+const DeleteTrainingDialog = ({ open, onCancel, onConfirm, relationStatus, message, data, id, title, summary }) => {
+    const renderSummaryTable = () => {
+        if (!summary) return null;
+
+        return (
+            <div className="mt-4 border rounded-lg p-3 bg-gray-50">
+                <h3 className="font-semibold text-sm text-gray-700 mb-2">Related Data Summary:</h3>
+                <table className="text-sm w-full">
+                    <tbody>
+                        <tr>
+                            <td className="text-gray-600 w-40">Registrations</td>
+                            <td className="font-medium text-black">{summary.total_registration}</td>
+                        </tr>
+                        <tr>
+                            <td className="text-gray-600">Participants</td>
+                            <td className="font-medium text-black">{summary.total_participant}</td>
+                        </tr>
+                        <tr>
+                            <td className="text-gray-600">Reviews</td>
+                            <td className="font-medium text-black">{summary.total_review}</td>
+                        </tr>
+                        <tr>
+                            <td className="text-gray-600">Certificates</td>
+                            <td className="font-medium text-black">{summary.total_certificate}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        );
+    };
+
+    const renderContent = () => {
+        switch (relationStatus) {
+            case 1:
+                return (
+                    <p className="text-sm text-muted-foreground">
+                        {message} This action will permanently delete{' '}
+                        <span className="font-medium text-mainBlue">{data}</span>{' '}
+                        <span className="font-semibold">{title}</span>.
+                        Are you sure you want to continue?
+                    </p>
+                );
+
+            case 2:
+                return (
+                    <div className="text-sm text-muted-foreground space-y-3">
+                        <p>
+                            This training has existing registrations but none have certificates yet.
+                            Deleting will also remove all related registrations, participants, and reviews (if any).
+                        </p>
+                        {renderSummaryTable()}
+                        <p>
+                            <span className="font-semibold text-mainBlue">{message}</span><br />
+                            Are you sure you want to proceed?
+                        </p>
+                    </div>
+                );
+
+            case 3:
+                return (
+                    <div className="text-sm text-muted-foreground space-y-3">
+                        <p>⚠️ {message}</p>
+                        {renderSummaryTable()}
+                        <p>This training cannot be deleted because at least one participant already has a certificate.</p>
+                    </div>
+                );
+
+            default:
+                return <p className="text-sm text-muted-foreground">Loading status...</p>;
+        }
+    };
+
+    return (
+        <Dialog open={open} onOpenChange={onCancel}>
+            <DialogContent className="space-y-4">
+                <DialogHeader>
+                    <DialogTitle className="text-lg font-semibold text-red-700">
+                        🗑️ Delete Training Confirmation
+                    </DialogTitle>
+                </DialogHeader>
+
+                {renderContent()}
+
+                <table className="text-sm w-full table-auto mt-3">
+                    <tbody>
+                        <tr>
+                            <td className="text-lightBlue w-20 align-top">ID</td>
+                            <td className="text-black font-medium">: {id}</td>
+                        </tr>
+                        <tr>
+                            <td className="text-lightBlue w-20 align-top">Title</td>
+                            <td className="text-black font-medium">: {title}</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <DialogFooter className="flex justify-end gap-2 pt-4">
+                    <Button variant="ghost" onClick={onCancel}>
+                        {relationStatus === 3 ? "OK" : "Cancel"}
+                    </Button>
+
+                    {relationStatus !== 3 && (
+                        <Button
+                            className="bg-red-700 hover:bg-red-800 text-white"
+                            onClick={onConfirm}
+                        >
+                            Yes, Delete
+                        </Button>
+                    )}
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+};
+
+export { ConfirmDialog, ConfirmDialogAdmin, ArchiveDialog, DeleteTrainingDialog };

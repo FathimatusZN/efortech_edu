@@ -74,8 +74,12 @@ export default function TrainingHistoryCard({
             <Button variant="orange" className="w-full" disabled>
               Upload Payment Proof
             </Button>
-            <Button variant="outline" className="w-full mt-2">
-              <a href={`/training/${trainingId}`}>See Details</a>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => router.push(`/training/${trainingId}`)}
+            >
+              See Details
             </Button>
           </>
         );
@@ -90,8 +94,12 @@ export default function TrainingHistoryCard({
             >
               Upload Payment Proof
             </Button>
-            <Button variant="outline" className="w-full mt-2">
-              <a href={`/training/${trainingId}`}>See Details</a>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => router.push(`/training/${trainingId}`)}
+            >
+              See Details
             </Button>
           </>
         );
@@ -102,8 +110,12 @@ export default function TrainingHistoryCard({
             <p className="text-white font-medium border-blue-900 bg-blue-900 rounded-md px-4 py-2 w-full text-center">
               Registration Validated
             </p>
-            <Button variant="outline" className="w-full">
-              <a href={`/training/${trainingId}`}>See Details</a>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => router.push(`/training/${trainingId}`)}
+            >
+              See Details
             </Button>
           </div>
         );
@@ -120,8 +132,12 @@ export default function TrainingHistoryCard({
               >
                 Review
               </Button>
-              <Button variant="outline" className="w-full">
-                <a href={`/training/${trainingId}`}>See Details</a>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => router.push(`/training/${trainingId}`)}
+              >
+                See Details
               </Button>
             </div>
           );
@@ -138,8 +154,12 @@ export default function TrainingHistoryCard({
               >
                 Review
               </Button>
-              <Button variant="outline" className="w-full">
-                <a href={`/training/${trainingId}`}>See Details</a>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => router.push(`/training/${trainingId}`)}
+              >
+                See Details
               </Button>
             </div>
           );
@@ -186,8 +206,12 @@ export default function TrainingHistoryCard({
               <p className="text-white font-medium border-red-600 bg-red-600 rounded-md px-4 py-2 w-full text-center">
                 Absent
               </p>
-              <Button variant="outline" className="w-full">
-                <a href={`/training/${trainingId}`}>See Details</a>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => router.push(`/training/${trainingId}`)}
+              >
+                See Details
               </Button>
             </div>
           );
@@ -197,8 +221,12 @@ export default function TrainingHistoryCard({
 
       default:
         return (
-          <Button variant="orange" className="w-full">
-            <a href={`/training/${trainingId}`}>See Details</a>
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={() => router.push(`/training/${trainingId}`)}
+          >
+            See Details
           </Button>
         );
     }
