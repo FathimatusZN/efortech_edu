@@ -14,6 +14,7 @@ import { FaFilter } from "react-icons/fa";
 import { useRouter, useSearchParams } from "next/navigation";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import ExportNeedToProcessDialog from "@/components/admin/ExportNeedToProcessDialog";
+import ExportOnProgressDialog from "@/components/admin/ExportOnProgressDialog";
 
 const ValidationTrainingClient = () => {
   const searchParams = useSearchParams();
@@ -712,6 +713,35 @@ const ValidationTrainingClient = () => {
             open={exportOpen}
             onClose={() => setExportOpen(false)}
           />
+
+          {tab === "needprocess" && (
+            <ExportNeedToProcessDialog
+              open={exportOpen}
+              onClose={() => setExportOpen(false)}
+            />
+          )}
+
+          {tab === "onprogress" && (
+            <ExportOnProgressDialog
+              open={exportOpen}
+              onClose={() => setExportOpen(false)}
+            />
+          )}
+
+          {tab === "completed" && (
+            <ExportCompletedDialog
+              open={exportOpen}
+              onClose={() => setExportOpen(false)}
+            />
+          )}
+
+          {tab === "cancelled" && (
+            <ExportCancelledDialog
+              open={exportOpen}
+              onClose={() => setExportOpen(false)}
+            />
+          )}
+
         </Tabs>
       </div>
     </ProtectedRoute>
