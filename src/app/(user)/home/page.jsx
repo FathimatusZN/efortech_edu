@@ -452,10 +452,10 @@ const Home = () => {
 
       {showAuthPopup && (
         <Dialog open={showAuthPopup} onOpenChange={setShowAuthPopup}>
-          <DialogContent className="sm:max-w-[900px] h-[400px] w-full p-0 overflow-hidden rounded-2xl shadow-xl focus:outline-none border-0">
-            <div className="flex flex-col sm:flex-row w-full">
+          <DialogContent className="w-[90%] sm:max-w-[900px] max-h-[90vh] h-auto p-0 overflow-hidden rounded-2xl shadow-xl focus:outline-none border-0">
+            <div className="flex flex-col sm:flex-row w-full h-full">
               {/* Gambar kiri */}
-              <div className="sm:w-1/2 w-full h-96 sm:h-auto">
+              <div className="w-full sm:w-1/2 h-48 sm:h-auto">
                 <img
                   src="/assets/popup_image.jpg"
                   alt="Popup"
@@ -464,20 +464,20 @@ const Home = () => {
               </div>
 
               {/* Konten kanan */}
-              <div className="sm:w-1/2 w-full bg-white p-8 flex flex-col justify-center items-center text-center sm:text-left gap-4">
-                <DialogTitle className="text-4xl sm:text-5xl font-extrabold text-mainBlue font-sans">
+              <div className="w-full sm:w-1/2 bg-white p-6 sm:p-8 flex flex-col justify-center items-center sm:items-start text-center sm:text-left gap-4">
+                <DialogTitle className="text-2xl sm:text-4xl font-extrabold text-mainBlue font-sans">
                   Sign up now to join the community!
                 </DialogTitle>
-                <p className="text-gray-700 text-base sm:text-lg">
+                <p className="text-gray-700 text-sm sm:text-base">
                   Join now to access exclusive training, track your progress,
                   and upload your certificates effortlessly.
                 </p>
 
-                <div className="flex gap-4 w-full mt-4">
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full mt-4">
                   <Button
-                    variant="orange" 
+                    variant="orange"
                     size="lg"
-                    className="w-1/2 py-3"
+                    className="w-full sm:w-1/2 py-3"
                     onClick={() => router.push("/auth/register")}
                   >
                     Sign Up
@@ -485,7 +485,7 @@ const Home = () => {
                   <Button
                     variant="outline"
                     size="lg"
-                    className="w-1/2 py-3"
+                    className="w-full sm:w-1/2 py-3"
                     onClick={() => router.push("/auth/signin")}
                   >
                     Login
