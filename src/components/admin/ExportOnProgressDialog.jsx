@@ -76,10 +76,10 @@ export default function ExportOnProgressDialog({ open, onClose }) {
           dateType === "registration"
             ? "registration_date"
             : dateType === "training"
-            ? "training_date"
-            : dateType === "completed"
-            ? "completed_date"
-            : "";
+              ? "training_date"
+              : dateType === "completed"
+                ? "completed_date"
+                : "";
 
         if (startDate) params.append("start", `${startDate}T00:00:00Z`);
         if (endDate) params.append("end", `${endDate}T23:59:59Z`);
@@ -282,10 +282,11 @@ export default function ExportOnProgressDialog({ open, onClose }) {
             onClick={() => handleExport("custom")}
             variant={
               (startDate && endDate) ||
-              selectedStatus.length > 0 ||
-              selectedTraining ||
-              advantechCert
-                
+                selectedStatus.length > 0 ||
+                selectedTraining ||
+                advantechCert
+                ? "orange"
+                : "outline"
             }
             disabled={
               !(
