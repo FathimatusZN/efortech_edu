@@ -15,7 +15,13 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { SuccessDialog } from "@/components/ui/SuccessDialog";
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup,
+} from "firebase/auth";
+import GoogleIcon from "@/components/ui/GoogleIcon";
 
 const RegisterPage = () => {
   const [fullName, setFullName] = useState("");
@@ -154,6 +160,51 @@ const RegisterPage = () => {
     }
   };
 
+  const handleGoogleRegister = async () => {
+    try {
+      setLoading(true);
+      const auth = getAuth();
+      const provider = new GoogleAuthProvider();
+
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      const token = await user.getIdToken();
+
+      // Panggil API register Google di backend-mu
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/register-google`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log("🧾 Google register response status:", res.status);
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setLoading(false);
+        setDialogMessage(data.message || "Google registration failed.");
+        setFailedDialog(true);
+        return;
+      }
+
+      // berhasil
+      setDialogMessage("Registration successful! Redirecting...");
+      setSuccessDialog(true);
+
+      setTimeout(() => {
+        router.push("/auth/signin");
+      }, 2000);
+    } catch (error) {
+      setLoading(false);
+      setDialogMessage(error.message);
+      setFailedDialog(true);
+    }
+  };
+
   const inputClass = (error) => `
         w-full border rounded-[10px] px-4 py-2 shadow-md
         text-xs md:text-sm lg:text-base xl:text-lg
@@ -188,16 +239,16 @@ const RegisterPage = () => {
       />
 
       <Dialog open={failedDialog} onOpenChange={setFailedDialog}>
-        <DialogContent className="rounded-xl shadow-2xl px-8 py-6 text-center space-y-4">
-          <DialogHeader>
-            <DialogTitle className="flex items-center justify-center gap-2 text-2xl font-bold text-red-600">
+        <DialogContent className="rounded-xl shadow-2xl px-8 py-6 text-center space-y-4 flex flex-col items-center">
+          <DialogHeader className="flex flex-col items-center space-y-2">
+            <DialogTitle className="text-2xl font-bold text-red-600 flex items-center gap-2 justify-center">
               ⚠️ Registration Failed
             </DialogTitle>
-            <DialogDescription className="text-gray-600 text-sm">
+            <DialogDescription className="text-gray-600 text-sm text-center">
               {dialogMessage}
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="flex justify-center">
+          <DialogFooter className="flex justify-center mt-4">
             <Button
               onClick={() => setFailedDialog(false)}
               variant="orange"
@@ -247,6 +298,25 @@ const RegisterPage = () => {
               <h1 className="text-xl md:text-2xl lg:text-3xl xl:text-4xl font-bold text-black text-center">
                 Register Form
               </h1>
+              <div className="w-full flex justify-center">
+                <Button
+                  type="button"
+                  onClick={handleGoogleRegister}
+                  className="w-[180px] h-9 text-xs md:text-sm font-semibold border border-gray-300 bg-white text-black hover:bg-gray-100 flex items-center justify-center gap-2 rounded-md shadow-sm"
+                >
+                  <GoogleIcon />
+                  Sign in with Google
+                </Button>
+              </div>
+
+              <div className="flex items-center my-4">
+                <div className="flex-grow border-t border-gray-300"></div>
+                <span className="mx-2 text-gray-400 text-sm">
+                  or register manually
+                </span>
+                <div className="flex-grow border-t border-gray-300"></div>
+              </div>
+
               <form
                 onSubmit={handleRegister}
                 className="border-2 border-mainBlue rounded-[10px] p-4 md:p-6 lg:p-8 xl:p-10 space-y-2 md:space-y-3 lg:space-y-3 xl:space-y-4 shadow-xl"
@@ -400,10 +470,14 @@ const RegisterPage = () => {
                       {/* Tooltip icon */}
                       <div className="relative group ml-2 flex-shrink-0 cursor-help text-sm">
                         ⓘ
-                        <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover:block
+                        <div
+                          className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover:block
                       w-fit min-w-[250px] max-w-[400px] bg-gray-800 text-white text-xs rounded p-2 shadow-lg z-50
-                      whitespace-pre-line break-words">
-                          {"Example:\n• Head of Electrical Engineering Study Program\n• Dean of Faculty of Engineering\n• Industrial Engineering Student\n• Director at PT. XYZ\n• Marketing Division at PT. XYZ"}
+                      whitespace-pre-line break-words"
+                        >
+                          {
+                            "Example:\n• Head of Electrical Engineering Study Program\n• Dean of Faculty of Engineering\n• Industrial Engineering Student\n• Director at PT. XYZ\n• Marketing Division at PT. XYZ"
+                          }
                         </div>
                       </div>
                     </label>
@@ -477,8 +551,9 @@ const RegisterPage = () => {
                   <p className="text-gray-500 text-center text-xs md:text-sm lg:text-base xl:text-lg">
                     Already have an account?{" "}
                     <span
-                      className={`text-[#ED7117] font-semibold hover:underline cursor-pointer ${loading ? "pointer-events-none opacity-50" : ""
-                        }`}
+                      className={`text-[#ED7117] font-semibold hover:underline cursor-pointer ${
+                        loading ? "pointer-events-none opacity-50" : ""
+                      }`}
                       onClick={handleRedirectToSignIn}
                     >
                       Sign In
