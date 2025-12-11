@@ -305,7 +305,7 @@ const RegisterPage = () => {
                   className="w-[180px] h-9 text-xs md:text-sm font-semibold border border-gray-300 bg-white text-black hover:bg-gray-100 flex items-center justify-center gap-2 rounded-md shadow-sm"
                 >
                   <GoogleIcon />
-                  Sign in with Google
+                  Sign up with Google
                 </Button>
               </div>
 
