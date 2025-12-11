@@ -127,7 +127,7 @@ export function UploadCertificateDialog({
                 body: JSON.stringify({
                     registration_participant_id: participant.registration_participant_id,
                     issued_date: issuedDate,
-                    expired_date: expiredDate,
+                    expired_date: expiredDate?.trim() ? expiredDate : null,
                     certificate_number: participant.certificate_number,
                 }),
             });
@@ -282,11 +282,23 @@ export function UploadCertificateDialog({
                             </div>
                             <div className="flex-1">
                                 <Label>Expired Date</Label>
-                                <Input
-                                    type="date"
-                                    value={expiredDate}
-                                    onChange={(e) => setExpiredDate(e.target.value)}
-                                />
+                                <div className="flex gap-2 items-center">
+                                    <Input
+                                        type="date"
+                                        value={expiredDate}
+                                        onChange={(e) => setExpiredDate(e.target.value)}
+                                    />
+                                    {expiredDate && (
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => setExpiredDate("")}
+                                        >
+                                            Clear
+                                        </Button>
+                                    )}
+                                </div>
                                 <p className="text-gray-500 text-xs">Leave empty if no expiry date</p>
                                 {errors.expiredDate && (
                                     <p className="text-red-500 text-sm">{errors.expiredDate}</p>

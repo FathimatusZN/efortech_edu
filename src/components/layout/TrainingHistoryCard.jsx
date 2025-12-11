@@ -11,20 +11,17 @@ export default function TrainingHistoryCard({
   registrationParticipantId,
   images,
   trainingName,
-  status,
+  status: initialStatus,
   hasReview = false,
   hasCertificate = false,
   attendanceStatus = null,
 }) {
   const router = useRouter();
 
+  const [status, setStatus] = useState(initialStatus);
   const [isCertificateUploaded, setIsCertificateUploaded] = useState(false);
   const [isUploadCertDialogOpen, setIsUploadCertDialogOpen] = useState(false);
-
-  const handleUploadCertificate = () => {
-    setIsUploadCertDialogOpen(true);
-  };
-
+  const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
@@ -36,16 +33,14 @@ export default function TrainingHistoryCard({
     }
   }, [images?.length]);
 
+  const handleUploadCertificate = () => setIsUploadCertDialogOpen(true);
+  const handleUploadPayment = () => setIsUploadDialogOpen(true);
+
   const handleWriteReview = () => {
     const path = hasReview
       ? `/edit-profile/review/${registrationParticipantId}?readonly=true`
       : `/edit-profile/review/${registrationParticipantId}`;
     router.push(path);
-  };
-
-  const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
-  const handleUploadPayment = () => {
-    setIsUploadDialogOpen(true);
   };
 
   const handleDownloadCertificate = async () => {
@@ -70,6 +65,7 @@ export default function TrainingHistoryCard({
     }
   };
 
+  // === RENDER BUTTONS ===
   const renderButtons = () => {
     switch (status) {
       case "pending":
@@ -78,11 +74,16 @@ export default function TrainingHistoryCard({
             <Button variant="orange" className="w-full" disabled>
               Upload Payment Proof
             </Button>
-            <Button variant="outline" className="w-full mt-2">
-              <a href={`/training/${trainingId}`}>See Details</a>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => router.push(`/training/${trainingId}`)}
+            >
+              See Details
             </Button>
           </>
         );
+
       case "waiting for payment":
         return (
           <>
@@ -93,70 +94,139 @@ export default function TrainingHistoryCard({
             >
               Upload Payment Proof
             </Button>
-            <Button variant="outline" className="w-full mt-2">
-              <a href={`/training/${trainingId}`}>See Details</a>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => router.push(`/training/${trainingId}`)}
+            >
+              See Details
             </Button>
           </>
         );
 
       case "validated":
         return (
-          <div className="flex flex-col items-center w-full gap-3 mt-4">
+          <div className="flex flex-col items-center w-full gap-2">
+            <p className="text-white font-medium border-blue-900 bg-blue-900 rounded-md px-4 py-2 w-full text-center">
+              Registration Validated
+            </p>
             <Button
-              variant="ghost"
-              onClick={handleWriteReview}
-              className="border-2 border-lightBlue w-full"
-              disabled
-            >
-              Review
-            </Button>
-            <Button
-              variant="lightBlue"
+              variant="outline"
               className="w-full"
-              disabled
-              onClick={handleDownloadCertificate}
+              onClick={() => router.push(`/training/${trainingId}`)}
             >
-              Download Certificate
+              See Details
             </Button>
           </div>
         );
 
       case "completed":
-        return (
-          <div className="flex flex-col items-center w-full gap-2">
-            <Button
-              variant="orange"
-              className="w-full"
-              onClick={handleUploadCertificate}
-              disabled={isCertificateUploaded || !attendanceStatus}
-            >
-              {isCertificateUploaded
-                ? "Certificate Uploaded"
-                : "Upload Advantech Certificate"}
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={handleWriteReview}
-              className="border-2 border-lightBlue w-full"
-              disabled={!hasCertificate}
-            >
-              Review
-            </Button>
-            <Button
-              variant="lightBlue"
-              className="w-full"
-              disabled={!hasReview}
-              onClick={handleDownloadCertificate}
-            >
-              Download Certificate
-            </Button>
-          </div>
-        );
+        // Kondisi 1: belum ada attendance status
+        if (attendanceStatus === null) {
+          return (
+            <div className="flex flex-col items-center w-full gap-2">
+              <Button
+                variant="ghost"
+                className="border-2 border-lightBlue w-full"
+                disabled
+              >
+                Review
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => router.push(`/training/${trainingId}`)}
+              >
+                See Details
+              </Button>
+            </div>
+          );
+        }
+
+        // Kondisi 2: sudah ada attendanceStatus == true tapi belum review
+        if (attendanceStatus === true && !hasReview) {
+          return (
+            <div className="flex flex-col items-center w-full gap-2">
+              <Button
+                variant="ghost"
+                className="border-2 border-lightBlue w-full"
+                onClick={handleWriteReview}
+              >
+                Review
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => router.push(`/training/${trainingId}`)}
+              >
+                See Details
+              </Button>
+            </div>
+          );
+        }
+
+        // Kondisi 3: sudah menulis review
+        if (hasReview) {
+          return (
+            <div className="flex flex-col items-center w-full gap-2">
+              <Button
+                variant="orange"
+                className="w-full"
+                onClick={handleUploadCertificate}
+                disabled={isCertificateUploaded || !attendanceStatus}
+              >
+                {isCertificateUploaded
+                  ? "Certificate Uploaded"
+                  : "Upload Advantech Certificate"}
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={handleWriteReview}
+                className="border-2 border-lightBlue w-full"
+              >
+                {" "}
+                Review{" "}
+              </Button>
+              <Button
+                variant="lightBlue"
+                className="w-full"
+                onClick={handleDownloadCertificate}
+                disabled={!hasCertificate}
+              >
+                Download Certificate
+              </Button>
+            </div>
+          );
+        }
+
+        // Kondisi 4: attendanceStatus == false
+        if (attendanceStatus === false) {
+          return (
+            <div className="flex flex-col items-center w-full gap-2">
+              <p className="text-white font-medium border-red-600 bg-red-600 rounded-md px-4 py-2 w-full text-center">
+                Absent
+              </p>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => router.push(`/training/${trainingId}`)}
+              >
+                See Details
+              </Button>
+            </div>
+          );
+        }
+
+        break;
 
       default:
         return (
-          <Button variant="orange" className="w-full">
-            <a href={`/training/${trainingId}`}>See Details</a>
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={() => router.push(`/training/${trainingId}`)}
+          >
+            See Details
           </Button>
         );
     }
@@ -170,8 +240,9 @@ export default function TrainingHistoryCard({
             key={index}
             src={img}
             alt={`Slide ${index + 1}`}
-            className={`absolute transition-opacity duration-1000 w-full h-full object-cover ${currentSlide === index ? "opacity-100" : "opacity-0"
-              }`}
+            className={`absolute transition-opacity duration-1000 w-full h-full object-cover ${
+              currentSlide === index ? "opacity-100" : "opacity-0"
+            }`}
           />
         ))}
 
@@ -180,12 +251,14 @@ export default function TrainingHistoryCard({
             <button
               key={index}
               onClick={() => setCurrentSlide(index)}
-              className={`w-3 h-3 rounded-full border-2 flex justify-center items-center transition-all ${currentSlide === index ? "border-mainOrange" : "border-gray-400"
-                }`}
+              className={`w-3 h-3 rounded-full border-2 flex justify-center items-center transition-all ${
+                currentSlide === index ? "border-mainOrange" : "border-gray-400"
+              }`}
             >
               <div
-                className={`w-1 h-1 rounded-full items-center ${currentSlide === index ? "bg-mainOrange" : "bg-transparent"
-                  }`}
+                className={`w-1 h-1 rounded-full items-center ${
+                  currentSlide === index ? "bg-mainOrange" : "bg-transparent"
+                }`}
               ></div>
             </button>
           ))}

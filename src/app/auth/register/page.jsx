@@ -15,6 +15,13 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { SuccessDialog } from "@/components/ui/SuccessDialog";
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup,
+} from "firebase/auth";
+import GoogleIcon from "@/components/ui/GoogleIcon";
 
 const RegisterPage = () => {
   const [fullName, setFullName] = useState("");
@@ -23,6 +30,13 @@ const RegisterPage = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [institution, setInstitution] = useState("");
+  const [phone, setPhone] = useState("");
+  const [gender, setGender] = useState("");
+  const [birthDate, setBirthDate] = useState("");
+  const [role, setRole] = useState("");
+  const [position, setPosition] = useState("");
+
   const [loading, setLoading] = useState(false);
   const [loading2, setLoading2] = useState("");
   const [dialogMessage, setDialogMessage] = useState("");
@@ -95,6 +109,44 @@ const RegisterPage = () => {
         return;
       }
 
+      const auth = getAuth();
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      await new Promise((r) => setTimeout(r, 800));
+      const token = await userCredential.user.getIdToken(true);
+
+      const editRes = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user/edit-profile`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            fullname: fullName,
+            institution,
+            phone_number: phone,
+            gender,
+            birthdate: birthDate,
+            user_photo: null,
+            role: parseInt(role) || 0,
+            position,
+          }),
+        }
+      );
+
+      const editData = await editRes.json().catch(() => ({}));
+      console.log("🧾 Edit profile response:", editRes.status, editData);
+
+      if (!editRes.ok) {
+        console.warn("⚠️ Failed to update extra profile data");
+      }
+      await auth.signOut();
+
       setDialogMessage("Registration successful! Redirecting to Sign In...");
       setSuccessDialog(true);
 
@@ -104,6 +156,51 @@ const RegisterPage = () => {
     } catch (e) {
       setLoading(false);
       setDialogMessage(e.message);
+      setFailedDialog(true);
+    }
+  };
+
+  const handleGoogleRegister = async () => {
+    try {
+      setLoading(true);
+      const auth = getAuth();
+      const provider = new GoogleAuthProvider();
+
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      const token = await user.getIdToken();
+
+      // Panggil API register Google di backend-mu
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/register-google`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log("🧾 Google register response status:", res.status);
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setLoading(false);
+        setDialogMessage(data.message || "Google registration failed.");
+        setFailedDialog(true);
+        return;
+      }
+
+      // berhasil
+      setDialogMessage("Registration successful! Redirecting...");
+      setSuccessDialog(true);
+
+      setTimeout(() => {
+        router.push("/auth/signin");
+      }, 2000);
+    } catch (error) {
+      setLoading(false);
+      setDialogMessage(error.message);
       setFailedDialog(true);
     }
   };
@@ -142,16 +239,16 @@ const RegisterPage = () => {
       />
 
       <Dialog open={failedDialog} onOpenChange={setFailedDialog}>
-        <DialogContent className="rounded-xl shadow-2xl px-8 py-6 text-center space-y-4">
-          <DialogHeader>
-            <DialogTitle className="flex items-center justify-center gap-2 text-2xl font-bold text-red-600">
+        <DialogContent className="rounded-xl shadow-2xl px-8 py-6 text-center space-y-4 flex flex-col items-center">
+          <DialogHeader className="flex flex-col items-center space-y-2">
+            <DialogTitle className="text-2xl font-bold text-red-600 flex items-center gap-2 justify-center">
               ⚠️ Registration Failed
             </DialogTitle>
-            <DialogDescription className="text-gray-600 text-sm">
+            <DialogDescription className="text-gray-600 text-sm text-center">
               {dialogMessage}
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="flex justify-center">
+          <DialogFooter className="flex justify-center mt-4">
             <Button
               onClick={() => setFailedDialog(false)}
               variant="orange"
@@ -201,6 +298,25 @@ const RegisterPage = () => {
               <h1 className="text-xl md:text-2xl lg:text-3xl xl:text-4xl font-bold text-black text-center">
                 Register Form
               </h1>
+              <div className="w-full flex justify-center">
+                <Button
+                  type="button"
+                  onClick={handleGoogleRegister}
+                  className="w-[180px] h-9 text-xs md:text-sm font-semibold border border-gray-300 bg-white text-black hover:bg-gray-100 flex items-center justify-center gap-2 rounded-md shadow-sm"
+                >
+                  <GoogleIcon />
+                  Sign up with Google
+                </Button>
+              </div>
+
+              <div className="flex items-center my-4">
+                <div className="flex-grow border-t border-gray-300"></div>
+                <span className="mx-2 text-gray-400 text-sm">
+                  or register manually
+                </span>
+                <div className="flex-grow border-t border-gray-300"></div>
+              </div>
+
               <form
                 onSubmit={handleRegister}
                 className="border-2 border-mainBlue rounded-[10px] p-4 md:p-6 lg:p-8 xl:p-10 space-y-2 md:space-y-3 lg:space-y-3 xl:space-y-4 shadow-xl"
@@ -311,6 +427,113 @@ const RegisterPage = () => {
                     </div>
                   </div>
 
+                  <div>
+                    <label className="text-base md:text-lg lg:text-xl xl:text-2xl font-semibold text-black flex items-center">
+                      Institution <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Enter your institution"
+                      className={inputClass("")}
+                      value={institution}
+                      onChange={(e) => setInstitution(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-base md:text-lg lg:text-xl xl:text-2xl font-semibold text-black flex items-center">
+                      Role <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      className={inputClass("")}
+                      value={role}
+                      onChange={(e) => setRole(e.target.value)}
+                      required
+                    >
+                      <option value="">Select your role</option>
+                      <option value="Teacher/Lecturer">
+                        Teacher / Lecturer
+                      </option>
+                      <option value="Student">Student</option>
+                      <option value="University Student">
+                        University Student
+                      </option>
+                      <option value="Professional">Professional</option>
+                      <option value="Others">Others</option>
+                    </select>
+                  </div>
+
+                  <div className="relative flex flex-col">
+                    <label className="text-base md:text-lg lg:text-xl xl:text-2xl font-semibold text-black flex items-center">
+                      Position <span className="text-red-500">*</span>
+                      {/* Tooltip icon */}
+                      <div className="relative group ml-2 flex-shrink-0 cursor-help text-sm">
+                        ⓘ
+                        <div
+                          className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover:block
+                      w-fit min-w-[250px] max-w-[400px] bg-gray-800 text-white text-xs rounded p-2 shadow-lg z-50
+                      whitespace-pre-line break-words"
+                        >
+                          {
+                            "Example:\n• Head of Electrical Engineering Study Program\n• Dean of Faculty of Engineering\n• Industrial Engineering Student\n• Director at PT. XYZ\n• Marketing Division at PT. XYZ"
+                          }
+                        </div>
+                      </div>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Enter your position"
+                      className={inputClass("")}
+                      value={position}
+                      onChange={(e) => setPosition(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-base md:text-lg lg:text-xl xl:text-2xl font-semibold text-black flex items-center">
+                      Phone Number <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Enter your phone number"
+                      className={inputClass("")}
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-base md:text-lg lg:text-xl xl:text-2xl font-semibold text-black flex items-center">
+                      Gender <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      className={inputClass("")}
+                      value={gender}
+                      onChange={(e) => setGender(e.target.value)}
+                      required
+                    >
+                      <option value="">Select Gender</option>
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-base md:text-lg lg:text-xl xl:text-2xl font-semibold text-black flex items-center">
+                      Birthdate <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="date"
+                      className={inputClass("")}
+                      value={birthDate}
+                      onChange={(e) => setBirthDate(e.target.value)}
+                      required
+                    />
+                  </div>
+
                   <div className="flex justify-center pt-10 md:pt-14 lg:pt-16 xl:pt-20">
                     <Button
                       type="submit"
@@ -328,8 +551,9 @@ const RegisterPage = () => {
                   <p className="text-gray-500 text-center text-xs md:text-sm lg:text-base xl:text-lg">
                     Already have an account?{" "}
                     <span
-                      className={`text-[#ED7117] font-semibold hover:underline cursor-pointer ${loading ? "pointer-events-none opacity-50" : ""
-                        }`}
+                      className={`text-[#ED7117] font-semibold hover:underline cursor-pointer ${
+                        loading ? "pointer-events-none opacity-50" : ""
+                      }`}
                       onClick={handleRedirectToSignIn}
                     >
                       Sign In

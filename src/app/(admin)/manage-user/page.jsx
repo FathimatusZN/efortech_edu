@@ -13,6 +13,7 @@ import { flexRender, getCoreRowModel, getSortedRowModel, getPaginationRowModel, 
 import { getUserColumns } from "./table";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import DetailUserDialog from "@/components/admin/DetailUserDialog";
+import ExportUserDialog from "@/components/admin/ExportUserDialog";
 import { auth } from "@/app/firebase/config";
 import { onAuthStateChanged, getIdToken } from "firebase/auth";
 
@@ -27,6 +28,7 @@ export default function ManageUser() {
     const debounceRef = useRef(null);
     const [detailOpen, setDetailOpen] = useState(false);
     const [detailData, setDetailData] = useState(null);
+    const [isExportDialogOpen, setExportDialogOpen] = useState(false);
 
     const handleDetail = (user) => {
         setDetailData(user);
@@ -195,9 +197,18 @@ export default function ManageUser() {
                                 <SelectItem value="user">User</SelectItem>
                             </SelectContent>
                         </Select>
+
+                        <Button
+                            variant="mainBlue"
+                            size="default"
+                            onClick={() => setExportDialogOpen(true)}
+                            className="flex items-center gap-2 whitespace-nowrap"
+                        >
+                            Export Data
+                        </Button>
                     </div>
                 </div>
-
+  
                 <div className="rounded-md overflow-x-auto">
                     <Table>
                         <TableHeader>
@@ -309,7 +320,11 @@ export default function ManageUser() {
                     setOpen={setDetailOpen}
                     user={detailData}
                 />
-
+                <ExportUserDialog
+                    open={isExportDialogOpen}
+                    onClose={() => setExportDialogOpen(false)}
+                    userData={userData}
+                />
             </div>
         </ProtectedRoute>
     );

@@ -9,9 +9,14 @@ import { AdditionalParticipantDialog } from "@/components/admin/AdditionalPartic
 import { UploadCertificateDialog } from "@/components/admin/UploadCertificateDialog";
 import { FaSearch } from "react-icons/fa";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
 import { FaFilter } from "react-icons/fa";
 import { useRouter, useSearchParams } from "next/navigation";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import ExportNeedToProcessDialog from "@/components/admin/ExportNeedToProcessDialog";
+import ExportOnProgressDialog from "@/components/admin/ExportOnProgressDialog";
+import ExportCompletedDialog from "@/components/admin/ExportCompletedDialog";
+import ExportCancelledDialog from "@/components/admin/ExportCancelledDialog";
 
 const ValidationTrainingClient = () => {
   const searchParams = useSearchParams();
@@ -52,6 +57,7 @@ const ValidationTrainingClient = () => {
     null: "Not Marked",
   };
 
+  const [exportOpen, setExportOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("");
   const [sortOrder, setSortOrder] = useState("ASC");
@@ -196,9 +202,8 @@ const ValidationTrainingClient = () => {
 
     setLoading(true);
     try {
-      const url = `${
-        process.env.NEXT_PUBLIC_API_BASE_URL
-      }${buildQueryParams()}`;
+      const url = `${process.env.NEXT_PUBLIC_API_BASE_URL
+        }${buildQueryParams()}`;
       const response = await fetch(url);
       if (!response.ok) throw new Error();
 
@@ -444,8 +449,8 @@ const ValidationTrainingClient = () => {
                                     status: checked
                                       ? [...prevStatus, statusCode]
                                       : prevStatus.filter(
-                                          (s) => s !== statusCode
-                                        ),
+                                        (s) => s !== statusCode
+                                      ),
                                   },
                                 };
                               });
@@ -487,8 +492,8 @@ const ValidationTrainingClient = () => {
                                       attendance_status: checked
                                         ? [...prevAttendance, attendanceStatus]
                                         : prevAttendance.filter(
-                                            (s) => s !== attendanceStatus
-                                          ),
+                                          (s) => s !== attendanceStatus
+                                        ),
                                     },
                                   };
                                 });
@@ -507,86 +512,98 @@ const ValidationTrainingClient = () => {
                   )}
                 </div>
 
-                {/* Sort Dropdown */}
-                <div className="relative" ref={sortRef}>
-                  <button
-                    onClick={() => setSortOpen(!sortOpen)}
-                    className="px-3 py-2 border border-gray-300 rounded-md text-sm flex items-center gap-2"
-                  >
-                    <FaFilter className="text-base" />
-                    Sort
-                  </button>
+                <div className="flex justify-between gap-4">
 
-                  {sortOpen && (
-                    <div className="absolute right-0 z-10 mt-2 w-64 bg-white border border-gray-300 rounded-md shadow-lg p-4">
-                      <p className="text-sm font-medium mb-2">Sort Order</p>
-                      <div className="flex gap-4 mb-4">
-                        <label className="flex items-center gap-2 text-sm">
-                          <input
-                            type="radio"
-                            value="ASC"
-                            checked={tempSortOrder === "ASC"}
-                            onChange={() => setTempSortOrder("ASC")}
-                          />
-                          Ascending
-                        </label>
-                        <label className="flex items-center gap-2 text-sm">
-                          <input
-                            type="radio"
-                            value="DESC"
-                            checked={tempSortOrder === "DESC"}
-                            onChange={() => setTempSortOrder("DESC")}
-                          />
-                          Descending
-                        </label>
-                      </div>
+                  {/* Sort Dropdown */}
+                  <div className="relative" ref={sortRef}>
+                    <button
+                      onClick={() => setSortOpen(!sortOpen)}
+                      className="px-3 py-2 border border-gray-300 rounded-md text-sm flex items-center gap-2"
+                    >
+                      <FaFilter className="text-base" />
+                      Sort
+                    </button>
 
-                      <p className="text-sm font-medium mb-2">Sort By</p>
-                      <div className="space-y-2 max-h-32 overflow-y-auto">
-                        {currentConfig.sortFields.map((field) => (
-                          <button
-                            key={field}
-                            onClick={() => setTempSortField(field)}
-                            className={`w-full text-left px-2 py-1 rounded hover:bg-gray-100 text-sm ${
-                              tempSortField === field
+                    {sortOpen && (
+                      <div className="absolute right-0 z-10 mt-2 w-64 bg-white border border-gray-300 rounded-md shadow-lg p-4">
+                        <p className="text-sm font-medium mb-2">Sort Order</p>
+                        <div className="flex gap-4 mb-4">
+                          <label className="flex items-center gap-2 text-sm">
+                            <input
+                              type="radio"
+                              value="ASC"
+                              checked={tempSortOrder === "ASC"}
+                              onChange={() => setTempSortOrder("ASC")}
+                            />
+                            Ascending
+                          </label>
+                          <label className="flex items-center gap-2 text-sm">
+                            <input
+                              type="radio"
+                              value="DESC"
+                              checked={tempSortOrder === "DESC"}
+                              onChange={() => setTempSortOrder("DESC")}
+                            />
+                            Descending
+                          </label>
+                        </div>
+
+                        <p className="text-sm font-medium mb-2">Sort By</p>
+                        <div className="space-y-2 max-h-32 overflow-y-auto">
+                          {currentConfig.sortFields.map((field) => (
+                            <button
+                              key={field}
+                              onClick={() => setTempSortField(field)}
+                              className={`w-full text-left px-2 py-1 rounded hover:bg-gray-100 text-sm ${tempSortField === field
                                 ? "bg-blue-100 font-semibold"
                                 : ""
-                            }`}
-                          >
-                            {field
-                              .replaceAll("_", " ")
-                              .split(" ")
-                              .map(
-                                (word) =>
-                                  word.charAt(0).toUpperCase() + word.slice(1)
-                              )
-                              .join(" ")}
-                          </button>
-                        ))}
-                      </div>
+                                }`}
+                            >
+                              {field
+                                .replaceAll("_", " ")
+                                .split(" ")
+                                .map(
+                                  (word) =>
+                                    word.charAt(0).toUpperCase() + word.slice(1)
+                                )
+                                .join(" ")}
+                            </button>
+                          ))}
+                        </div>
 
-                      <div className="flex justify-end mt-4 gap-2">
-                        <button
-                          className="text-sm text-gray-500 hover:underline"
-                          onClick={() => setSortOpen(false)}
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          onClick={() => {
-                            setSortBy(tempSortField);
-                            setSortOrder(tempSortOrder);
-                            setSortOpen(false);
-                            fetchTabData(); // apply sorting
-                          }}
-                          className="text-sm bg-mainBlue text-white px-3 py-1 rounded"
-                        >
-                          Apply
-                        </button>
+                        <div className="flex justify-end mt-4 gap-2">
+                          <button
+                            className="text-sm text-gray-500 hover:underline"
+                            onClick={() => setSortOpen(false)}
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            onClick={() => {
+                              setSortBy(tempSortField);
+                              setSortOrder(tempSortOrder);
+                              setSortOpen(false);
+                              fetchTabData(); // apply sorting
+                            }}
+                            className="text-sm bg-mainBlue text-white px-3 py-1 rounded"
+                          >
+                            Apply
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
+
+                  {/* Button Export Data */}
+                  <Button
+                    variant="orange"
+                    onClick={() => setExportOpen(true)}
+                    className="flex items-center"
+                  >
+                    <i className="fa-solid fa-file-export"></i>Export Data
+                  </Button>
                 </div>
+
               </div>
             </div>
             <div className="border-t border-gray-200 mt-2" />
@@ -691,6 +708,40 @@ const ValidationTrainingClient = () => {
               </div>
             </div>
           </div>
+
+          <ExportNeedToProcessDialog
+            open={exportOpen}
+            onClose={() => setExportOpen(false)}
+          />
+
+          {tab === "needprocess" && (
+            <ExportNeedToProcessDialog
+              open={exportOpen}
+              onClose={() => setExportOpen(false)}
+            />
+          )}
+
+          {tab === "onprogress" && (
+            <ExportOnProgressDialog
+              open={exportOpen}
+              onClose={() => setExportOpen(false)}
+            />
+          )}
+
+          {tab === "completed" && (
+            <ExportCompletedDialog
+              open={exportOpen}
+              onClose={() => setExportOpen(false)}
+            />
+          )}
+
+          {tab === "cancelled" && (
+            <ExportCancelledDialog
+              open={exportOpen}
+              onClose={() => setExportOpen(false)}
+            />
+          )}
+
         </Tabs>
       </div>
     </ProtectedRoute>

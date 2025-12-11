@@ -40,9 +40,12 @@ export default function EditProfile() {
         if (!currentUser || didFetch) return;
         const token = await getIdToken(currentUser);
 
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user/me`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user/me`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
 
         const data = await res.json();
         if (!res.ok) throw new Error(data.message || "Failed to fetch");
@@ -53,9 +56,14 @@ export default function EditProfile() {
           email: u.email || "",
           phone: u.phone_number || "",
           institution: u.institution || "",
-          gender: u.gender === 1 ? "Male" : u.gender === 2 ? "Female" : "Default",
-          birthDate: u.birthdate ? new Date(u.birthdate).toLocaleDateString("en-CA") : "",
+          gender:
+            u.gender === 1 ? "Male" : u.gender === 2 ? "Female" : "Default",
+          birthDate: u.birthdate
+            ? new Date(u.birthdate).toLocaleDateString("en-CA")
+            : "",
           profileImage: u.user_photo || "/assets/user1.png",
+          role: u.role || 0,
+          position: u.position || "",
         });
 
         didFetch = true;
@@ -92,37 +100,47 @@ export default function EditProfile() {
         const formData = new FormData();
         formData.append("images", newImageFile, newImageFile.name);
 
-        const uploadRes = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user/upload-user-photo`, {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-          body: formData,
-        });
+        const uploadRes = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user/upload-user-photo`,
+          {
+            method: "POST",
+            headers: { Authorization: `Bearer ${token}` },
+            body: formData,
+          }
+        );
 
         const uploadData = await uploadRes.json();
-        if (!uploadRes.ok) throw new Error(uploadData.message || "Failed to upload image");
+        if (!uploadRes.ok)
+          throw new Error(uploadData.message || "Failed to upload image");
 
         uploadedImageUrl = uploadData.data.imageUrl;
       }
 
       // Update user profile
-      const editRes = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user/edit-profile`, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          fullname: profile.fullName,
-          institution: profile.institution,
-          phone_number: profile.phone,
-          gender: profile.gender,
-          birthdate: profile.birthDate,
-          user_photo: uploadedImageUrl,
-        }),
-      });
+      const editRes = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user/edit-profile`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            fullname: profile.fullName,
+            institution: profile.institution,
+            phone_number: profile.phone,
+            gender: profile.gender,
+            birthdate: profile.birthDate,
+            user_photo: uploadedImageUrl,
+            role: parseInt(profile.role) || 0,
+            position: profile.position,
+          }),
+        }
+      );
 
       const editData = await editRes.json();
-      if (!editRes.ok) throw new Error(editData.message || "Failed to update profile");
+      if (!editRes.ok)
+        throw new Error(editData.message || "Failed to update profile");
 
       toast.success("Profile updated successfully!");
 
@@ -139,7 +157,9 @@ export default function EditProfile() {
   return (
     <ProtectedRoute allowedRoles={["admin", "superadmin", "user"]}>
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold mb-6 text-center md:text-left">User Profile</h1>
+        <h1 className="text-2xl font-bold mb-6 text-center md:text-left">
+          User Profile
+        </h1>
 
         <div className="outline outline-3 outline-mainBlue p-6 rounded-lg">
           <div className="flex flex-col lg:flex-row gap-6 items-center relative">
@@ -186,15 +206,23 @@ export default function EditProfile() {
                             maxWidthOrHeight: 800,
                             useWebWorker: true,
                           };
-                          const compressedBlob = await imageCompression(file, options);
+                          const compressedBlob = await imageCompression(
+                            file,
+                            options
+                          );
 
-                          let originalName = file.name && file.name !== "blob"
-                            ? file.name
-                            : `user-photo-${Date.now()}.jpg`;
+                          let originalName =
+                            file.name && file.name !== "blob"
+                              ? file.name
+                              : `user-photo-${Date.now()}.jpg`;
 
-                          const renamedFile = new File([compressedBlob], originalName, {
-                            type: compressedBlob.type,
-                          });
+                          const renamedFile = new File(
+                            [compressedBlob],
+                            originalName,
+                            {
+                              type: compressedBlob.type,
+                            }
+                          );
 
                           const previewUrl = URL.createObjectURL(renamedFile);
                           setNewImageFile(renamedFile);
@@ -219,7 +247,10 @@ export default function EditProfile() {
                   <button
                     onClick={() => {
                       setNewImageFile(null);
-                      setProfile((prev) => ({ ...prev, profileImage: "/assets/user1.png" }));
+                      setProfile((prev) => ({
+                        ...prev,
+                        profileImage: "/assets/user1.png",
+                      }));
                     }}
                     className="block w-full text-left px-4 py-2 hover:bg-gray-200"
                   >
@@ -266,6 +297,25 @@ export default function EditProfile() {
                 },
                 { label: "Phone Number", name: "phone", type: "text" },
                 { label: "Birthdate", name: "birthDate", type: "date" },
+                {
+                  label: "Role",
+                  name: "role",
+                  type: "select",
+                  options: [
+                    { label: "Teacher / Lecturer", value: 1 },
+                    { label: "Student (School)", value: 2 },
+                    { label: "University Student", value: 3 },
+                    { label: "Professional", value: 4 },
+                    { label: "Others", value: 5 },
+                  ],
+                },
+                {
+                  label: "Position",
+                  name: "position",
+                  type: "text",
+                  tooltip:
+                    "Example:\nHead of Electrical Engineering Study Program\nDean of Faculty of Engineering\nIndustrial Engineering Student",
+                },
               ].map((input, idx) => (
                 <div key={idx} className={input.className || ""}>
                   <label className="block text-sm font-medium text-gray-700">
@@ -278,19 +328,37 @@ export default function EditProfile() {
                       onChange={handleChange}
                       className="border p-2 rounded w-full"
                     >
-                      {input.options.map((opt) => (
-                        <option key={opt}>{opt}</option>
-                      ))}
+                      {input.options.map((opt) =>
+                        typeof opt === "string" ? (
+                          <option key={opt}>{opt}</option>
+                        ) : (
+                          <option key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </option>
+                        )
+                      )}
                     </select>
                   ) : (
-                    <input
-                      type={input.type}
-                      name={input.name}
-                      value={profile[input.name]}
-                      onChange={handleChange}
-                      readOnly={input.readOnly || false}
-                      className={`border p-2 rounded w-full ${input.className || ""}`}
-                    />
+                    <div className="relative">
+                      <input
+                        type={input.type}
+                        name={input.name}
+                        value={profile[input.name]}
+                        onChange={handleChange}
+                        readOnly={input.readOnly || false}
+                        className={`border p-2 rounded w-full ${
+                          input.className || ""
+                        }`}
+                      />
+                      {input.tooltip && (
+                        <div className="absolute right-2 top-2 text-gray-400 cursor-help group">
+                          ⓘ
+                          <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover:block w-max max-w-xs bg-gray-800 text-white text-xs rounded p-2 shadow-lg z-50 whitespace-pre-line">
+                            {input.tooltip}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   )}
                 </div>
               ))}
