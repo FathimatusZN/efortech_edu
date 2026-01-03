@@ -1,9 +1,14 @@
 "use client";
-import { Dialog, DialogContent, DialogTitle, DialogHeader } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogHeader,
+} from "@/components/ui/dialog";
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "react-hot-toast";
-import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import { X, FileText, Upload } from "lucide-react";
 
 export default function UploadCertificateDialog({
   open,
@@ -12,31 +17,61 @@ export default function UploadCertificateDialog({
   registrationId,
   onSuccess,
 }) {
-  const [file, setFile] = useState(null);
-  const [fileUrl, setFileUrl] = useState(null);
+  const [selectedFiles, setSelectedFiles] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
-  const [isPreviewLoading, setIsPreviewLoading] = useState(true);
   const [isConfirmed, setIsConfirmed] = useState(false);
+  const fileInputRef = useRef(null);
 
-  const handleFileChange = async (e) => {
-    const selectedFile = e.target.files[0];
-    if (!selectedFile) return;
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files);
 
-    if (selectedFile.type !== "application/pdf") {
+    // Validate: only PDF
+    const invalidFiles = files.filter((f) => f.type !== "application/pdf");
+    if (invalidFiles.length > 0) {
       toast.error("Only PDF files are allowed.");
-      e.target.value = "";
       return;
     }
 
-    setFile(selectedFile);
-    setIsUploading(true);
-    setFileUrl(null);
+    // Validate: max 3 files total
+    if (selectedFiles.length + files.length > 3) {
+      toast.error("Maximum 3 certificate files allowed.");
+      return;
+    }
 
-    const formData = new FormData();
-    formData.append("files", selectedFile);
-    formData.append("registration_id", registrationId);
+    // Add files to state (stored in browser memory)
+    setSelectedFiles((prev) => [...prev, ...files]);
+
+    // Reset input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const handleRemoveFile = (index) => {
+    setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleSubmit = async () => {
+    if (selectedFiles.length === 0) {
+      toast.error("Please select at least 1 certificate file.");
+      return;
+    }
+
+    if (selectedFiles.length > 3) {
+      toast.error("Maximum 3 certificate files allowed.");
+      return;
+    }
+
+    setIsUploading(true);
 
     try {
+      // Upload files to server
+      const formData = new FormData();
+      selectedFiles.forEach((file) => {
+        formData.append("files", file);
+      });
+      formData.append("registration_id", registrationId);
+
       const uploadRes = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/enrollment/upload-advantech-certificate`,
         {
@@ -50,31 +85,16 @@ export default function UploadCertificateDialog({
       if (
         !uploadRes.ok ||
         uploadData.status !== "success" ||
-        !uploadData.data?.fileUrl
+        !uploadData.data?.fileUrls
       ) {
         toast.error(uploadData.message || "Upload failed.");
-        setFile(null);
+        setIsUploading(false);
         return;
       }
 
-      setFileUrl(uploadData.data.fileUrl);
-      setIsPreviewLoading(true);
-    } catch (err) {
-      console.error("Upload error:", err);
-      toast.error("Something went wrong while uploading the file.");
-      setFile(null);
-    } finally {
-      setIsUploading(false);
-    }
-  };
+      const fileUrls = uploadData.data.fileUrls;
 
-  const handleSubmit = async () => {
-    if (!fileUrl) {
-      toast.error("File URL is not set. Please upload a file first.");
-      return;
-    }
-
-    try {
+      // Save URLs to database
       const updateRes = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/enrollment/update-advantech-link`,
         {
@@ -84,7 +104,7 @@ export default function UploadCertificateDialog({
           },
           body: JSON.stringify({
             registration_participant_id: registrationParticipantId,
-            fileUrl,
+            fileUrls,
           }),
         }
       );
@@ -92,28 +112,29 @@ export default function UploadCertificateDialog({
       const updateData = await updateRes.json();
 
       if (!updateRes.ok) {
-        toast.error(updateData.message || "Failed to save certificate.");
+        toast.error(updateData.message || "Failed to save certificates.");
+        setIsUploading(false);
         return;
       }
 
       onSuccess?.();
       onOpenChange(false);
-      toast.success("Certificate uploaded successfully.");
+      toast.success(
+        `${fileUrls.length} certificate${fileUrls.length > 1 ? "s" : ""} uploaded successfully.`
+      );
     } catch (err) {
-      console.error("Update error:", err);
-      toast.error("Failed to save certificate. Please try again.");
+      console.error("Upload error:", err);
+      toast.error("Failed to upload certificates. Please try again.");
+    } finally {
+      setIsUploading(false);
     }
   };
 
-  const fileInputRef = useRef(null);
-
   useEffect(() => {
     if (!open) {
-      setFile(null);
-      setFileUrl(null);
+      setSelectedFiles([]);
       setIsConfirmed(false);
       setIsUploading(false);
-      setIsPreviewLoading(true);
 
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
@@ -126,63 +147,102 @@ export default function UploadCertificateDialog({
       <DialogContent className="max-w-[90vw] md:max-w-[80vw] lg:max-w-[60vw] max-h-[90vh] overflow-y-auto w-[95vw] sm:w-[90vw] p-4 sm:p-6 rounded-md">
         <DialogHeader>
           <DialogTitle className="text-base sm:text-lg md:text-xl">
-            Upload Advantech Certificate
+            Upload Advantech Certificate (1-3 files)
           </DialogTitle>
         </DialogHeader>
 
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="application/pdf"
-          onChange={handleFileChange}
-          disabled={isUploading}
-          className="mt-2 w-full text-sm"
-        />
+        {/* File Input */}
+        <div className="mt-4">
+          <label
+            htmlFor="file-upload"
+            className="flex items-center justify-center w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-mainOrange transition-colors"
+          >
+            <Upload className="w-5 h-5 mr-2 text-gray-500" />
+            <span className="text-sm text-gray-600">
+              Click to select PDF files (max 3)
+            </span>
+          </label>
+          <input
+            id="file-upload"
+            ref={fileInputRef}
+            type="file"
+            accept="application/pdf"
+            multiple
+            onChange={handleFileChange}
+            disabled={isUploading || selectedFiles.length >= 3}
+            className="hidden"
+          />
+        </div>
 
-        {fileUrl && (
-          <>
-            <div className="relative mt-4 w-full max-h-[60vh]">
-              {isPreviewLoading && (
-                <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/70">
-                  <LoadingSpinner className="w-10 h-10" />
+        {/* Selected Files List */}
+        {selectedFiles.length > 0 && (
+          <div className="mt-4 space-y-2">
+            <p className="text-sm font-medium text-gray-700">
+              Selected Files ({selectedFiles.length}/3):
+            </p>
+            {selectedFiles.map((file, index) => (
+              <div
+                key={index}
+                className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg"
+              >
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <FileText className="w-5 h-5 text-red-500 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-800 truncate">
+                      {file.name}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {(file.size / 1024).toFixed(2)} KB
+                    </p>
+                  </div>
                 </div>
-              )}
-              <iframe
-                src={`https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(fileUrl)}`}
-                title="Certificate Preview"
-                className="w-full h-full min-h-[300px] border rounded"
-                onLoad={() => setIsPreviewLoading(false)}
-              />
-            </div>
-
-            {/* Checkbox warning */}
-            <div className="mt-4 space-y-2 text-xs sm:text-sm md:text-md">
-              <div className="flex items-start gap-2">
-                <input
-                  type="checkbox"
-                  id="confirmUpload"
-                  checked={isConfirmed}
-                  onChange={(e) => setIsConfirmed(e.target.checked)}
-                  className="mt-1 shrink-0"
-                />
-                <label
-                  htmlFor="confirmUpload"
-                  className="leading-snug italic break-words flex-1"
+                <button
+                  onClick={() => handleRemoveFile(index)}
+                  disabled={isUploading}
+                  className="ml-2 p-1 hover:bg-gray-200 rounded-full transition-colors disabled:opacity-50"
                 >
-                  I confirm that the uploaded certificate is correct. I understand that this file can only be uploaded once and cannot be changed later.
-                </label>
+                  <X className="w-4 h-4 text-gray-600" />
+                </button>
               </div>
-            </div>
-
-          </>
+            ))}
+          </div>
         )}
 
+        {/* Warning Checkbox */}
+        {selectedFiles.length > 0 && (
+          <div className="mt-4 space-y-2 text-xs sm:text-sm md:text-md">
+            <div className="flex items-start gap-2">
+              <input
+                type="checkbox"
+                id="confirmUpload"
+                checked={isConfirmed}
+                onChange={(e) => setIsConfirmed(e.target.checked)}
+                className="mt-1 shrink-0"
+                disabled={isUploading}
+              />
+              <label
+                htmlFor="confirmUpload"
+                className="leading-snug italic break-words flex-1 text-gray-700"
+              >
+                I confirm that the uploaded certificate(s) are correct. I
+                understand that these files can only be uploaded once and cannot
+                be changed later.
+              </label>
+            </div>
+          </div>
+        )}
+
+        {/* Submit Button */}
         <Button
-          className="mt-4 w-full bg-mainOrange text-white text-sm sm:text-base"
+          className="mt-4 w-full bg-mainOrange text-white text-sm sm:text-base hover:bg-orange-600"
           onClick={handleSubmit}
-          disabled={!fileUrl || !isConfirmed}
+          disabled={
+            selectedFiles.length === 0 || !isConfirmed || isUploading
+          }
         >
-          Save Certificate
+          {isUploading
+            ? "Uploading..."
+            : `Save Certificate${selectedFiles.length > 1 ? "s" : ""}`}
         </Button>
       </DialogContent>
     </Dialog>
