@@ -34,7 +34,7 @@ export default function DetailUserDialog({ open, setOpen, user }) {
         { label: "Email", value: user.email },
         { label: "Phone Number", value: user.phone_number || "-" },
         { label: "Institution", value: user.institution || "-" },
-        { label: "Role", value: roleMapping[user.role_id] || user.role || "-" },
+        { label: "Role", value: roleMapping[user.role] || "-" },
         { label: "Position", value: user.position || "-" },
         { label: "Gender", value: user.gender === 1 ? "Male" : user.gender === 2 ? "Female" : "-" },
         { label: "Birthdate", value: formatDate(user.birthdate) },
