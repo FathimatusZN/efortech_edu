@@ -8,7 +8,7 @@ import {
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "react-hot-toast";
-import { X, FileText, Upload } from "lucide-react";
+import { X, FileText, Upload, ExternalLink } from "lucide-react";
 
 export default function UploadCertificateDialog({
   open,
@@ -20,6 +20,8 @@ export default function UploadCertificateDialog({
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
   const [isConfirmed, setIsConfirmed] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [previewFileName, setPreviewFileName] = useState("");
   const fileInputRef = useRef(null);
 
   const handleFileChange = (e) => {
@@ -49,6 +51,23 @@ export default function UploadCertificateDialog({
 
   const handleRemoveFile = (index) => {
     setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
+    // Clear preview if the removed file was being previewed
+    if (previewUrl && selectedFiles[index]?.name === previewFileName) {
+      URL.revokeObjectURL(previewUrl);
+      setPreviewUrl(null);
+      setPreviewFileName("");
+    }
+  };
+
+  const handlePreviewFile = (file) => {
+    // Revoke previous preview URL to avoid memory leak
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
+
+    const url = URL.createObjectURL(file);
+    setPreviewUrl(url);
+    setPreviewFileName(file.name);
   };
 
   const handleSubmit = async () => {
@@ -136,15 +155,31 @@ export default function UploadCertificateDialog({
       setIsConfirmed(false);
       setIsUploading(false);
 
+      // Revoke preview URL on close
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+        setPreviewUrl(null);
+        setPreviewFileName("");
+      }
+
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
     }
   }, [open]);
 
+  // Cleanup preview URL on unmount
+  useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[90vw] md:max-w-[80vw] lg:max-w-[60vw] max-h-[90vh] overflow-y-auto w-[95vw] sm:w-[90vw] p-4 sm:p-6 rounded-md">
+      <DialogContent className="max-w-[95vw] sm:max-w-[90vw] md:max-w-[700px] lg:max-w-[800px] max-h-[90vh] overflow-y-auto p-4 sm:p-6 rounded-md">
         <DialogHeader>
           <DialogTitle className="text-base sm:text-lg md:text-xl">
             Upload Advantech Certificate (1-3 files)
@@ -155,11 +190,16 @@ export default function UploadCertificateDialog({
         <div className="mt-4">
           <label
             htmlFor="file-upload"
-            className="flex items-center justify-center w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-mainOrange transition-colors"
+            className={`flex items-center justify-center w-full px-4 py-3 border-2 border-dashed rounded-lg transition-colors ${selectedFiles.length >= 3
+                ? "border-gray-200 bg-gray-50 cursor-not-allowed"
+                : "border-gray-300 hover:border-mainOrange cursor-pointer"
+              }`}
           >
             <Upload className="w-5 h-5 mr-2 text-gray-500" />
             <span className="text-sm text-gray-600">
-              Click to select PDF files (max 3)
+              {selectedFiles.length >= 3
+                ? "Maximum files reached"
+                : "Click to select PDF files (max 3)"}
             </span>
           </label>
           <input
@@ -180,38 +220,70 @@ export default function UploadCertificateDialog({
             <p className="text-sm font-medium text-gray-700">
               Selected Files ({selectedFiles.length}/3):
             </p>
-            {selectedFiles.map((file, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg"
-              >
-                <div className="flex items-center gap-3 flex-1 min-w-0">
-                  <FileText className="w-5 h-5 text-red-500 flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-800 truncate">
-                      {file.name}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {(file.size / 1024).toFixed(2)} KB
-                    </p>
+            <div className="space-y-2 max-h-[200px] overflow-y-auto">
+              {selectedFiles.map((file, index) => (
+                <div
+                  key={index}
+                  className={`flex items-center justify-between p-3 border rounded-lg transition-colors ${previewFileName === file.name
+                      ? "bg-blue-50 border-blue-300"
+                      : "bg-gray-50 border-gray-200"
+                    }`}
+                >
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <FileText className="w-5 h-5 text-red-500 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-800 truncate">
+                        {file.name}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {(file.size / 1024).toFixed(2)} KB
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 ml-2">
+                    <button
+                      onClick={() => handlePreviewFile(file)}
+                      disabled={isUploading}
+                      className="p-2 hover:bg-blue-100 rounded-full transition-colors disabled:opacity-50"
+                      title="Preview file"
+                    >
+                      <ExternalLink className="w-4 h-4 text-blue-600" />
+                    </button>
+                    <button
+                      onClick={() => handleRemoveFile(index)}
+                      disabled={isUploading}
+                      className="p-2 hover:bg-red-100 rounded-full transition-colors disabled:opacity-50"
+                      title="Remove file"
+                    >
+                      <X className="w-4 h-4 text-red-600" />
+                    </button>
                   </div>
                 </div>
-                <button
-                  onClick={() => handleRemoveFile(index)}
-                  disabled={isUploading}
-                  className="ml-2 p-1 hover:bg-gray-200 rounded-full transition-colors disabled:opacity-50"
-                >
-                  <X className="w-4 h-4 text-gray-600" />
-                </button>
-              </div>
-            ))}
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* PDF Preview */}
+        {previewUrl && (
+          <div className="mt-4">
+            <p className="text-sm font-medium text-gray-700 mb-2">
+              Preview: {previewFileName}
+            </p>
+            <div className="w-full h-[300px] sm:h-[400px] md:h-[500px] border border-gray-300 rounded-lg overflow-hidden">
+              <iframe
+                src={previewUrl}
+                title="PDF Preview"
+                className="w-full h-full"
+              />
+            </div>
           </div>
         )}
 
         {/* Warning Checkbox */}
         {selectedFiles.length > 0 && (
-          <div className="mt-4 space-y-2 text-xs sm:text-sm md:text-md">
-            <div className="flex items-start gap-2">
+          <div className="mt-4 space-y-2">
+            <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
               <input
                 type="checkbox"
                 id="confirmUpload"
@@ -222,11 +294,11 @@ export default function UploadCertificateDialog({
               />
               <label
                 htmlFor="confirmUpload"
-                className="leading-snug italic break-words flex-1 text-gray-700"
+                className="text-xs sm:text-sm leading-snug text-gray-700 flex-1"
               >
-                I confirm that the uploaded certificate(s) are correct. I
-                understand that these files can only be uploaded once and cannot
-                be changed later.
+                <span className="font-semibold text-amber-700">Important:</span> I
+                confirm that the uploaded certificate(s) are correct. These files
+                can only be uploaded once and cannot be changed later.
               </label>
             </div>
           </div>
@@ -234,15 +306,18 @@ export default function UploadCertificateDialog({
 
         {/* Submit Button */}
         <Button
-          className="mt-4 w-full bg-mainOrange text-white text-sm sm:text-base hover:bg-orange-600"
+          className="mt-4 w-full bg-mainOrange text-white text-sm sm:text-base hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed"
           onClick={handleSubmit}
-          disabled={
-            selectedFiles.length === 0 || !isConfirmed || isUploading
-          }
+          disabled={selectedFiles.length === 0 || !isConfirmed || isUploading}
         >
-          {isUploading
-            ? "Uploading..."
-            : `Save Certificate${selectedFiles.length > 1 ? "s" : ""}`}
+          {isUploading ? (
+            <span className="flex items-center justify-center gap-2">
+              <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
+              Uploading...
+            </span>
+          ) : (
+            `Save Certificate${selectedFiles.length > 1 ? "s" : ""}`
+          )}
         </Button>
       </DialogContent>
     </Dialog>
