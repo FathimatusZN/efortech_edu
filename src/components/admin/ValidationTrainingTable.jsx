@@ -1,8 +1,10 @@
+// efortech_edu\src\components\admin\ValidationTrainingTable.jsx
 import React, { useState } from "react";
 import {
   Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { BsCheckCircleFill, BsFillXCircleFill } from "react-icons/bs";
 import { TbCloudUpload } from "react-icons/tb";
 import {
@@ -47,6 +49,11 @@ export const ValidationTrainingTable = ({
   onAttendanceChange,
   onUploadClick,
   disablePagination = false,
+  // Selection props (injected by SelectableTableWrapper or passed manually)
+  selectedRows = [],
+  onSelectRow = () => { },
+  onSelectAll = () => { },
+  selectionEnabled = false,
 }) => {
 
   const [page, setPage] = useState(1);
@@ -56,6 +63,20 @@ export const ValidationTrainingTable = ({
   const [showCertificateDialog, setShowCertificateDialog] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [isDialogOpen, setDialogOpen] = useState(false);
+
+  // Check if all rows on current page are selected
+  const isAllSelected = selectionEnabled && paginatedData.length > 0 &&
+    paginatedData.every(item => selectedRows.includes(item.registration_id));
+
+  // Check if some (but not all) rows are selected
+  const isSomeSelected = selectionEnabled &&
+    paginatedData.some(item => selectedRows.includes(item.registration_id)) && !isAllSelected;
+
+  // Handle select all on current page
+  const handleSelectAll = (checked) => {
+    const currentPageIds = paginatedData.map(item => item.registration_id);
+    onSelectAll(checked, currentPageIds);
+  };
 
   // Render attendance buttons or status
   const renderAttendanceColumn = (item) => {
@@ -203,6 +224,16 @@ export const ValidationTrainingTable = ({
         <Table>
           <TableHeader>
             <TableRow>
+              {/* Checkbox column - show when selection is enabled */}
+              {selectionEnabled && (
+                <TableHead className="w-12">
+                  <Checkbox
+                    checked={isAllSelected}
+                    indeterminate={isSomeSelected}
+                    onCheckedChange={handleSelectAll}
+                  />
+                </TableHead>
+              )}
               <TableHead>ID</TableHead>
               {mode === "needprocess" || mode === "cancelled" ? (
                 <TableHead>Registrant Name</TableHead>
@@ -231,6 +262,16 @@ export const ValidationTrainingTable = ({
               <TableRow
                 key={item.registration_id + (item.registration_participant_id || "")}
               >
+                {/* Checkbox cell - show when selection is enabled */}
+                {selectionEnabled && (
+                  <TableCell>
+                    <Checkbox
+                      checked={selectedRows.includes(item.registration_id)}
+                      onCheckedChange={(checked) => onSelectRow(item.registration_id, checked)}
+                    />
+                  </TableCell>
+                )}
+
                 <TableCell>
                   {mode === "needprocess" || mode === "cancelled"
                     ? item.registration_id
