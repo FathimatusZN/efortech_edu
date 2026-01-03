@@ -229,7 +229,7 @@ export const ValidationTrainingTable = ({
                 <TableHead className="w-12">
                   <Checkbox
                     checked={isAllSelected}
-                    indeterminate={isSomeSelected}
+                    {...(isSomeSelected && { indeterminate: true })}
                     onCheckedChange={handleSelectAll}
                   />
                 </TableHead>
