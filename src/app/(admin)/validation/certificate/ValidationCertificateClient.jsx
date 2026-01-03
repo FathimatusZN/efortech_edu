@@ -1,16 +1,18 @@
+// efortech_edu\src\app\(admin)\validation\certificate\ValidationCertificateClient.jsx
 "use client";
 
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ValidationCertificateTable } from "@/components/admin/ValidationCertificateTable";
+import { SelectableTableWrapper } from "@/components/ui/SelectableTableWrapper";
 import { useState, useRef, useEffect } from "react";
 import { toast } from "react-hot-toast";
-import { FaSearch } from "react-icons/fa";
+import { FaSearch, FaFilter } from "react-icons/fa";
 import { Checkbox } from "@/components/ui/checkbox";
-import { FaFilter } from "react-icons/fa";
 import { useRouter, useSearchParams } from "next/navigation";
 import UploadCertificateForm from "@/components/layout/UploadCertificateForm";
 import { SuccessDialog } from "@/components/ui/SuccessDialog";
+import { ConfirmDialogAdmin } from "@/components/ui/ConfirmDialog";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
 const ValidationCertificateClient = () => {
@@ -29,11 +31,18 @@ const ValidationCertificateClient = () => {
   const [certificateData, setCertificateData] = useState({
     needProcessData: null,
     completedData: null,
+    rejectedData: null,
   });
   const [loading, setLoading] = useState(true);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const filterRef = useRef(null);
   const sortRef = useRef(null);
+
+  // Delete related states
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteMode, setDeleteMode] = useState(""); // "selected" or "all"
+  const [selectedIdsToDelete, setSelectedIdsToDelete] = useState([]);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const STATUS_LABELS = {
     1: "Pending",
@@ -52,6 +61,7 @@ const ValidationCertificateClient = () => {
   const [selectedFilters, setSelectedFilters] = useState({
     needprocess: { status: ["1"] },
     completed: { status: ["2", "3"] },
+    rejected: { status: ["3"] },
   });
 
   const tabConfig = {
@@ -76,6 +86,24 @@ const ValidationCertificateClient = () => {
     completed: {
       url: "/api/ucertificate/search",
       key: "completedData",
+      searchFields: ["user_certificate_id", "user_id", "fullname", "cert_type"],
+      filters: {
+        status: ["1", "2", "3"],
+      },
+      sortFields: [
+        "user_certificate_id",
+        "created_at",
+        "user_id",
+        "fullname",
+        "cert_type",
+        "issued_date",
+        "expired_date",
+        "validity_status",
+      ],
+    },
+    rejected: {
+      url: "/api/ucertificate/search",
+      key: "rejectedData",
       searchFields: ["user_certificate_id", "user_id", "fullname", "cert_type"],
       filters: {
         status: ["1", "2", "3"],
@@ -136,8 +164,7 @@ const ValidationCertificateClient = () => {
 
     setLoading(true);
     try {
-      const url = `${process.env.NEXT_PUBLIC_API_BASE_URL
-        }${buildQueryParams()}`;
+      const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}${buildQueryParams()}`;
       const response = await fetch(url);
       if (!response.ok) throw new Error();
 
@@ -193,8 +220,8 @@ const ValidationCertificateClient = () => {
 
     if (tab === "needprocess") {
       defaultSortBy = "created_at";
-    } else if (tab === "completed") {
-      defaultSortBy = "verifiecation_date";
+    } else if (tab === "completed" || tab === "rejected") {
+      defaultSortBy = "verification_date";
     }
 
     setSortBy(defaultSortBy);
@@ -204,6 +231,8 @@ const ValidationCertificateClient = () => {
       defaultFilter.status = ["1"];
     } else if (tab === "completed") {
       defaultFilter.status = ["2", "3"];
+    } else if (tab === "rejected") {
+      defaultFilter.status = ["3"];
     }
 
     // ensure status key always exists (even empty)
@@ -271,6 +300,68 @@ const ValidationCertificateClient = () => {
     return data;
   };
 
+  // Delete selected certificates
+  const handleDeleteSelected = async (selectedIds) => {
+    setSelectedIdsToDelete(selectedIds);
+    setDeleteMode("selected");
+    setDeleteDialogOpen(true);
+  };
+
+  // Delete all rejected certificates
+  const handleDeleteAll = async () => {
+    setDeleteMode("all");
+    setDeleteDialogOpen(true);
+  };
+
+  // Execute delete operation
+  const executeDelete = async () => {
+    setIsDeleting(true);
+    try {
+      let res, result;
+
+      if (deleteMode === "all") {
+        res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/ucertificate/delete-all-rejected`,
+          {
+            method: "DELETE",
+          }
+        );
+      } else {
+        res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/ucertificate/delete-multiple`,
+          {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ user_certificate_ids: selectedIdsToDelete }),
+          }
+        );
+      }
+
+      result = await res.json();
+
+      if (!res.ok) {
+        throw new Error(result.message || "Failed to delete certificates");
+      }
+
+      if (result.data.deleted_certificates === 0) {
+        toast.success("No rejected certificates to delete");
+      } else {
+        toast.success(
+          `${result.data.deleted_certificates} certificate(s) deleted successfully`
+        );
+      }
+
+      setDeleteDialogOpen(false);
+      fetchTabData(tab);
+    } catch (error) {
+      console.error("Error deleting certificates:", error);
+      toast.error(`Error: ${error.message}`);
+    } finally {
+      setIsDeleting(false);
+      setSelectedIdsToDelete([]);
+    }
+  };
+
   // Function to handle click outside the filter dropdown
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -317,6 +408,12 @@ const ValidationCertificateClient = () => {
     }
   };
 
+  // Get rejected data count
+  const rejectedDataCount = certificateData.rejectedData?.length || 0;
+
+  // Check if current tab should show search/filter/sort
+  const showSearchFilterSort = tab !== "upload";
+
   return (
     <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
       <div className="max-w-screen mx-auto p-4 md:p-6">
@@ -330,155 +427,159 @@ const ValidationCertificateClient = () => {
               <TabsList className="flex flex-wrap gap-2">
                 <TabsTrigger value="needprocess">Need to Process</TabsTrigger>
                 <TabsTrigger value="completed">Completed</TabsTrigger>
+                <TabsTrigger value="rejected">Rejected</TabsTrigger>
                 <TabsTrigger value="upload">Upload Certificate</TabsTrigger>
               </TabsList>
 
-              <div className="flex flex-col sm:flex-row sm:items-center gap-4 w-full sm:w-auto">
-                <div className="relative w-full sm:w-[250px]">
-                  <input
-                    type="text"
-                    placeholder={`Type search keyword...`}
-                    value={searchInput}
-                    onChange={(e) => setSearchInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        setSearchQuery(searchInput);
-                      } // trigger search
-                    }}
-                    className="text-sm w-full pl-6 pr-10 py-2 rounded-md border border-mainBlue focus:ring-0 focus:outline-none"
-                  />
-                  <FaSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
-                </div>
+              {/* Only show search/filter/sort when NOT on upload tab */}
+              {showSearchFilterSort && (
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4 w-full sm:w-auto">
+                  <div className="relative w-full sm:w-[250px]">
+                    <input
+                      type="text"
+                      placeholder={`Type search keyword...`}
+                      value={searchInput}
+                      onChange={(e) => setSearchInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          setSearchQuery(searchInput);
+                        }
+                      }}
+                      className="text-sm w-full pl-6 pr-10 py-2 rounded-md border border-mainBlue focus:ring-0 focus:outline-none"
+                    />
+                    <FaSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
+                  </div>
 
-                <div className="relative" ref={filterRef}>
-                  <button
-                    className="w-full sm:w-[180px] border border-mainBlue rounded-md text-sm px-4 py-2 text-left"
-                    onClick={() => setIsFilterOpen(!isFilterOpen)}
-                  >
-                    Filter by
-                  </button>
+                  <div className="relative" ref={filterRef}>
+                    <button
+                      className="w-full sm:w-[180px] border border-mainBlue rounded-md text-sm px-4 py-2 text-left"
+                      onClick={() => setIsFilterOpen(!isFilterOpen)}
+                    >
+                      Filter by
+                    </button>
 
-                  {isFilterOpen && (
-                    <div className="absolute z-10 mt-2 w-[180px] bg-white border border-gray-300 rounded-md shadow-md p-2 space-y-2 text-sm">
-                      {currentConfig.filters?.status?.map((statusCode) => (
-                        <div
-                          key={statusCode}
-                          className="flex items-center gap-2"
-                        >
-                          <Checkbox
-                            id={`status-${statusCode}`}
-                            checked={
-                              selectedFilters[tab].status?.includes(
-                                statusCode
-                              ) || false
-                            }
-                            onCheckedChange={(checked) => {
-                              setSelectedFilters((prev) => {
-                                const prevTabFilters = prev[tab] || {};
-                                const prevStatus = prevTabFilters.status || [];
-
-                                return {
-                                  ...prev,
-                                  [tab]: {
-                                    ...prevTabFilters,
-                                    status: checked
-                                      ? [...prevStatus, statusCode]
-                                      : prevStatus.filter(
-                                        (s) => s !== statusCode
-                                      ),
-                                  },
-                                };
-                              });
-                            }}
-                          />
-                          <label htmlFor={`status-${statusCode}`}>
-                            {STATUS_LABELS[statusCode] || `${statusCode}`}
-                          </label>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                <div className="relative" ref={sortRef}>
-                  <button
-                    onClick={() => setSortOpen(!sortOpen)}
-                    className="px-3 py-2 border border-gray-300 rounded-md text-sm flex items-center gap-2"
-                  >
-                    <FaFilter className="text-base" />
-                    Sort
-                  </button>
-
-                  {sortOpen && (
-                    <div className="absolute right-0 z-10 mt-2 w-64 bg-white border border-gray-300 rounded-md shadow-lg p-4">
-                      <p className="text-sm font-medium mb-2">Sort Order</p>
-                      <div className="flex gap-4 mb-4">
-                        <label className="flex items-center gap-2 text-sm">
-                          <input
-                            type="radio"
-                            value="ASC"
-                            checked={tempSortOrder === "ASC"}
-                            onChange={() => setTempSortOrder("ASC")}
-                          />
-                          Ascending
-                        </label>
-                        <label className="flex items-center gap-2 text-sm">
-                          <input
-                            type="radio"
-                            value="DESC"
-                            checked={tempSortOrder === "DESC"}
-                            onChange={() => setTempSortOrder("DESC")}
-                          />
-                          Descending
-                        </label>
-                      </div>
-
-                      <p className="text-sm font-medium mb-2">Sort By</p>
-                      <div className="space-y-2 max-h-32 overflow-y-auto">
-                        {currentConfig.sortFields.map((field) => (
-                          <button
-                            key={field}
-                            onClick={() => setTempSortField(field)}
-                            className={`w-full text-left px-2 py-1 rounded hover:bg-gray-100 text-sm ${tempSortField === field
-                              ? "bg-blue-100 font-semibold"
-                              : ""
-                              }`}
+                    {isFilterOpen && (
+                      <div className="absolute z-10 mt-2 w-[180px] bg-white border border-gray-300 rounded-md shadow-md p-2 space-y-2 text-sm">
+                        {currentConfig.filters?.status?.map((statusCode) => (
+                          <div
+                            key={statusCode}
+                            className="flex items-center gap-2"
                           >
-                            {field
-                              .replaceAll("_", " ")
-                              .split(" ")
-                              .map(
-                                (word) =>
-                                  word.charAt(0).toUpperCase() + word.slice(1)
-                              )
-                              .join(" ")}
-                          </button>
+                            <Checkbox
+                              id={`status-${statusCode}`}
+                              checked={
+                                selectedFilters[tab].status?.includes(
+                                  statusCode
+                                ) || false
+                              }
+                              onCheckedChange={(checked) => {
+                                setSelectedFilters((prev) => {
+                                  const prevTabFilters = prev[tab] || {};
+                                  const prevStatus = prevTabFilters.status || [];
+
+                                  return {
+                                    ...prev,
+                                    [tab]: {
+                                      ...prevTabFilters,
+                                      status: checked
+                                        ? [...prevStatus, statusCode]
+                                        : prevStatus.filter(
+                                          (s) => s !== statusCode
+                                        ),
+                                    },
+                                  };
+                                });
+                              }}
+                            />
+                            <label htmlFor={`status-${statusCode}`}>
+                              {STATUS_LABELS[statusCode] || `${statusCode}`}
+                            </label>
+                          </div>
                         ))}
                       </div>
+                    )}
+                  </div>
 
-                      <div className="flex justify-end mt-4 gap-2">
-                        <button
-                          className="text-sm text-gray-500 hover:underline"
-                          onClick={() => setSortOpen(false)}
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          onClick={() => {
-                            setSortBy(tempSortField);
-                            setSortOrder(tempSortOrder);
-                            setSortOpen(false);
-                            fetchTabData(); // apply sorting
-                          }}
-                          className="text-sm bg-mainBlue text-white px-3 py-1 rounded"
-                        >
-                          Apply
-                        </button>
+                  <div className="relative" ref={sortRef}>
+                    <button
+                      onClick={() => setSortOpen(!sortOpen)}
+                      className="px-3 py-2 border border-gray-300 rounded-md text-sm flex items-center gap-2"
+                    >
+                      <FaFilter className="text-base" />
+                      Sort
+                    </button>
+
+                    {sortOpen && (
+                      <div className="absolute right-0 z-10 mt-2 w-64 bg-white border border-gray-300 rounded-md shadow-lg p-4">
+                        <p className="text-sm font-medium mb-2">Sort Order</p>
+                        <div className="flex gap-4 mb-4">
+                          <label className="flex items-center gap-2 text-sm">
+                            <input
+                              type="radio"
+                              value="ASC"
+                              checked={tempSortOrder === "ASC"}
+                              onChange={() => setTempSortOrder("ASC")}
+                            />
+                            Ascending
+                          </label>
+                          <label className="flex items-center gap-2 text-sm">
+                            <input
+                              type="radio"
+                              value="DESC"
+                              checked={tempSortOrder === "DESC"}
+                              onChange={() => setTempSortOrder("DESC")}
+                            />
+                            Descending
+                          </label>
+                        </div>
+
+                        <p className="text-sm font-medium mb-2">Sort By</p>
+                        <div className="space-y-2 max-h-32 overflow-y-auto">
+                          {currentConfig.sortFields.map((field) => (
+                            <button
+                              key={field}
+                              onClick={() => setTempSortField(field)}
+                              className={`w-full text-left px-2 py-1 rounded hover:bg-gray-100 text-sm ${tempSortField === field
+                                  ? "bg-blue-100 font-semibold"
+                                  : ""
+                                }`}
+                            >
+                              {field
+                                .replaceAll("_", " ")
+                                .split(" ")
+                                .map(
+                                  (word) =>
+                                    word.charAt(0).toUpperCase() + word.slice(1)
+                                )
+                                .join(" ")}
+                            </button>
+                          ))}
+                        </div>
+
+                        <div className="flex justify-end mt-4 gap-2">
+                          <button
+                            className="text-sm text-gray-500 hover:underline"
+                            onClick={() => setSortOpen(false)}
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            onClick={() => {
+                              setSortBy(tempSortField);
+                              setSortOrder(tempSortOrder);
+                              setSortOpen(false);
+                              fetchTabData();
+                            }}
+                            className="text-sm bg-mainBlue text-white px-3 py-1 rounded"
+                          >
+                            Apply
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
             <div className="border-t border-gray-200 mt-2" />
 
@@ -517,6 +618,33 @@ const ValidationCertificateClient = () => {
                     )}
                   </TabsContent>
 
+                  {/* Rejected tab with SelectableTableWrapper */}
+                  <TabsContent value="rejected">
+                    {certificateData.rejectedData ? (
+                      <SelectableTableWrapper
+                        data={certificateData.rejectedData}
+                        idKey="user_certificate_id"
+                        onDeleteSelected={handleDeleteSelected}
+                        onDeleteAll={handleDeleteAll}
+                        itemType="certificate"
+                        showDeleteAll={rejectedDataCount > 0}
+                        enabled={true}
+                      >
+                        <ValidationCertificateTable
+                          data={certificateData.rejectedData}
+                          mode="rejected"
+                          adminId={adminId}
+                          onShowDetailCertificate={onShowDetailCertificate}
+                          onStatusChange={handleStatusChange}
+                        />
+                      </SelectableTableWrapper>
+                    ) : (
+                      <div className="items-center justify-center">
+                        <LoadingSpinner className="w-10 h-10" />
+                      </div>
+                    )}
+                  </TabsContent>
+
                   <TabsContent value="upload">
                     <div className="mb-20">
                       <UploadCertificateForm
@@ -539,6 +667,21 @@ const ValidationCertificateClient = () => {
             </div>
           </div>
         </Tabs>
+
+        {/* Delete Confirmation Dialog */}
+        <ConfirmDialogAdmin
+          open={deleteDialogOpen}
+          data={
+            deleteMode === "all"
+              ? `all ${rejectedDataCount} rejected certificates`
+              : `${selectedIdsToDelete.length} selected certificates`
+          }
+          onCancel={() => {
+            setDeleteDialogOpen(false);
+            setIsDeleting(false);
+          }}
+          onConfirm={executeDelete}
+        />
       </div>
     </ProtectedRoute>
   );
