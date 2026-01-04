@@ -99,7 +99,7 @@ export default function TrainingDetailPage() {
       if (res.ok) {
         setRelationStatus(data.data.relation_status);
         setDeleteMessage(data.data.message);
-        setDeleteSummary(data.data.summary); // <-- tambahkan ini
+        setDeleteSummary(data.data.summary);
         setDeleteConfirmOpen(true);
       } else {
         toast.error(data.message || "Failed to check training relations.");
@@ -138,7 +138,7 @@ export default function TrainingDetailPage() {
         {/* Page Header */}
         <div className="flex flex-col sm:flex-row sm:justify-between items-start sm:items-center mt-6 mb-6 gap-4">
           <h1 className="text-xl sm:text-2xl font-bold">Training Detail</h1>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2 w-full sm:w-auto">
             <Button
               variant="mainBlue"
               size="sm"
@@ -170,63 +170,31 @@ export default function TrainingDetailPage() {
           </div>
         </div>
 
-        <div className="relative">
+        <div className="relative w-full aspect-video rounded-xl overflow-hidden">
           <img
             src={training.images[0] || "/fallback.jpg"}
             alt={training.training_name}
-            className="w-full h-72 sm:h-80 md:h-[380px] object-cover rounded-xl"
+            className="absolute inset-0 w-full h-full object-cover"
           />
 
-          <div className="absolute inset-x-0 bottom-[15px] flex justify-center px-4 max-h-50">
-            <div className="bg-white/50 backdrop-blur-md rounded-2xl px-4 sm:px-5 py-4 sm:py-4 flex flex-col md:flex-row justify-between items-stretch w-full max-w-5xl gap-4 md:gap-4">
-              <InfoItem
-                label="Level"
-                value={
-                  training.level === 1
-                    ? "Beginner"
-                    : training.level === 2
-                      ? "Intermediate"
-                      : "Advanced"
-                }
-              />
-              <VerticalDivider />
-              <InfoItem label="Available Date" value={`${training.available_date}`} />
-              <VerticalDivider />
-              <InfoItem
-                label="Duration"
-                value={`${training.duration} ${training.duration > 1 ? "Hours" : "Hour"}`}
-              />
-              <VerticalDivider />
-              <InfoItem
-                label="Training Fees"
-                value={
-                  training.discount && training.discount > 0 ? (
-                    <div className="flex flex-col items-center sm:items-start whitespace-nowrap">
-                      <span className="line-through text-gray-500 text-xs sm:text-sm">
-                        Rp {parseInt(training.training_fees).toLocaleString("id-ID")}
-                      </span>
-                      <span className="text-black font-bold text-sm sm:text-base">
-                        Rp {parseInt(training.final_price).toLocaleString("id-ID")}
-                      </span>
-                    </div>
-                  ) : (
-                    <span className="whitespace-nowrap text-sm sm:text-base font-bold">
-                      Rp {parseInt(training.training_fees).toLocaleString("id-ID")}
-                    </span>
-                  )
-                }
-              />
-            </div>
+          {/* Info bar (desktop only) */}
+          <div className="hidden md:flex absolute inset-x-0 bottom-4 justify-center px-4">
+            <InfoBar training={training} />
           </div>
         </div>
 
-        <div className="mt-12 text-center px-4">
+        {/* Info bar (mobile) */}
+        <div className="mt-4 md:hidden px-4">
+          <InfoBar training={training} />
+        </div>
+
+        <div className="mt-6 text-center px-4">
           <h1 className="text-2xl sm:text-3xl font-bold text-mainBlue">
             {training.training_name}
           </h1>
         </div>
 
-        <div className="mt-10 space-y-6 px-4">
+        <div className="mt-6 space-y-6 px-4">
           <div>
             <h2 className="text-xl sm:text-2xl text-mainOrange font-bold mb-1">Description</h2>
             <p className="text-black text-sm whitespace-pre-line">{training.description}</p>
@@ -303,12 +271,11 @@ export default function TrainingDetailPage() {
 
 function InfoItem({ label, value }) {
   return (
-    <div className="flex flex-col items-center justify-center text-center px-2 sm:px-4">
-      <span className="text-xs sm:text-sm md:text-base text-gray-700 font-semibold" style={{ textShadow: "1px 1px 0 rgba(255, 255, 255, 0.4)" }}>
+    <div className="flex flex-col items-center md:items-start text-center md:text-left">
+      <span className="text-[11px] uppercase tracking-wide text-gray-500 font-semibold">
         {label}
       </span>
-      <span
-        className="mt-1 text-sm sm:text-base md:text-lg text-black font-bold break-words text-center" style={{ textShadow: "1px 1px 0 rgba(255, 255, 255, 0.4)" }}>
+      <span className="mt-1 text-sm sm:text-base font-bold text-gray-900">
         {value}
       </span>
     </div>
@@ -316,5 +283,79 @@ function InfoItem({ label, value }) {
 }
 
 function VerticalDivider() {
-  return <div className="hidden md:block w-px bg-gray-300 mx-2" />;
+  return (
+    <div className="hidden md:block self-stretch w-px bg-white mx-4" />
+  );
+}
+
+function InfoBar({ training }) {
+  return (
+    <div
+      className="
+        /* MOBILE */
+        bg-gradient-to-br from-white via-sky-50 to-white
+        border border-sky-100
+        shadow-md
+        grid grid-cols-2 gap-4
+        px-4 py-4
+
+        /* DESKTOP OVERRIDE */
+        md:bg-none
+        md:bg-white/50
+        md:backdrop-blur-md
+        md:border-white/30
+        md:shadow-lg
+        md:flex md:flex-row md:justify-between md:items-center
+        md:px-5 md:py-4
+
+        rounded-2xl
+        w-full max-w-5xl
+      "
+    >
+      <InfoItem
+        label="Level"
+        value={
+          training.level === 1
+            ? "Beginner"
+            : training.level === 2
+              ? "Intermediate"
+              : "Advanced"
+        }
+      />
+
+      <VerticalDivider />
+
+      <InfoItem label="Available Date" value={training.available_date} />
+
+      <VerticalDivider />
+
+      <InfoItem
+        label="Duration"
+        value={`${training.duration} ${training.duration > 1 ? "Hours" : "Hour"
+          }`}
+      />
+
+      <VerticalDivider />
+
+      <InfoItem
+        label="Training Fees"
+        value={
+          training.discount && training.discount > 0 ? (
+            <div className="flex flex-col items-center md:items-start whitespace-nowrap">
+              <span className="line-through text-gray-500 text-xs">
+                Rp {parseInt(training.training_fees).toLocaleString("id-ID")}
+              </span>
+              <span className="text-black font-bold">
+                Rp {parseInt(training.final_price).toLocaleString("id-ID")}
+              </span>
+            </div>
+          ) : (
+            <span className="whitespace-nowrap font-bold">
+              Rp {parseInt(training.training_fees).toLocaleString("id-ID")}
+            </span>
+          )
+        }
+      />
+    </div>
+  );
 }
