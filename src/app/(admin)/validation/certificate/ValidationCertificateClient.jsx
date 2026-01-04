@@ -9,11 +9,13 @@ import { useState, useRef, useEffect } from "react";
 import { toast } from "react-hot-toast";
 import { FaSearch, FaFilter } from "react-icons/fa";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
 import { useRouter, useSearchParams } from "next/navigation";
 import UploadCertificateForm from "@/components/layout/UploadCertificateForm";
 import { SuccessDialog } from "@/components/ui/SuccessDialog";
 import { ConfirmDialogAdmin } from "@/components/ui/ConfirmDialog";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import ExportUserCertificatesDialog from "@/components/admin/ExportUserCertificatesDialog";
 
 const ValidationCertificateClient = () => {
   const searchParams = useSearchParams();
@@ -43,6 +45,9 @@ const ValidationCertificateClient = () => {
   const [deleteMode, setDeleteMode] = useState(""); // "selected" or "all"
   const [selectedIdsToDelete, setSelectedIdsToDelete] = useState([]);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // Export dialog state
+  const [exportOpen, setExportOpen] = useState(false);
 
   const STATUS_LABELS = {
     1: "Pending",
@@ -411,7 +416,7 @@ const ValidationCertificateClient = () => {
   // Get rejected data count
   const rejectedDataCount = certificateData.rejectedData?.length || 0;
 
-  // Check if current tab should show search/filter/sort
+  // Check if current tab should show search/filter/sort/export
   const showSearchFilterSort = tab !== "upload";
 
   return (
@@ -431,7 +436,7 @@ const ValidationCertificateClient = () => {
                 <TabsTrigger value="upload">Upload Certificate</TabsTrigger>
               </TabsList>
 
-              {/* Only show search/filter/sort when NOT on upload tab */}
+              {/* Only show search/filter/sort/export when NOT on upload tab */}
               {showSearchFilterSort && (
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4 w-full sm:w-auto">
                   <div className="relative w-full sm:w-[250px]">
@@ -500,83 +505,94 @@ const ValidationCertificateClient = () => {
                     )}
                   </div>
 
-                  <div className="relative" ref={sortRef}>
-                    <button
-                      onClick={() => setSortOpen(!sortOpen)}
-                      className="px-3 py-2 border border-gray-300 rounded-md text-sm flex items-center gap-2"
-                    >
-                      <FaFilter className="text-base" />
-                      Sort
-                    </button>
+                  <div className="flex justify-between gap-4">
+                    <div className="relative" ref={sortRef}>
+                      <button
+                        onClick={() => setSortOpen(!sortOpen)}
+                        className="px-3 py-2 border border-gray-300 rounded-md text-sm flex items-center gap-2"
+                      >
+                        <FaFilter className="text-base" />
+                        Sort
+                      </button>
 
-                    {sortOpen && (
-                      <div className="absolute right-0 z-10 mt-2 w-64 bg-white border border-gray-300 rounded-md shadow-lg p-4">
-                        <p className="text-sm font-medium mb-2">Sort Order</p>
-                        <div className="flex gap-4 mb-4">
-                          <label className="flex items-center gap-2 text-sm">
-                            <input
-                              type="radio"
-                              value="ASC"
-                              checked={tempSortOrder === "ASC"}
-                              onChange={() => setTempSortOrder("ASC")}
-                            />
-                            Ascending
-                          </label>
-                          <label className="flex items-center gap-2 text-sm">
-                            <input
-                              type="radio"
-                              value="DESC"
-                              checked={tempSortOrder === "DESC"}
-                              onChange={() => setTempSortOrder("DESC")}
-                            />
-                            Descending
-                          </label>
-                        </div>
+                      {sortOpen && (
+                        <div className="absolute right-0 z-10 mt-2 w-64 bg-white border border-gray-300 rounded-md shadow-lg p-4">
+                          <p className="text-sm font-medium mb-2">Sort Order</p>
+                          <div className="flex gap-4 mb-4">
+                            <label className="flex items-center gap-2 text-sm">
+                              <input
+                                type="radio"
+                                value="ASC"
+                                checked={tempSortOrder === "ASC"}
+                                onChange={() => setTempSortOrder("ASC")}
+                              />
+                              Ascending
+                            </label>
+                            <label className="flex items-center gap-2 text-sm">
+                              <input
+                                type="radio"
+                                value="DESC"
+                                checked={tempSortOrder === "DESC"}
+                                onChange={() => setTempSortOrder("DESC")}
+                              />
+                              Descending
+                            </label>
+                          </div>
 
-                        <p className="text-sm font-medium mb-2">Sort By</p>
-                        <div className="space-y-2 max-h-32 overflow-y-auto">
-                          {currentConfig.sortFields.map((field) => (
-                            <button
-                              key={field}
-                              onClick={() => setTempSortField(field)}
-                              className={`w-full text-left px-2 py-1 rounded hover:bg-gray-100 text-sm ${tempSortField === field
+                          <p className="text-sm font-medium mb-2">Sort By</p>
+                          <div className="space-y-2 max-h-32 overflow-y-auto">
+                            {currentConfig.sortFields.map((field) => (
+                              <button
+                                key={field}
+                                onClick={() => setTempSortField(field)}
+                                className={`w-full text-left px-2 py-1 rounded hover:bg-gray-100 text-sm ${tempSortField === field
                                   ? "bg-blue-100 font-semibold"
                                   : ""
-                                }`}
-                            >
-                              {field
-                                .replaceAll("_", " ")
-                                .split(" ")
-                                .map(
-                                  (word) =>
-                                    word.charAt(0).toUpperCase() + word.slice(1)
-                                )
-                                .join(" ")}
-                            </button>
-                          ))}
-                        </div>
+                                  }`}
+                              >
+                                {field
+                                  .replaceAll("_", " ")
+                                  .split(" ")
+                                  .map(
+                                    (word) =>
+                                      word.charAt(0).toUpperCase() + word.slice(1)
+                                  )
+                                  .join(" ")}
+                              </button>
+                            ))}
+                          </div>
 
-                        <div className="flex justify-end mt-4 gap-2">
-                          <button
-                            className="text-sm text-gray-500 hover:underline"
-                            onClick={() => setSortOpen(false)}
-                          >
-                            Cancel
-                          </button>
-                          <button
-                            onClick={() => {
-                              setSortBy(tempSortField);
-                              setSortOrder(tempSortOrder);
-                              setSortOpen(false);
-                              fetchTabData();
-                            }}
-                            className="text-sm bg-mainBlue text-white px-3 py-1 rounded"
-                          >
-                            Apply
-                          </button>
+                          <div className="flex justify-end mt-4 gap-2">
+                            <button
+                              className="text-sm text-gray-500 hover:underline"
+                              onClick={() => setSortOpen(false)}
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              onClick={() => {
+                                setSortBy(tempSortField);
+                                setSortOrder(tempSortOrder);
+                                setSortOpen(false);
+                                fetchTabData();
+                              }}
+                              className="text-sm bg-mainBlue text-white px-3 py-1 rounded"
+                            >
+                              Apply
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
+                    </div>
+
+                    {/* Export Button */}
+                    <Button
+                      variant="orange"
+                      onClick={() => setExportOpen(true)}
+                      className="flex items-center"
+                    >
+                      <i className="fa-solid fa-file-export"></i>Export Data
+                    </Button>
                   </div>
                 </div>
               )}
@@ -667,6 +683,12 @@ const ValidationCertificateClient = () => {
             </div>
           </div>
         </Tabs>
+
+        {/* Export Dialog */}
+        <ExportUserCertificatesDialog
+          open={exportOpen}
+          onClose={() => setExportOpen(false)}
+        />
 
         {/* Delete Confirmation Dialog */}
         <ConfirmDialogAdmin
