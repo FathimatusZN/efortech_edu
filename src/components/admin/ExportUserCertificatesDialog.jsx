@@ -56,7 +56,6 @@ export default function ExportUserCertificatesDialog({ open, onClose }) {
 
             let res;
             if (type === "all") {
-                // Export All - no query params
                 res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
             } else {
                 const params = new URLSearchParams();
@@ -69,7 +68,6 @@ export default function ExportUserCertificatesDialog({ open, onClose }) {
                     params.append("status", selectedStatus.join(","));
 
                 if (selectedCertStatus.length > 0) {
-                    // Only send one certificate_status value (the first selected)
                     params.append("certificate_status", selectedCertStatus[0]);
                 }
 
@@ -109,183 +107,196 @@ export default function ExportUserCertificatesDialog({ open, onClose }) {
             URL.revokeObjectURL(link.href);
 
             toast.success("User certificates data exported successfully.");
+            onClose();
         } catch (error) {
             console.error(error);
             toast.error("Export failed. Please try again.");
         }
     };
 
+    const clearFilters = () => {
+        setSelectedStatus([]);
+        setSelectedCertStatus([]);
+        setDateType("issued_date");
+        setStartDate("");
+        setEndDate("");
+    };
+
+    const hasFilters =
+        (startDate && endDate) ||
+        selectedStatus.length > 0 ||
+        selectedCertStatus.length > 0;
+
     return (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
-            <div className="relative bg-white rounded-lg p-6 w-[460px] shadow-lg">
-                <h2 className="text-xl font-bold mb-1">Export User Certificates</h2>
-                <p className="text-sm text-gray-500 mb-4">
-                    Export user uploaded certificate data with custom filters.
-                </p>
-
-                {/* Date Type Selection */}
-                <div className="mb-4">
-                    <Label className="text-sm block mb-2">Date Type</Label>
-                    <div className="grid grid-cols-2 gap-2">
-                        <label className="flex items-center gap-2">
-                            <input
-                                type="radio"
-                                name="dateType"
-                                value="issued_date"
-                                checked={dateType === "issued_date"}
-                                onChange={(e) => setDateType(e.target.value)}
-                            />
-                            Issued Date
-                        </label>
-                        <label className="flex items-center gap-2">
-                            <input
-                                type="radio"
-                                name="dateType"
-                                value="expired_date"
-                                checked={dateType === "expired_date"}
-                                onChange={(e) => setDateType(e.target.value)}
-                            />
-                            Expired Date
-                        </label>
-                        <label className="flex items-center gap-2">
-                            <input
-                                type="radio"
-                                name="dateType"
-                                value="created_at"
-                                checked={dateType === "created_at"}
-                                onChange={(e) => setDateType(e.target.value)}
-                            />
-                            Created Date
-                        </label>
-                        <label className="flex items-center gap-2">
-                            <input
-                                type="radio"
-                                name="dateType"
-                                value="verification_date"
-                                checked={dateType === "verification_date"}
-                                onChange={(e) => setDateType(e.target.value)}
-                            />
-                            Verification Date
-                        </label>
-                    </div>
+        <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50 p-4">
+            <div className="relative bg-white rounded-lg w-full max-w-[800px] max-h-[90vh] overflow-y-auto shadow-lg">
+                {/* Header - Sticky */}
+                <div className="sticky top-0 bg-white z-10 px-4 sm:px-6 pt-4 sm:pt-6 pb-3 border-b">
+                    <h2 className="text-lg sm:text-xl font-bold mb-1">Export User Certificates</h2>
+                    <p className="text-xs sm:text-sm text-gray-500">
+                        Export user uploaded certificate data with custom filters.
+                    </p>
+                    <button
+                        onClick={onClose}
+                        className="absolute top-3 sm:top-4 right-3 sm:right-4 text-gray-500 hover:text-gray-700 text-xl"
+                    >
+                        ✕
+                    </button>
                 </div>
 
-                {/* Date Range */}
-                <div className="mb-4">
-                    <Label className="text-sm mb-2 block">Date Range</Label>
-                    <div className="flex items-center gap-3">
-                        <div className="flex flex-col">
-                            <Label htmlFor="startDate" className="text-xs text-gray-500 mb-1">
-                                From
-                            </Label>
-                            <Input
-                                id="startDate"
-                                type="date"
-                                className="w-48"
-                                value={startDate}
-                                onChange={(e) => setStartDate(e.target.value)}
-                            />
-                        </div>
-
-                        <div className="flex flex-col">
-                            <Label htmlFor="endDate" className="text-xs text-gray-500 mb-1">
-                                To
-                            </Label>
-                            <Input
-                                id="endDate"
-                                type="date"
-                                className="w-48"
-                                value={endDate}
-                                onChange={(e) => setEndDate(e.target.value)}
-                            />
+                {/* Content - Scrollable */}
+                <div className="px-4 sm:px-6 py-4 space-y-4">
+                    {/* Date Type Selection */}
+                    <div>
+                        <Label className="text-xs sm:text-sm block mb-2 font-semibold">Date Type</Label>
+                        <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                            <label className="flex items-center gap-2 text-xs sm:text-sm">
+                                <input
+                                    type="radio"
+                                    name="dateType"
+                                    value="issued_date"
+                                    checked={dateType === "issued_date"}
+                                    onChange={(e) => setDateType(e.target.value)}
+                                    className="w-4 h-4"
+                                />
+                                Issued Date
+                            </label>
+                            <label className="flex items-center gap-2 text-xs sm:text-sm">
+                                <input
+                                    type="radio"
+                                    name="dateType"
+                                    value="expired_date"
+                                    checked={dateType === "expired_date"}
+                                    onChange={(e) => setDateType(e.target.value)}
+                                    className="w-4 h-4"
+                                />
+                                Expired Date
+                            </label>
+                            <label className="flex items-center gap-2 text-xs sm:text-sm">
+                                <input
+                                    type="radio"
+                                    name="dateType"
+                                    value="created_at"
+                                    checked={dateType === "created_at"}
+                                    onChange={(e) => setDateType(e.target.value)}
+                                    className="w-4 h-4"
+                                />
+                                Created Date
+                            </label>
+                            <label className="flex items-center gap-2 text-xs sm:text-sm">
+                                <input
+                                    type="radio"
+                                    name="dateType"
+                                    value="verification_date"
+                                    checked={dateType === "verification_date"}
+                                    onChange={(e) => setDateType(e.target.value)}
+                                    className="w-4 h-4"
+                                />
+                                Verification Date
+                            </label>
                         </div>
                     </div>
-                </div>
 
-                {/* Validation Status */}
-                <div className="mb-4">
-                    <Label className="text-sm block mb-2">Validation Status</Label>
-                    <div className="flex flex-wrap gap-3">
-                        {statuses.map((st) => (
-                            <div key={st.value} className="flex items-center space-x-2">
-                                <Checkbox
-                                    id={st.value}
-                                    checked={selectedStatus.includes(st.value)}
-                                    onCheckedChange={() => toggleStatus(st.value)}
-                                />
-                                <Label htmlFor={st.value} className="text-sm capitalize">
-                                    {st.label}
+                    {/* Date Range */}
+                    <div>
+                        <Label className="text-xs sm:text-sm mb-2 block font-semibold">Date Range</Label>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div className="flex flex-col">
+                                <Label htmlFor="startDate" className="text-xs text-gray-500 mb-1">
+                                    From
                                 </Label>
+                                <Input
+                                    id="startDate"
+                                    type="date"
+                                    className="w-full text-sm"
+                                    value={startDate}
+                                    onChange={(e) => setStartDate(e.target.value)}
+                                />
                             </div>
-                        ))}
+
+                            <div className="flex flex-col">
+                                <Label htmlFor="endDate" className="text-xs text-gray-500 mb-1">
+                                    To
+                                </Label>
+                                <Input
+                                    id="endDate"
+                                    type="date"
+                                    className="w-full text-sm"
+                                    value={endDate}
+                                    onChange={(e) => setEndDate(e.target.value)}
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Validation Status */}
+                    <div>
+                        <Label className="text-xs sm:text-sm block mb-2 font-semibold">Validation Status</Label>
+                        <div className="flex flex-wrap gap-3">
+                            {statuses.map((st) => (
+                                <div key={st.value} className="flex items-center space-x-2">
+                                    <Checkbox
+                                        id={st.value}
+                                        checked={selectedStatus.includes(st.value)}
+                                        onCheckedChange={() => toggleStatus(st.value)}
+                                    />
+                                    <Label htmlFor={st.value} className="text-xs sm:text-sm capitalize cursor-pointer">
+                                        {st.label}
+                                    </Label>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Certificate Status */}
+                    <div>
+                        <Label className="text-xs sm:text-sm block mb-2 font-semibold">Certificate Status</Label>
+                        <div className="flex flex-wrap gap-3">
+                            {certStatuses.map((st) => (
+                                <div key={st.value} className="flex items-center space-x-2">
+                                    <Checkbox
+                                        id={st.value}
+                                        checked={selectedCertStatus.includes(st.value)}
+                                        onCheckedChange={() => toggleCertStatus(st.value)}
+                                    />
+                                    <Label htmlFor={st.value} className="text-xs sm:text-sm capitalize cursor-pointer">
+                                        {st.label}
+                                    </Label>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
 
-                {/* Certificate Status */}
-                <div className="mb-5">
-                    <Label className="text-sm block mb-2">Certificate Status</Label>
-                    <div className="flex flex-wrap gap-3">
-                        {certStatuses.map((st) => (
-                            <div key={st.value} className="flex items-center space-x-2">
-                                <Checkbox
-                                    id={st.value}
-                                    checked={selectedCertStatus.includes(st.value)}
-                                    onCheckedChange={() => toggleCertStatus(st.value)}
-                                />
-                                <Label htmlFor={st.value} className="text-sm capitalize">
-                                    {st.label}
-                                </Label>
-                            </div>
-                        ))}
+                {/* Footer - Sticky */}
+                <div className="sticky bottom-0 bg-white border-t px-4 sm:px-6 py-3 sm:py-4">
+                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 sm:justify-between sm:items-center">
+                        <Button
+                            onClick={() => handleExport("all")}
+                            variant="mainBlue"
+                            className="w-full sm:w-auto text-sm"
+                        >
+                            Export All
+                        </Button>
+
+                        <Button
+                            variant="outline"
+                            onClick={clearFilters}
+                            className="w-full sm:w-auto text-sm"
+                        >
+                            Clear Filter
+                        </Button>
+
+                        <Button
+                            onClick={() => handleExport("custom")}
+                            variant={hasFilters ? "orange" : "outline"}
+                            disabled={!hasFilters}
+                            className="w-full sm:w-auto text-sm"
+                        >
+                            Export Custom
+                        </Button>
                     </div>
                 </div>
-
-                {/* Buttons */}
-                <div className="flex justify-between items-center mt-6">
-                    <Button onClick={() => handleExport("all")} variant="mainBlue">
-                        Export All
-                    </Button>
-
-                    <Button
-                        variant="outline"
-                        onClick={() => {
-                            setSelectedStatus([]);
-                            setSelectedCertStatus([]);
-                            setDateType("issued_date");
-                            setStartDate("");
-                            setEndDate("");
-                        }}
-                    >
-                        Clear Filter
-                    </Button>
-
-                    <Button
-                        onClick={() => handleExport("custom")}
-                        variant={
-                            (startDate && endDate) ||
-                                selectedStatus.length > 0 ||
-                                selectedCertStatus.length > 0
-                                ? "orange"
-                                : "outline"
-                        }
-                        disabled={
-                            !(
-                                (startDate && endDate) ||
-                                selectedStatus.length > 0 ||
-                                selectedCertStatus.length > 0
-                            )
-                        }
-                    >
-                        Export Custom
-                    </Button>
-                </div>
-
-                <button
-                    onClick={onClose}
-                    className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
-                >
-                    ✕
-                </button>
             </div>
         </div>
     );
