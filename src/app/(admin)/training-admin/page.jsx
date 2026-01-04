@@ -1,8 +1,9 @@
+// efortech_edu\src\app\(admin)\training-admin\page.jsx
 "use client";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { ArrowRight, Plus } from "lucide-react";
+import { ArrowRight, Plus, Download } from "lucide-react";
 import { FaSearch } from "react-icons/fa";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,6 +23,7 @@ import {
 } from "@/components/ui/select";
 import { NotFound } from "@/components/ui/ErrorPage";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import ExportTrainingDialog from "@/components/admin/ExportTrainingDialog";
 
 export default function TrainingPage() {
   const router = useRouter();
@@ -32,6 +34,7 @@ export default function TrainingPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
   const [isLoading, setIsLoading] = useState(true);
+  const [exportDialogOpen, setExportDialogOpen] = useState(false);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -147,6 +150,14 @@ export default function TrainingPage() {
                   <SelectItem value="Oldest">Oldest</SelectItem>
                 </SelectContent>
               </Select>
+
+              <Button
+                variant="orange"
+                onClick={() => setExportDialogOpen(true)}
+                className="flex items-center"
+              >
+                <Download size={20} className="mr-2" /> Export
+              </Button>
 
               <Button
                 variant="mainBlue"
@@ -305,6 +316,11 @@ export default function TrainingPage() {
           } of {trainingData.length} training data
         </p>
       </div>
+
+      <ExportTrainingDialog
+        open={exportDialogOpen}
+        onClose={() => setExportDialogOpen(false)}
+      />
     </ProtectedRoute>
   );
 }
