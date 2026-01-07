@@ -66,7 +66,9 @@ export default function TrainingPage() {
 
           // Make API call with constructed query params
           const res = await fetch(
-            `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/training?${params.toString()}`
+            `${
+              process.env.NEXT_PUBLIC_API_BASE_URL
+            }/api/training?${params.toString()}`
           );
 
           const data = await res.json();
@@ -111,8 +113,8 @@ export default function TrainingPage() {
 
   return (
     <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
-      <div className="flex flex-col justify-start w-full max-w-screen mx-auto min-h-screen pb-12 px-2 sm:px-4 md:px-8">
-        <div className="w-full flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 py-8 px-4">
+      <div className="flex flex-col justify-start w-full max-w-7xl mx-auto min-h-screen pb-12 px-4 sm:px-6 md:px-8">
+        <div className="w-full flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 py-8">
           <h2 className="text-2xl font-bold">Training & Courses</h2>
           <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto items-stretch sm:items-center">
             <div className="relative w-full sm:w-auto">
@@ -163,7 +165,7 @@ export default function TrainingPage() {
             <LoadingSpinner />
           </div>
         )}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 px-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {paginatedData.length > 0 ? (
             paginatedData.map((item) => {
               const isArchived = item.status !== 1; // 1 = Active, sesuai backend
@@ -176,15 +178,18 @@ export default function TrainingPage() {
 
               const fee = parseFloat(item.training_fees);
               const discount = parseFloat(item.discount);
-              const finalPrice = item.final_price || (fee - (discount / 100) * fee);
+              const finalPrice =
+                item.final_price || fee - (discount / 100) * fee;
 
               return (
                 <div
                   key={item.training_id}
-                  className={`border shadow-lg rounded-2xl overflow-hidden flex flex-col cursor-pointer w-full h-[430px] max-w-sm ${cardClass}`}
-                  onClick={() => router.push(`/training-admin/${item.training_id}`)}
+                  className={`border shadow-lg rounded-2xl overflow-hidden flex flex-col cursor-pointer w-full max-w-sm transition-all duration-300 hover:shadow-xl ${cardClass}`}
+                  onClick={() =>
+                    router.push(`/training-admin/${item.training_id}`)
+                  }
                 >
-                  <div className="h-[200px] w-full relative">
+                  <div className="w-full aspect-[16/9] relative">
                     {discount > 0 && (
                       <div className="absolute top-2 right-2 bg-red-500 text-white text-[11px] font-semibold px-2 py-[2px] rounded-full shadow-md animate-bounce">
                         🔥 {discount}% OFF
@@ -197,17 +202,17 @@ export default function TrainingPage() {
                     />
                   </div>
 
-                  <div className="flex flex-col justify-between flex-grow p-4">
-                    <div>
-                      <h2 className="text-lg font-semibold mb-1 line-clamp-2">
+                  <div className="flex flex-col justify-between flex-grow p-5">
+                    <div className="mb-4">
+                      <h2 className="text-lg font-semibold mb-2 line-clamp-2">
                         {item.training_name}
                       </h2>
-                      <p className="text-sm text-gray-600 mb-3 line-clamp-4">
+                      <p className="text-sm text-gray-600 mb-3 line-clamp-3">
                         {item.description}
                       </p>
                     </div>
-                    <div className="flex items-center justify-between border-t pt-3">
-                      <div className="flex gap-2 items-center">
+                    <div className="flex items-center justify-between border-t pt-4">
+                      <div className="flex gap-2 items-center flex-wrap">
                         <span
                           className={`px-3 py-1 rounded-lg font-semibold text-sm border ${badgeClass}`}
                         >
@@ -230,9 +235,7 @@ export default function TrainingPage() {
                         )}
                       </div>
 
-                      <ArrowRight
-                        className="text-gray-600 hover:text-mainOrange transition-all"
-                      />
+                      <ArrowRight className="text-gray-600 hover:text-mainOrange transition-all flex-shrink-0" />
                     </div>
                   </div>
                 </div>
@@ -250,7 +253,6 @@ export default function TrainingPage() {
               />
             </div>
           )}
-
         </div>
 
         {totalPages > 1 && (
@@ -264,30 +266,36 @@ export default function TrainingPage() {
 
               {(() => {
                 const maxVisible = 5;
-                let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+                let startPage = Math.max(
+                  1,
+                  currentPage - Math.floor(maxVisible / 2)
+                );
                 let endPage = Math.min(totalPages, startPage + maxVisible - 1);
 
                 if (endPage - startPage < maxVisible - 1) {
                   startPage = Math.max(1, endPage - maxVisible + 1);
                 }
 
-                return Array.from({ length: endPage - startPage + 1 }, (_, i) => {
-                  const pageNumber = startPage + i;
-                  return (
-                    <PaginationItem key={pageNumber}>
-                      <PaginationLink
-                        href="#"
-                        isActive={currentPage === pageNumber}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handlePageChange(pageNumber);
-                        }}
-                      >
-                        {pageNumber}
-                      </PaginationLink>
-                    </PaginationItem>
-                  );
-                });
+                return Array.from(
+                  { length: endPage - startPage + 1 },
+                  (_, i) => {
+                    const pageNumber = startPage + i;
+                    return (
+                      <PaginationItem key={pageNumber}>
+                        <PaginationLink
+                          href="#"
+                          isActive={currentPage === pageNumber}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handlePageChange(pageNumber);
+                          }}
+                        >
+                          {pageNumber}
+                        </PaginationLink>
+                      </PaginationItem>
+                    );
+                  }
+                );
               })()}
 
               <PaginationItem>
@@ -299,10 +307,14 @@ export default function TrainingPage() {
           </Pagination>
         )}
         <p className="text-sm text-muted-foreground mt-2 flex justify-center items-center">
-          Showing {trainingData.length > 0
-            ? `${(currentPage - 1) * itemsPerPage + 1} - ${Math.min(currentPage * itemsPerPage, trainingData.length)}`
-            : 0
-          } of {trainingData.length} training data
+          Showing{" "}
+          {trainingData.length > 0
+            ? `${(currentPage - 1) * itemsPerPage + 1} - ${Math.min(
+                currentPage * itemsPerPage,
+                trainingData.length
+              )}`
+            : 0}{" "}
+          of {trainingData.length} training data
         </p>
       </div>
     </ProtectedRoute>

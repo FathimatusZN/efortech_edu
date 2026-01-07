@@ -174,7 +174,7 @@ export default function TrainingDetailPage() {
           <img
             src={training.images[0] || "/fallback.jpg"}
             alt={training.training_name}
-            className="w-full h-72 sm:h-80 md:h-[380px] object-cover rounded-xl"
+            className="w-full aspect-[16/9] object-cover rounded-xl"
           />
 
           <div className="absolute inset-x-0 bottom-[15px] flex justify-center px-4 max-h-50">
