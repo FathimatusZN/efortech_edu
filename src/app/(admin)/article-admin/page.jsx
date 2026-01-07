@@ -1,3 +1,4 @@
+// efortech_edu\src\app\(admin)\article-admin\page.jsx
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -5,6 +6,8 @@ import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import ArticleCardAdmin from "@/components/admin/ArticleCardAdmin";
 import { NotFound } from "@/components/ui/ErrorPage";
 import { FaSearch, FaPlus } from "react-icons/fa";
+import { Download } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Pagination,
   PaginationContent,
@@ -21,6 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import ExportArticlesDialog from "@/components/admin/ExportArticlesDialog";
 
 const categoryOptions = [
   { id: 0, label: "All" },
@@ -38,6 +42,7 @@ const ArticleAdminPage = () => {
   const [page, setPage] = useState(1);
   const itemsPerPage = PAGE_SIZE; // 6 articles per page
   const [isLoading, setIsLoading] = useState(true);
+  const [exportDialogOpen, setExportDialogOpen] = useState(false);
 
   useEffect(() => {
     fetchAllArticles();
@@ -78,8 +83,7 @@ const ArticleAdminPage = () => {
     }
     try {
       const response = await fetch(
-        `${
-          process.env.NEXT_PUBLIC_API_BASE_URL
+        `${process.env.NEXT_PUBLIC_API_BASE_URL
         }/api/articles/search?query=${encodeURIComponent(searchQuery)}`
       );
       const data = await response.json();
@@ -114,10 +118,10 @@ const ArticleAdminPage = () => {
 
   const filteredArticles = Array.isArray(articles)
     ? articles.filter((article) => {
-        return (
-          selectedCategory === "All" || article.category === selectedCategoryId
-        );
-      })
+      return (
+        selectedCategory === "All" || article.category === selectedCategoryId
+      );
+    })
     : [];
 
   const totalPages = Math.ceil(filteredArticles.length / PAGE_SIZE);
@@ -168,6 +172,13 @@ const ArticleAdminPage = () => {
               </SelectContent>
             </Select>
 
+            <Button
+              variant="orange"
+              onClick={() => setExportDialogOpen(true)}
+              className="flex items-center"            >
+              <Download size={20} className="mr-2" /> Export
+            </Button>
+
             <button
               className="flex items-center gap-2 bg-lightBlue text-white px-4 py-2 sm:px-6 sm:py-2 rounded-lg shadow hover:bg-mainBlue"
               onClick={() => (window.location.href = "/add-article")}
@@ -203,7 +214,7 @@ const ArticleAdminPage = () => {
 
               {paginatedArticles.length === 0 && (
                 <NotFound
-                  message="We couldn’t find any articles matching your search or category. Try different keywords."
+                  message="We couldn't find any articles matching your search or category. Try different keywords."
                   buttons={[]}
                 />
               )}
@@ -273,9 +284,9 @@ const ArticleAdminPage = () => {
                 Showing{" "}
                 {filteredArticles.length > 0
                   ? `${(page - 1) * itemsPerPage + 1} - ${Math.min(
-                      page * itemsPerPage,
-                      filteredArticles.length
-                    )}`
+                    page * itemsPerPage,
+                    filteredArticles.length
+                  )}`
                   : 0}{" "}
                 of {filteredArticles.length} article
                 {filteredArticles.length !== 1 && "s"}
@@ -284,6 +295,11 @@ const ArticleAdminPage = () => {
           )}
         </div>
       </div>
+
+      <ExportArticlesDialog
+        open={exportDialogOpen}
+        onClose={() => setExportDialogOpen(false)}
+      />
     </ProtectedRoute>
   );
 };

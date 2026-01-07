@@ -1,3 +1,4 @@
+// efortech_edu\src\components\admin\ExportOnProgressDialog.jsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -64,7 +65,6 @@ export default function ExportOnProgressDialog({ open, onClose }) {
 
       let res;
       if (type === "all") {
-
         res = await fetch(url, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -125,188 +125,199 @@ export default function ExportOnProgressDialog({ open, onClose }) {
       URL.revokeObjectURL(link.href);
 
       toast.success("Training data exported successfully.");
+      onClose();
     } catch (error) {
       console.error(error);
       toast.error("Export failed. Please try again.");
     }
   };
 
+  const clearFilters = () => {
+    setSelectedTraining("");
+    setSelectedStatus([]);
+    setDateType("");
+    setStartDate("");
+    setEndDate("");
+    setAdvantechCert("");
+  };
+
+  const hasFilters =
+    (startDate && endDate) ||
+    selectedStatus.length > 0 ||
+    selectedTraining ||
+    advantechCert;
+
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
-      <div className="relative bg-white rounded-lg p-6 w-[460px] shadow-lg">
-        <h2 className="text-xl font-bold mb-1">Export On Progress</h2>
-        <p className="text-sm text-gray-500 mb-4">
-          Export training registration data that are currently in progress.
-        </p>
-
-        {/* Date Type Selection */}
-        <div className="mb-4">
-          <Label className="text-sm block mb-2">Date Type</Label>
-          <div className="flex gap-4">
-            <label className="text-xs flex items-center gap-2">
-              <input
-                type="radio"
-                name="dateType"
-                value="registration"
-                checked={dateType === "registration"}
-                onChange={(e) => setDateType(e.target.value)}
-              />
-              Registration Date
-            </label>
-            <label className="text-xs flex items-center gap-2">
-              <input
-                type="radio"
-                name="dateType"
-                value="training"
-                checked={dateType === "training"}
-                onChange={(e) => setDateType(e.target.value)}
-              />
-              Training Date
-            </label>
-            <label className="text-xs flex items-center gap-2">
-              <input
-                type="radio"
-                name="dateType"
-                value="completed"
-                checked={dateType === "completed"}
-                onChange={(e) => setDateType(e.target.value)}
-              />
-              Completed Date
-            </label>
-          </div>
+    <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50 p-4">
+      <div className="relative bg-white rounded-lg w-full max-w-[800px] max-h-[90vh] overflow-y-auto shadow-lg">
+        {/* Header - Sticky */}
+        <div className="sticky top-0 bg-white z-10 px-4 sm:px-6 pt-4 sm:pt-6 pb-3 border-b">
+          <h2 className="text-lg sm:text-xl font-bold mb-1">Export On Progress</h2>
+          <p className="text-xs sm:text-sm text-gray-500">
+            Export training registration data that are currently in progress.
+          </p>
+          <button
+            onClick={onClose}
+            className="absolute top-3 sm:top-4 right-3 sm:right-4 text-gray-500 hover:text-gray-700 text-xl"
+          >
+            ✕
+          </button>
         </div>
 
-        {/* Date Range */}
-        <div className="mb-4">
-          <Label className="text-sm mb-2 block">Date Range</Label>
-          <div className="flex items-center gap-3">
-            <div className="flex flex-col">
-              <Label htmlFor="startDate" className="text-xs text-gray-500 mb-1">
-                From
-              </Label>
-              <Input
-                id="startDate"
-                type="date"
-                className="w-48"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-              />
-            </div>
-
-            <div className="flex flex-col">
-              <Label htmlFor="endDate" className="text-xs text-gray-500 mb-1">
-                To
-              </Label>
-              <Input
-                id="endDate"
-                type="date"
-                className="w-48"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Status */}
-        <div className="mb-4">
-          <Label className="text-sm block mb-2">Status Attendance</Label>
-          <div className="flex flex-wrap gap-3">
-            {statuses.map((st) => (
-              <div key={st.value} className="flex items-center space-x-2">
-                <Checkbox
-                  id={st.value}
-                  checked={selectedStatus.includes(st.value)}
-                  onCheckedChange={() => toggleStatus(st.value)}
+        {/* Content - Scrollable */}
+        <div className="px-4 sm:px-6 py-4 space-y-4">
+          {/* Date Type Selection */}
+          <div>
+            <Label className="text-xs sm:text-sm block mb-2 font-semibold">Date Type</Label>
+            <div className="flex flex-wrap gap-2 sm:gap-3">
+              <label className="flex items-center gap-2 text-xs sm:text-sm">
+                <input
+                  type="radio"
+                  name="dateType"
+                  value="registration"
+                  checked={dateType === "registration"}
+                  onChange={(e) => setDateType(e.target.value)}
+                  className="w-4 h-4"
                 />
-                <Label htmlFor={st.value} className="text-sm capitalize">
-                  {st.label}
+                Registration Date
+              </label>
+              <label className="flex items-center gap-2 text-xs sm:text-sm">
+                <input
+                  type="radio"
+                  name="dateType"
+                  value="training"
+                  checked={dateType === "training"}
+                  onChange={(e) => setDateType(e.target.value)}
+                  className="w-4 h-4"
+                />
+                Training Date
+              </label>
+              <label className="flex items-center gap-2 text-xs sm:text-sm">
+                <input
+                  type="radio"
+                  name="dateType"
+                  value="completed"
+                  checked={dateType === "completed"}
+                  onChange={(e) => setDateType(e.target.value)}
+                  className="w-4 h-4"
+                />
+                Completed Date
+              </label>
+            </div>
+          </div>
+
+          {/* Date Range */}
+          <div>
+            <Label className="text-xs sm:text-sm mb-2 block font-semibold">Date Range</Label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="flex flex-col">
+                <Label htmlFor="startDate" className="text-xs text-gray-500 mb-1">
+                  From
                 </Label>
+                <Input
+                  id="startDate"
+                  type="date"
+                  className="w-full text-sm"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                />
               </div>
-            ))}
+
+              <div className="flex flex-col">
+                <Label htmlFor="endDate" className="text-xs text-gray-500 mb-1">
+                  To
+                </Label>
+                <Input
+                  id="endDate"
+                  type="date"
+                  className="w-full text-sm"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Status */}
+          <div>
+            <Label className="text-xs sm:text-sm block mb-2 font-semibold">Status Attendance</Label>
+            <div className="flex flex-wrap gap-3">
+              {statuses.map((st) => (
+                <div key={st.value} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={st.value}
+                    checked={selectedStatus.includes(st.value)}
+                    onCheckedChange={() => toggleStatus(st.value)}
+                  />
+                  <Label htmlFor={st.value} className="text-xs sm:text-sm capitalize cursor-pointer">
+                    {st.label}
+                  </Label>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Training Dropdown */}
+          <div>
+            <Label className="text-xs sm:text-sm block mb-2 font-semibold">Training</Label>
+            <Select value={selectedTraining} onValueChange={setSelectedTraining}>
+              <SelectTrigger className="w-full text-sm">
+                <SelectValue placeholder="Select a training" />
+              </SelectTrigger>
+              <SelectContent>
+                {trainingList.map((t) => (
+                  <SelectItem key={t.training_id} value={t.training_id}>
+                    {t.training_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Advantech Certificate */}
+          <div>
+            <Label className="text-xs sm:text-sm block mb-2 font-semibold">Advantech Certificate</Label>
+            <Select value={advantechCert} onValueChange={setAdvantechCert}>
+              <SelectTrigger className="w-full text-sm">
+                <SelectValue placeholder="Select certificate availability" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value='true'>Yes</SelectItem>
+                <SelectItem value='false'>No</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
-        {/* Training Dropdown */}
-        <div className="mb-5">
-          <Label className="text-sm block mb-2">Training</Label>
-          <Select value={selectedTraining} onValueChange={setSelectedTraining}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select a training" />
-            </SelectTrigger>
-            <SelectContent>
-              {trainingList.map((t) => (
-                <SelectItem key={t.training_id} value={t.training_id}>
-                  {t.training_name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        {/* Footer - Sticky */}
+        <div className="sticky bottom-0 bg-white border-t px-4 sm:px-6 py-3 sm:py-4">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 sm:justify-between sm:items-center">
+            <Button
+              onClick={() => handleExport("all")}
+              variant="mainBlue"
+              className="w-full sm:w-auto text-sm"
+            >
+              Export All
+            </Button>
+
+            <Button
+              variant="outline"
+              onClick={clearFilters}
+              className="w-full sm:w-auto text-sm"
+            >
+              Clear Filter
+            </Button>
+
+            <Button
+              onClick={() => handleExport("custom")}
+              variant={hasFilters ? "orange" : "outline"}
+              disabled={!hasFilters}
+              className="w-full sm:w-auto text-sm"
+            >
+              Export Custom
+            </Button>
+          </div>
         </div>
-
-        {/* Advantech Certificate */}
-        <div className="mb-5">
-          <Label className="text-sm block mb-2">Advantech Certificate</Label>
-          <Select value={advantechCert} onValueChange={setAdvantechCert}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select certificate availability" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value='true'>Yes</SelectItem>
-              <SelectItem value='false'>No</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Buttons */}
-        <div className="flex justify-between items-center mt-6">
-          <Button onClick={() => handleExport("all")} variant="mainBlue">
-            Export All
-          </Button>
-
-          <Button
-            variant="outline"
-            onClick={() => {
-              setSelectedTraining("");
-              setSelectedStatus([]);
-              setDateType("");
-              setStartDate("");
-              setEndDate("");
-              setAdvantechCert("");
-            }}
-          >
-            Clear Filter
-          </Button>
-
-          <Button
-            onClick={() => handleExport("custom")}
-            variant={
-              (startDate && endDate) ||
-                selectedStatus.length > 0 ||
-                selectedTraining ||
-                advantechCert
-                ? "orange"
-                : "outline"
-            }
-            disabled={
-              !(
-                (startDate && endDate) ||
-                selectedStatus.length > 0 ||
-                selectedTraining ||
-                advantechCert
-              )
-            }
-          >
-            Export Custom
-          </Button>
-        </div>
-
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
-        >
-          ✕
-        </button>
       </div>
     </div>
   );

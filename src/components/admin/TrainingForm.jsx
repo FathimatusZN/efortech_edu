@@ -184,6 +184,7 @@ export default function TrainingForm({
         <label className="block text-sm font-semibold mb-1">
           Available Date
         </label>
+        <p className="text-xs text-sky-600">Text, adjust as needed (can be a date and time)</p>
         <input
           type="text"
           value={available_date}

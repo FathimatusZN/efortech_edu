@@ -153,17 +153,17 @@ const ImageUploader = ({ maxImages = 3, images, setImages, onImageUpload, upload
     return (
         <div className="w-full">
             <label className="font-semibold">
-                Image <span className="text-red-500">*</span>
+                Image <span className="text-red-500">*</span> <p className="font-extralight mb-1 text-xs">(Landscape 16:9 Image ratio)</p>
             </label>
             <div className="flex gap-4 flex-wrap mt-1.5">
                 {images.map((image, index) => (
                     <div key={index} className="relative w-[30%]">
-                        <label className="cursor-pointer flex flex-col items-center justify-center outline-1 outline-dashed outline-mainBlue rounded-md w-full h-32">
+                        <label className="cursor-pointer relative flex items-center justify-center outline-1 outline-dashed outline-mainBlue rounded-md w-full aspect-video overflow-hidden">
                             {image ? (
                                 <img
                                     src={image}
                                     alt="Uploaded"
-                                    className="w-full h-full object-cover rounded-md"
+                                    className="absolute inset-0 w-full h-full object-contain rounded-md"
                                     onClick={() => setPreviewImage(image)}
                                 />
                             ) : (
@@ -197,7 +197,7 @@ const ImageUploader = ({ maxImages = 3, images, setImages, onImageUpload, upload
 
                 {images.length < maxImages && (
                     <div
-                        className="w-[30%] flex flex-col items-center justify-center p-4 cursor-pointer outline-1 outline-dashed outline-mainBlue rounded-md h-32"
+                        className="w-[30%] aspect-video flex flex-col items-center justify-center p-4 cursor-pointer outline-1 outline-dashed outline-mainBlue rounded-md"
                         onClick={addImageSlot}
                     >
                         <div className="bg-mainOrange text-white p-4 rounded-md">
@@ -209,24 +209,42 @@ const ImageUploader = ({ maxImages = 3, images, setImages, onImageUpload, upload
             </div>
 
             {previewImage && (
-                <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50">
-                    <div className="relative bg-white p-4 rounded-lg">
-                        <button
-                            onClick={() => setPreviewImage(null)}
-                            className="absolute top-2 right-2 bg-gray-700 text-white p-2 rounded-full hover:bg-gray-900"
-                        >
-                            <FaTimes />
-                        </button>
-                        <img src={previewImage} alt="Preview" className="max-w-[90vw] max-h-[80vh] rounded-md" />
-                        <button
-                            onClick={() => removeImage(previewImage)}
-                            className="mt-4 bg-error1 text-white px-4 py-2 rounded hover:bg-error2"
-                        >
-                            Delete Image
-                        </button>
+                <div className="fixed inset-0 z-50 bg-black/70 overflow-y-auto">
+                    <div className="relative mx-auto my-6 w-full max-w-4xl px-4">
+                        <div className="relative bg-white rounded-lg p-4 max-h-[90vh] overflow-y-auto">
+
+                            {/* Close button */}
+                            <button
+                                onClick={() => setPreviewImage(null)}
+                                className="absolute top-3 right-3 bg-gray-700 text-white p-2 rounded-full hover:bg-gray-900 z-10"
+                            >
+                                <FaTimes />
+                            </button>
+
+                            {/* Image preview */}
+                            <div className="relative w-full max-w-3xl mx-auto aspect-video bg-black rounded-md overflow-hidden">
+                                <img
+                                    src={previewImage}
+                                    alt="Preview"
+                                    className="absolute inset-0 w-full h-full object-contain"
+                                />
+                            </div>
+
+                            {/* Actions */}
+                            <div className="mt-4 flex justify-end">
+                                <button
+                                    onClick={() => removeImage(previewImage)}
+                                    className="bg-error1 text-white px-4 py-2 rounded hover:bg-error2"
+                                >
+                                    Delete Image
+                                </button>
+                            </div>
+
+                        </div>
                     </div>
                 </div>
             )}
+
         </div>
     );
 };

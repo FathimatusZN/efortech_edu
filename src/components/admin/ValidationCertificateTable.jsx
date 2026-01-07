@@ -1,3 +1,4 @@
+// efortech_edu\src\components\admin\ValidationCertificateTable.jsx
 import React, { useState } from "react";
 import {
   Table,
@@ -8,6 +9,7 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { BsCheckCircleFill, BsFillXCircleFill } from "react-icons/bs";
 import {
   Pagination,
@@ -61,6 +63,11 @@ export const ValidationCertificateTable = ({
   adminId,
   onStatusChange,
   disablePagination = false,
+  // Selection props (injected by SelectableTableWrapper or passed manually)
+  selectedRows = [],
+  onSelectRow = () => { },
+  onSelectAll = () => { },
+  selectionEnabled = false,
 }) => {
 
   const [page, setPage] = useState(1);
@@ -72,6 +79,20 @@ export const ValidationCertificateTable = ({
   const [selectedStatus, setSelectedStatus] = useState(null);
   const [selectedCertificateId, setSelectedCertificateId] = useState(null);
   const [notes, setNotes] = useState("");
+
+  // Check if all rows on current page are selected
+  const isAllSelected = selectionEnabled && paginatedData.length > 0 &&
+    paginatedData.every(item => selectedRows.includes(item.user_certificate_id));
+
+  // Check if some (but not all) rows are selected
+  const isSomeSelected = selectionEnabled &&
+    paginatedData.some(item => selectedRows.includes(item.user_certificate_id)) && !isAllSelected;
+
+  // Handle select all on current page
+  const handleSelectAll = (checked) => {
+    const currentPageIds = paginatedData.map(item => item.user_certificate_id);
+    onSelectAll(checked, currentPageIds);
+  };
 
   // Render status buttons or badge
   const renderStatusColumn = (item) => {
@@ -175,6 +196,21 @@ export const ValidationCertificateTable = ({
         <Table>
           <TableHeader>
             <TableRow>
+              {/* Checkbox column - show when selection is enabled */}
+              {selectionEnabled && (
+                <TableHead className="w-12">
+                  <Checkbox
+                    checked={
+                      isAllSelected
+                        ? true
+                        : isSomeSelected
+                          ? "indeterminate"
+                          : false
+                    }
+                    onCheckedChange={handleSelectAll}
+                  />
+                </TableHead>
+              )}
               <TableHead>Certificate Number</TableHead>
               <TableHead>Full Name</TableHead>
               <TableHead>Certificate Type</TableHead>
@@ -190,6 +226,15 @@ export const ValidationCertificateTable = ({
           <TableBody>
             {paginatedData.map((item) => (
               <TableRow key={item.user_certificate_id}>
+                {/* Checkbox cell - show when selection is enabled */}
+                {selectionEnabled && (
+                  <TableCell>
+                    <Checkbox
+                      checked={selectedRows.includes(item.user_certificate_id)}
+                      onCheckedChange={(checked) => onSelectRow(item.user_certificate_id, checked)}
+                    />
+                  </TableCell>
+                )}
                 <TableCell>{item.original_number || item.certificate_number}</TableCell>
                 <TableCell>{item.fullname}</TableCell>
                 <TableCell>{item.cert_type}</TableCell>

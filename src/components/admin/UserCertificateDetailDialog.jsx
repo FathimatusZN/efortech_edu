@@ -54,7 +54,7 @@ export const UserCertificateDetailDialog = ({ open, onClose, item, mode }) => {
           />
         </div>
 
-        {mode === "completed" && (
+        {(mode === "completed" || mode === "rejected") && (
           <div className="mt-4 space-y-2 text-sm text-gray-700">
             <table className="w-full text-sm sm:text-base text-black break-words">
               <tbody>

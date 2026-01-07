@@ -256,14 +256,12 @@ const Home = () => {
             <button
               key={index}
               onClick={() => setCurrentSlide(index)}
-              className={`w-3 h-3 rounded-full border-2 flex items-center justify-center transition-all ${
-                currentSlide === index ? "border-mainOrange" : "border-gray-400"
-              }`}
+              className={`w-3 h-3 rounded-full border-2 flex items-center justify-center transition-all ${currentSlide === index ? "border-mainOrange" : "border-gray-400"
+                }`}
             >
               <div
-                className={`w-1 h-1 rounded-full ${
-                  currentSlide === index ? "bg-mainOrange" : "bg-transparent"
-                }`}
+                className={`w-1 h-1 rounded-full ${currentSlide === index ? "bg-mainOrange" : "bg-transparent"
+                  }`}
               ></div>
             </button>
           ))}

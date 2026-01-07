@@ -44,12 +44,12 @@ export default function TrainingHistory({ userId }) {
               email,
               user_photo,
               attendance_status,
+              advantech_cert,
             } = participant;
 
             let trainingImages = [];
             let trainingIdFromReg = null;
 
-            // Ambil training_id dari registration untuk ambil gambar
             try {
               const regRes = await fetch(
                 `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/registration/${registration_id}`
@@ -83,6 +83,7 @@ export default function TrainingHistory({ userId }) {
               images: trainingImages,
               isCompleted: status === 4,
               attendanceStatus: attendance_status,
+              advantechCert: advantech_cert || [],
             };
           })
         );
@@ -127,11 +128,10 @@ export default function TrainingHistory({ userId }) {
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2 font-medium ${
-              activeTab === tab
+            className={`px-4 py-2 font-medium ${activeTab === tab
                 ? "text-mainOrange border-b-2 border-mainOrange"
                 : "text-gray-600"
-            }`}
+              }`}
           >
             {tab}
           </button>
