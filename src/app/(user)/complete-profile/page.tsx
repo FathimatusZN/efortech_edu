@@ -1,30 +1,55 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { FaUser } from "react-icons/fa";
 import imageCompression from "browser-image-compression";
 import { toast } from "react-hot-toast";
 import { useAuth } from "@/app/context/AuthContext";
 import { useProfile } from "@/app/context/ProfileContext";
+import { FaInfoCircle } from "react-icons/fa";
 
 type ProfileForm = {
   fullname: string;
   email: string;
   phone_number: string;
   institution: string;
-  gender: string; // Store as "Male", "Female", or "Default" like EditProfile
+  gender: string;
   birthdate: string;
   role: string;
   position: string;
   user_photo: string;
 };
 
+const FormField = ({
+  label,
+  children,
+  helper,
+  tooltip,
+}: {
+  label: string;
+  children: React.ReactNode;
+  helper?: string;
+  tooltip?: string;
+}) => (
+  <div className="flex flex-col gap-1">
+    <label className="flex items-center gap-1 text-sm font-medium text-gray-700">
+      {label}
+      {tooltip && (
+        <span className="text-gray-400 cursor-help" title={tooltip}>
+          <FaInfoCircle size={12} />
+        </span>
+      )}
+    </label>
+    {children}
+    {helper && <span className="text-xs text-gray-500">{helper}</span>}
+  </div>
+);
+
 export default function CompleteProfile() {
-  const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const { refetch } = useProfile();
 
   const [loading, setLoading] = useState(true);
@@ -99,10 +124,6 @@ export default function CompleteProfile() {
       </div>
     );
   }
-
-  /* =========================
-      HANDLERS
-  ========================= */
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -209,40 +230,45 @@ export default function CompleteProfile() {
     }
   };
 
-  /* =========================
-      UI
-  ========================= */
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-2xl bg-white p-8 rounded-lg shadow"
+        className="w-full max-w-2xl bg-white p-6 sm:p-8 rounded-xl shadow-sm border"
       >
-        <div className="text-center mb-6">
-          <div className="mx-auto w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center mb-3">
-            <FaUser className="text-blue-600" />
+        <div className="text-center mb-8">
+          <div className="mx-auto w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+            <FaUser className="text-blue-600 text-lg" />
           </div>
-          <h1 className="text-xl font-bold">Complete Your Profile</h1>
-          <p className="text-sm text-gray-500">
-            Please complete your profile to continue
+          <h1 className="text-xl font-semibold text-gray-900">
+            Please Complete Your Profile
+          </h1>
+          <p className="text-sm text-gray-500 mt-1">
+            This information helps us personalize your experience
           </p>
         </div>
 
         {/* Profile Image */}
-        <div className="flex flex-col items-center mb-6">
-          <img
-            src={profile.user_photo}
-            className="w-28 h-28 rounded-full object-cover border"
-            alt="profile"
-          />
+        <div className="flex flex-col items-center mb-8">
+          <div className="relative w-28 h-28 rounded-full overflow-hidden border bg-gray-100">
+            <Image
+              src={profile.user_photo}
+              alt="profile"
+              fill
+              className="object-cover"
+            />
+          </div>
+
           <button
             type="button"
-            className="text-sm text-blue-600 mt-2"
+            className="text-sm text-blue-600 mt-2 hover:underline"
             onClick={() => fileInputRef.current?.click()}
           >
             Change photo
           </button>
+
+          <span className="text-xs text-gray-400 mt-1">JPG / PNG, max 1MB</span>
+
           <input
             ref={fileInputRef}
             type="file"
@@ -253,86 +279,112 @@ export default function CompleteProfile() {
         </div>
 
         {/* Fields */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <input
-            name="fullname"
-            value={profile.fullname}
-            onChange={handleChange}
-            placeholder="Full Name"
-            className="input"
-            required
-          />
-          <input
-            name="institution"
-            value={profile.institution}
-            onChange={handleChange}
-            placeholder="Institution"
-            className="input"
-          />
-          <input
-            value={profile.email}
-            readOnly
-            className="input bg-gray-100"
-            placeholder="Email"
-          />
-          <input
-            name="phone_number"
-            value={profile.phone_number}
-            onChange={handleChange}
-            placeholder="Phone Number"
-            className="input"
-            required
-          />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <FormField label="Full Name">
+            <input
+              name="fullname"
+              value={profile.fullname}
+              onChange={handleChange}
+              placeholder="Your full name"
+              className="input"
+              required
+            />
+          </FormField>
 
-          <select
-            name="gender"
-            value={profile.gender}
-            onChange={handleChange}
-            className="input"
+          <FormField label="Email Address">
+            <input
+              value={profile.email}
+              readOnly
+              className="input bg-gray-100 cursor-not-allowed"
+            />
+          </FormField>
+
+          <FormField label="Institution">
+            <input
+              name="institution"
+              value={profile.institution}
+              onChange={handleChange}
+              placeholder="School / University / Company"
+              className="input"
+            />
+          </FormField>
+
+          <FormField label="Phone Number">
+            <input
+              name="phone_number"
+              value={profile.phone_number}
+              onChange={handleChange}
+              placeholder="+62xxxxxxxxxx"
+              className="input"
+              required
+            />
+          </FormField>
+
+          <FormField label="Gender">
+            <select
+              name="gender"
+              value={profile.gender}
+              onChange={handleChange}
+              className="input"
+            >
+              <option value="Default">Select gender</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+            </select>
+          </FormField>
+
+          <FormField label="Birthdate">
+            <input
+              type="date"
+              name="birthdate"
+              value={profile.birthdate}
+              onChange={handleChange}
+              className="input"
+            />
+          </FormField>
+
+          <FormField label="Role">
+            <select
+              name="role"
+              value={profile.role}
+              onChange={handleChange}
+              className="input"
+              required
+            >
+              <option value="">Select role</option>
+              <option value="1">Teacher / Lecturer</option>
+              <option value="2">Student (School)</option>
+              <option value="3">University Student</option>
+              <option value="4">Professional</option>
+              <option value="5">Others</option>
+            </select>
+          </FormField>
+
+          <FormField
+            label="Position"
+            tooltip={`Example:
+Marketing Manager
+Software Engineer
+Head of Electrical Engineering Study Program
+Dean of Faculty of Engineering
+Industrial Engineering Student`}
           >
-            <option value="Default">Select Gender</option>
-            <option value="Male">Male</option>
-            <option value="Female">Female</option>
-          </select>
-
-          <input
-            type="date"
-            name="birthdate"
-            value={profile.birthdate}
-            onChange={handleChange}
-            className="input"
-          />
-
-          <select
-            name="role"
-            value={profile.role}
-            onChange={handleChange}
-            className="input"
-            required
-          >
-            <option value="">Select Role</option>
-            <option value="1">Teacher / Lecturer</option>
-            <option value="2">Student (School)</option>
-            <option value="3">University Student</option>
-            <option value="4">Professional</option>
-            <option value="5">Others</option>
-          </select>
-
-          <input
-            name="position"
-            value={profile.position}
-            onChange={handleChange}
-            placeholder="Position"
-            className="input"
-            required
-          />
+            <input
+              name="position"
+              value={profile.position}
+              onChange={handleChange}
+              placeholder="e.g. Frontend Developer"
+              className="input"
+              required
+            />
+          </FormField>
         </div>
 
         <button
           disabled={submitting}
-          className="mt-6 w-full bg-blue-600 text-white py-2.5 rounded disabled:opacity-50"
+          className="mt-8 w-full max-w-[400px] bg-mainBlue hover:bg-lightBlue text-white py-3 rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed items-center justify-center flex mx-auto"
         >
-          {submitting ? "Saving..." : "Complete Profile"}
+          {submitting ? "Saving profile..." : "Complete Profile"}
         </button>
       </form>
     </div>
