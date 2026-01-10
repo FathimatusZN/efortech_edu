@@ -391,9 +391,16 @@ const TrainingDetail = () => {
             <div className="flex flex-col sm:flex-row gap-4">
               <button
                 onClick={handleEnrollClick}
-                className="flex-1 px-8 py-3 bg-mainOrange text-white font-bold rounded-lg hover:bg-orange-700 transition-all shadow-md hover:shadow-lg active:scale-95"
+                disabled={trainingData.status === 2}
+                className={`flex-1 px-8 py-3 font-bold rounded-lg transition-all ${
+                  trainingData.status === 2
+                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    : "bg-mainOrange text-white hover:bg-orange-700 shadow-md hover:shadow-lg active:scale-95"
+                }`}
               >
-                Enroll Now
+                {trainingData.status === 2
+                  ? "Training No Longer Available"
+                  : "Enroll Now"}
               </button>
 
               <button
