@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { AuthProvider } from "@/app/context/AuthContext";
+import { ProfileProvider } from "@/app/context/ProfileContext";
 import NavbarWrapper from "@/components/layout/NavbarWrapper";
 import FooterWrapper from "@/components/layout/FooterWrapper";
 import { Toaster } from "react-hot-toast";
@@ -32,19 +33,21 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <AuthProvider>
-      <SessionExpiredDialog />
-      <html lang="en" className="h-full">
-        <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}
-        >
-          <RouteLoader />
-          <Toaster position="bottom-right" reverseOrder={false} />
-          <NavbarWrapper />
-          <main className="flex-grow">{children}</main>
-          <FooterWrapper />
-        </body>
-      </html>
-    </AuthProvider>
+    <html lang="en" className="h-full">
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}
+      >
+        <AuthProvider>
+          <ProfileProvider>
+            <SessionExpiredDialog />
+            <RouteLoader />
+            <Toaster position="bottom-right" reverseOrder={false} />
+            <NavbarWrapper />
+            <main className="flex-grow">{children}</main>
+            <FooterWrapper />
+          </ProfileProvider>
+        </AuthProvider>
+      </body>
+    </html>
   );
 }

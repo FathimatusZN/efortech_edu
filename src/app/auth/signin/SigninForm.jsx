@@ -37,15 +37,8 @@ const SigninForm = () => {
     setLoading(true);
     try {
       await signInWithPopup(auth, provider);
-
-      // Redirect sesuai role
-      const role = localStorage.getItem("role");
-      router.push(
-        role === "admin" || role === "superadmin" ? "/dashboard" : "/home"
-      );
     } catch (err) {
       console.error("Google login error:", err);
-    } finally {
       setLoading(false);
     }
   };
@@ -76,16 +69,6 @@ const SigninForm = () => {
 
     try {
       await login(email, password);
-
-      if (redirect) {
-        router.push(redirect);
-      } else {
-        // Ambil user dari sessionStorage
-        const role = localStorage.getItem("role");
-        router.push(
-          role === "admin" || role === "superadmin" ? "/dashboard" : "/home"
-        );
-      }
     } catch (err) {
       // Tangani error Firebase
       if (err.message.includes("auth/invalid-credential")) {
@@ -93,7 +76,6 @@ const SigninForm = () => {
       } else {
         setPasswordError("An error occurred. Please try again.");
       }
-    } finally {
       setLoading(false);
     }
   };
