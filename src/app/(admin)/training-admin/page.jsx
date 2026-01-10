@@ -32,33 +32,28 @@ export default function TrainingPage() {
   const [sortOrder, setSortOrder] = useState("Latest");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 6;
+  const itemsPerPage = 24;
   const [isLoading, setIsLoading] = useState(true);
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
 
   useEffect(() => {
     setCurrentPage(1);
-    // Setup a delay to debounce the search query input
     const delayDebounce = setTimeout(() => {
       const fetchTrainings = async () => {
         setIsLoading(true);
         try {
-          // Build query params based on current filter/sort/search state
           const params = new URLSearchParams();
 
-          // Filter by status (convert to backend expected value)
           if (filterStatus !== "All") {
             params.append("status", filterStatus === "Active" ? "1" : "2");
           } else {
             params.append("status", "all");
           }
 
-          // Add search query if it's not empty
           if (searchQuery) {
             params.append("search", searchQuery);
           }
 
-          // Add sort params
           if (sortOrder === "Latest") {
             params.append("sort_by", "created_date");
             params.append("sort_order", "desc");
@@ -67,16 +62,12 @@ export default function TrainingPage() {
             params.append("sort_order", "asc");
           }
 
-          // Make API call with constructed query params
           const res = await fetch(
-            `${
-              process.env.NEXT_PUBLIC_API_BASE_URL
-            }/api/training?${params.toString()}`
+            `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/training?${params.toString()}`
           );
 
           const data = await res.json();
 
-          // Update state with fetched data
           if (res.ok) {
             setTrainingData(data.data);
           }
@@ -87,13 +78,11 @@ export default function TrainingPage() {
         }
       };
 
-      // Call the fetch function after debounce delay
       fetchTrainings();
-    }, 500); // Wait for 500ms before calling API (debounce)
+    }, 500);
 
-    // Clear timeout if any of the dependencies change before the delay completes
     return () => clearTimeout(delayDebounce);
-  }, [filterStatus, sortOrder, searchQuery]); // Rerun effect when filters or search change
+  }, [filterStatus, sortOrder, searchQuery]);
 
   const totalPages = Math.ceil(trainingData.length / itemsPerPage);
   const paginatedData = trainingData.slice(
@@ -116,8 +105,8 @@ export default function TrainingPage() {
 
   return (
     <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
-      <div className="flex flex-col justify-start w-full max-w-7xl mx-auto min-h-screen pb-12 px-4 sm:px-6 md:px-8">
-        <div className="w-full flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 py-8">
+      <div className="flex flex-col justify-start w-full max-w-screen mx-auto min-h-screen pb-12 px-2 sm:px-4 md:px-8">
+        <div className="w-full flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 py-8 px-4">
           <h2 className="text-2xl font-bold">Training & Courses</h2>
           <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto items-stretch sm:items-center">
             <div className="relative w-full sm:w-auto">
@@ -176,10 +165,10 @@ export default function TrainingPage() {
             <LoadingSpinner />
           </div>
         )}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 px-4">
           {paginatedData.length > 0 ? (
             paginatedData.map((item) => {
-              const isArchived = item.status !== 1; // 1 = Active, sesuai backend
+              const isArchived = item.status !== 1;
               const badgeClass = isArchived
                 ? "text-gray-500 border-gray-400"
                 : "text-mainOrange border-mainOrange";
@@ -189,18 +178,15 @@ export default function TrainingPage() {
 
               const fee = parseFloat(item.training_fees);
               const discount = parseFloat(item.discount);
-              const finalPrice =
-                item.final_price || fee - (discount / 100) * fee;
+              const finalPrice = item.final_price || (fee - (discount / 100) * fee);
 
               return (
                 <div
                   key={item.training_id}
-                  className={`border shadow-lg rounded-2xl overflow-hidden flex flex-col cursor-pointer w-full max-w-sm transition-all duration-300 hover:shadow-xl ${cardClass}`}
-                  onClick={() =>
-                    router.push(`/training-admin/${item.training_id}`)
-                  }
+                  className={`border shadow-lg rounded-2xl overflow-hidden flex flex-col cursor-pointer w-full h-[480px] max-w-sm ${cardClass} hover:shadow-xl transition-shadow`}
+                  onClick={() => router.push(`/training-admin/${item.training_id}`)}
                 >
-                  <div className="w-full aspect-[16/9] relative">
+                  <div className="h-[200px] w-full relative">
                     {discount > 0 && (
                       <div className="absolute top-2 right-2 bg-red-500 text-white text-[11px] font-semibold px-2 py-[2px] rounded-full shadow-md animate-bounce">
                         🔥 {discount}% OFF
@@ -213,16 +199,35 @@ export default function TrainingPage() {
                     />
                   </div>
 
-                  <div className="flex flex-col justify-between flex-grow p-5">
-                    <div className="mb-4">
-                      <h2 className="text-lg font-semibold mb-2 line-clamp-2">
+                  <div className="flex flex-col justify-between flex-grow p-4">
+                    <div>
+                      <h2 className="text-lg font-semibold mb-1 line-clamp-2">
                         {item.training_name}
                       </h2>
-                      <p className="text-sm text-gray-600 mb-3 line-clamp-3">
+                      <p className="text-sm text-gray-600 mb-3 line-clamp-2">
                         {item.description}
                       </p>
+
+                      {/* Admin Info Section */}
+                      <div className="bg-gray-50 border border-gray-200 rounded-lg p-2 mb-3 space-y-1">
+                        <div className="flex justify-between items-center text-xs">
+                          <span className="text-gray-500">Graduates:</span>
+                          <span className="font-semibold text-gray-900">{item.graduates || 0}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-xs">
+                          <span className="text-gray-500">Rating:</span>
+                          <span className="font-semibold text-gray-900">⭐ {item.rating ? item.rating.toFixed(1) : '0.0'}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-xs">
+                          <span className="text-gray-500">Created:</span>
+                          <span className="font-semibold text-gray-900">
+                            {item.created_date ? new Date(item.created_date).toLocaleDateString('id-ID', { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A'}
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex items-center justify-between border-t pt-4">
+
+                    <div className="flex items-center justify-between border-t pt-3">
                       <div className="flex gap-2 items-center flex-wrap">
                         <span
                           className={`px-3 py-1 rounded-lg font-semibold text-sm border ${badgeClass}`}
@@ -246,7 +251,9 @@ export default function TrainingPage() {
                         )}
                       </div>
 
-                      <ArrowRight className="text-gray-600 hover:text-mainOrange transition-all flex-shrink-0" />
+                      <ArrowRight
+                        className="text-gray-600 hover:text-mainOrange transition-all"
+                      />
                     </div>
                   </div>
                 </div>
@@ -264,6 +271,7 @@ export default function TrainingPage() {
               />
             </div>
           )}
+
         </div>
 
         {totalPages > 1 && (
@@ -277,36 +285,30 @@ export default function TrainingPage() {
 
               {(() => {
                 const maxVisible = 5;
-                let startPage = Math.max(
-                  1,
-                  currentPage - Math.floor(maxVisible / 2)
-                );
+                let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
                 let endPage = Math.min(totalPages, startPage + maxVisible - 1);
 
                 if (endPage - startPage < maxVisible - 1) {
                   startPage = Math.max(1, endPage - maxVisible + 1);
                 }
 
-                return Array.from(
-                  { length: endPage - startPage + 1 },
-                  (_, i) => {
-                    const pageNumber = startPage + i;
-                    return (
-                      <PaginationItem key={pageNumber}>
-                        <PaginationLink
-                          href="#"
-                          isActive={currentPage === pageNumber}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handlePageChange(pageNumber);
-                          }}
-                        >
-                          {pageNumber}
-                        </PaginationLink>
-                      </PaginationItem>
-                    );
-                  }
-                );
+                return Array.from({ length: endPage - startPage + 1 }, (_, i) => {
+                  const pageNumber = startPage + i;
+                  return (
+                    <PaginationItem key={pageNumber}>
+                      <PaginationLink
+                        href="#"
+                        isActive={currentPage === pageNumber}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handlePageChange(pageNumber);
+                        }}
+                      >
+                        {pageNumber}
+                      </PaginationLink>
+                    </PaginationItem>
+                  );
+                });
               })()}
 
               <PaginationItem>
@@ -318,14 +320,10 @@ export default function TrainingPage() {
           </Pagination>
         )}
         <p className="text-sm text-muted-foreground mt-2 flex justify-center items-center">
-          Showing{" "}
-          {trainingData.length > 0
-            ? `${(currentPage - 1) * itemsPerPage + 1} - ${Math.min(
-                currentPage * itemsPerPage,
-                trainingData.length
-              )}`
-            : 0}{" "}
-          of {trainingData.length} training data
+          Showing {trainingData.length > 0
+            ? `${(currentPage - 1) * itemsPerPage + 1} - ${Math.min(currentPage * itemsPerPage, trainingData.length)}`
+            : 0
+          } of {trainingData.length} training data
         </p>
       </div>
 
