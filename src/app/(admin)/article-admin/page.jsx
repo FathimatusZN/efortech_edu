@@ -33,14 +33,14 @@ const categoryOptions = [
   { id: 3, label: "Success Story" },
 ];
 
-const PAGE_SIZE = 6;
+const PAGE_SIZE = 24;
 
 const ArticleAdminPage = () => {
   const [articles, setArticles] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [page, setPage] = useState(1);
-  const itemsPerPage = PAGE_SIZE; // 6 articles per page
+  const itemsPerPage = PAGE_SIZE;
   const [isLoading, setIsLoading] = useState(true);
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
 
