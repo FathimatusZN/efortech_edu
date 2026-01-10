@@ -64,7 +64,7 @@ export default function TrainingCard({ training }) {
                     }`}
                 style={{ bottom: "1rem" }}
             >
-                {getShortDescription(training.description, 300)}
+                {getShortDescription(training.description, 150)}
             </p>
         </div>
 
