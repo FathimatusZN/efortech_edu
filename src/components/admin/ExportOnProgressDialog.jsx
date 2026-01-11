@@ -1,4 +1,3 @@
-// efortech_edu\src\components\admin\ExportOnProgressDialog.jsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -65,6 +64,12 @@ export default function ExportOnProgressDialog({ open, onClose }) {
 
       let res;
       if (type === "all") {
+        res = await fetch(url, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      } else if (type === "certnumbers") {
+        // Export certificate numbers (no filters applied)
+        url += `?mode=certnumbers`;
         res = await fetch(url, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -291,31 +296,56 @@ export default function ExportOnProgressDialog({ open, onClose }) {
 
         {/* Footer - Sticky */}
         <div className="sticky bottom-0 bg-white border-t px-4 sm:px-6 py-3 sm:py-4">
-          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 sm:justify-between sm:items-center">
-            <Button
-              onClick={() => handleExport("all")}
-              variant="mainBlue"
-              className="w-full sm:w-auto text-sm"
-            >
-              Export All
-            </Button>
+          <div className="flex flex-col gap-2">
+            {/* First Row */}
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+              <Button
+                onClick={() => handleExport("all")}
+                variant="mainBlue"
+                className="w-full sm:w-auto text-sm"
+              >
+                Export All
+              </Button>
 
-            <Button
-              variant="outline"
-              onClick={clearFilters}
-              className="w-full sm:w-auto text-sm"
-            >
-              Clear Filter
-            </Button>
+              <div className="flex relative group">
+                <Button
+                  onClick={() => handleExport("certnumbers")}
+                  variant="lightBlue"
+                  className="w-full sm:w-auto text-sm"
+                >
+                  Export Cert Numbers
+                </Button>
 
-            <Button
-              onClick={() => handleExport("custom")}
-              variant={hasFilters ? "orange" : "outline"}
-              disabled={!hasFilters}
-              className="w-full sm:w-auto text-sm"
-            >
-              Export Custom
-            </Button>
+                {/* Tooltip */}
+                <div className="absolute bottom-full left-0 mb-2 hidden group-hover:block z-50 w-64 sm:w-80">
+                  <div className="bg-gray-800 text-white text-xs rounded-lg py-2 px-3 shadow-lg">
+                    <p className="font-semibold mb-1">Export Certificate Numbers Only</p>
+                    <p className="text-gray-300">
+                      Exports participants with present attendance who have certificate numbers
+                      but missing certificate files (pending upload).
+                    </p>
+                    <div className="absolute top-full left-4 -mt-1 border-4 border-transparent border-t-gray-800"></div>
+                  </div>
+                </div>
+              </div>
+
+              <Button
+                variant="outline"
+                onClick={clearFilters}
+                className="w-full sm:w-auto text-sm"
+              >
+                Clear Filter
+              </Button>
+
+              <Button
+                onClick={() => handleExport("custom")}
+                variant={hasFilters ? "orange" : "outline"}
+                disabled={!hasFilters}
+                className="w-full sm:w-auto text-sm"
+              >
+                Export Custom
+              </Button>
+            </div>
           </div>
         </div>
       </div>
