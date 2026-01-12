@@ -23,7 +23,7 @@ export default function TrainingCard({ training }) {
 
     return (
         <div
-            className="relative group overflow-hidden rounded-lg shadow-lg w-full max-w-[400px] aspect-[4/3] mx-auto transition-all duration-500 ease-in-out cursor-pointer"
+            className="relative group overflow-hidden rounded-lg shadow-lg w-full max-w-[400px] aspect-[16/9] mx-auto transition-all duration-500 ease-in-out cursor-pointer"
             onClick={() => router.push(`/training/${training.training_id}`)}
             onMouseEnter={() => setHovered(true)}
             onMouseLeave={() => setHovered(false)}
@@ -64,7 +64,7 @@ export default function TrainingCard({ training }) {
                     }`}
                 style={{ bottom: "1rem" }}
             >
-                {getShortDescription(training.description, 300)}
+                {getShortDescription(training.description, 150)}
             </p>
         </div>
 

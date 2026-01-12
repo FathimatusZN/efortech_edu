@@ -1,49 +1,34 @@
-// efortech_edu\src\components\admin\ExportCancelledDialog.jsx
+// efortech_edu\src\components\admin\ExportArticlesDialog.jsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
 import { auth } from "@/app/firebase/config";
 import { getIdToken } from "firebase/auth";
 import { toast } from "react-hot-toast";
 
-export default function ExportCancelledDialog({ open, onClose }) {
-    const [dateType, setDateType] = useState("");
+export default function ExportArticlesDialog({ open, onClose }) {
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
-    const [selectedStatus, setSelectedStatus] = useState([]);
-    const [selectedTraining, setSelectedTraining] = useState("");
-    const [trainingList, setTrainingList] = useState([]);
+    const [selectedCategory, setSelectedCategory] = useState([]);
+    const [authorFilter, setAuthorFilter] = useState("");
+    const [minViews, setMinViews] = useState("");
+    const [maxViews, setMaxViews] = useState("");
 
-    const statuses = [
-        { label: "Cancelled", value: "5" }
+    const categories = [
+        { label: "Education", value: "1" },
+        { label: "Event", value: "2" },
+        { label: "Success Story", value: "3" },
     ];
-
-    useEffect(() => {
-        const fetchTrainings = async () => {
-            try {
-                const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/training?status=all`);
-                const data = await res.json();
-                setTrainingList(data?.data || []);
-            } catch (error) {
-                console.error(error);
-                toast.error("Failed");
-            }
-        };
-        fetchTrainings();
-    }, []);
 
     if (!open) return null;
 
-    const toggleStatus = (value) => {
-        setSelectedStatus((prev) =>
-            prev.includes(value)
-                ? prev.filter((s) => s !== value)
-                : [...prev, value]
+    const toggleCategory = (value) => {
+        setSelectedCategory((prev) =>
+            prev.includes(value) ? prev.filter((c) => c !== value) : [...prev, value]
         );
     };
 
@@ -53,24 +38,26 @@ export default function ExportCancelledDialog({ open, onClose }) {
             if (!currentUser) throw new Error("User not logged in");
             const token = await getIdToken(currentUser);
 
-            let url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/export/registrations/cancelled`;
+            let url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/export/articles`;
 
             let res;
             if (type === "all") {
+                // Export All - no query params
                 res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
             } else {
                 const params = new URLSearchParams();
-                params.append("tab", "cancelled");
+                params.append("dateType", "create_date");
 
-                const mappedDateType =
-                    dateType === "registration" ? "registration_date" : "training_date";
-                params.append("dateType", mappedDateType);
+                if (startDate) params.append("start", startDate);
+                if (endDate) params.append("end", endDate);
 
-                if (startDate) params.append("start", `${startDate}T00:00:00Z`);
-                if (endDate) params.append("end", `${endDate}T23:59:59Z`);
-                if (selectedStatus.length > 0)
-                    params.append("statuses", selectedStatus.join(","));
-                if (selectedTraining) params.append("training_id", selectedTraining);
+                if (selectedCategory.length > 0) {
+                    params.append("category", selectedCategory.join(","));
+                }
+
+                if (authorFilter) params.append("author", authorFilter);
+                if (minViews) params.append("min_views", minViews);
+                if (maxViews) params.append("max_views", maxViews);
 
                 if (params.toString()) url += `?${params.toString()}`;
 
@@ -81,17 +68,21 @@ export default function ExportCancelledDialog({ open, onClose }) {
                 const errData = await res.json().catch(() => null);
                 const errMsg = errData?.message || "Export failed.";
 
-                if (errMsg.toLowerCase().includes("no data")) {
-                    toast.error("No data available to export.");
+                if (
+                    errMsg.toLowerCase().includes("no") &&
+                    errMsg.toLowerCase().includes("data")
+                ) {
+                    toast.error("No article data available to export.");
                 } else {
                     toast.error(errMsg);
                 }
 
                 return;
             }
+
             const blob = await res.blob();
             const contentDisposition = res.headers.get("Content-Disposition");
-            let fileName = "exported_data.xlsx";
+            let fileName = "articles_data.xlsx";
 
             if (contentDisposition && contentDisposition.includes("filename=")) {
                 const match = contentDisposition.match(/filename="?([^"]+)"?/);
@@ -106,7 +97,7 @@ export default function ExportCancelledDialog({ open, onClose }) {
             link.remove();
             URL.revokeObjectURL(link.href);
 
-            toast.success("Training data exported successfully.");
+            toast.success("Articles data exported successfully.");
             onClose();
         } catch (error) {
             console.error(error);
@@ -115,26 +106,30 @@ export default function ExportCancelledDialog({ open, onClose }) {
     };
 
     const clearFilters = () => {
-        setSelectedTraining("");
-        setSelectedStatus([]);
-        setDateType("registration");
+        setSelectedCategory([]);
         setStartDate("");
         setEndDate("");
+        setAuthorFilter("");
+        setMinViews("");
+        setMaxViews("");
     };
 
     const hasFilters =
         (startDate && endDate) ||
-        selectedStatus.length > 0 ||
-        selectedTraining;
+        selectedCategory.length > 0 ||
+        authorFilter ||
+        minViews ||
+        maxViews;
 
     return (
         <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50 p-4">
             <div className="relative bg-white rounded-lg w-full max-w-[800px] max-h-[90vh] overflow-y-auto shadow-lg">
                 {/* Header - Sticky */}
                 <div className="sticky top-0 bg-white z-10 px-4 sm:px-6 pt-4 sm:pt-6 pb-3 border-b">
-                    <h2 className="text-lg sm:text-xl font-bold mb-1">Export Cancelled Registration</h2>
+                    <h2 className="text-lg sm:text-xl font-bold mb-1">Export Articles Data</h2>
                     <p className="text-xs sm:text-sm text-gray-500">
-                        Export cancelled training registration data.
+                        Export comprehensive articles data including content, views, categories,
+                        and author information.
                     </p>
                     <button
                         onClick={onClose}
@@ -146,38 +141,9 @@ export default function ExportCancelledDialog({ open, onClose }) {
 
                 {/* Content - Scrollable */}
                 <div className="px-4 sm:px-6 py-4 space-y-4">
-                    {/* Date Type Selection */}
-                    <div>
-                        <Label className="text-xs sm:text-sm block mb-2 font-semibold">Date Type</Label>
-                        <div className="flex flex-wrap gap-3 sm:gap-4">
-                            <label className="flex items-center gap-2 text-sm">
-                                <input
-                                    type="radio"
-                                    name="dateType"
-                                    value="registration"
-                                    checked={dateType === "registration"}
-                                    onChange={(e) => setDateType(e.target.value)}
-                                    className="w-4 h-4"
-                                />
-                                Registration Date
-                            </label>
-                            <label className="flex items-center gap-2 text-sm">
-                                <input
-                                    type="radio"
-                                    name="dateType"
-                                    value="training"
-                                    checked={dateType === "training"}
-                                    onChange={(e) => setDateType(e.target.value)}
-                                    className="w-4 h-4"
-                                />
-                                Training Date
-                            </label>
-                        </div>
-                    </div>
-
                     {/* Date Range */}
                     <div>
-                        <Label className="text-xs sm:text-sm mb-2 block font-semibold">Date Range</Label>
+                        <Label className="text-xs sm:text-sm mb-2 block font-semibold">Created Date Range</Label>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div className="flex flex-col">
                                 <Label htmlFor="startDate" className="text-xs text-gray-500 mb-1">
@@ -207,40 +173,72 @@ export default function ExportCancelledDialog({ open, onClose }) {
                         </div>
                     </div>
 
-                    {/* Status */}
+                    {/* Category Filter */}
                     <div>
-                        <Label className="text-xs sm:text-sm block mb-2 font-semibold">Status</Label>
+                        <Label className="text-xs sm:text-sm block mb-2 font-semibold">Category</Label>
                         <div className="flex flex-wrap gap-3">
-                            {statuses.map((st) => (
-                                <div key={st.value} className="flex items-center space-x-2">
+                            {categories.map((c) => (
+                                <div key={c.value} className="flex items-center space-x-2">
                                     <Checkbox
-                                        id={st.value}
-                                        checked={selectedStatus.includes(st.value)}
-                                        onCheckedChange={() => toggleStatus(st.value)}
+                                        id={`category-${c.value}`}
+                                        checked={selectedCategory.includes(c.value)}
+                                        onCheckedChange={() => toggleCategory(c.value)}
                                     />
-                                    <Label htmlFor={st.value} className="text-xs sm:text-sm capitalize cursor-pointer">
-                                        {st.label}
+                                    <Label htmlFor={`category-${c.value}`} className="text-xs sm:text-sm cursor-pointer">
+                                        {c.label}
                                     </Label>
                                 </div>
                             ))}
                         </div>
                     </div>
 
-                    {/* Training Dropdown */}
+                    {/* Author Filter */}
                     <div>
-                        <Label className="text-xs sm:text-sm block mb-2 font-semibold">Training</Label>
-                        <Select value={selectedTraining} onValueChange={setSelectedTraining}>
-                            <SelectTrigger className="w-full text-sm">
-                                <SelectValue placeholder="Select a training" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {trainingList.map((t) => (
-                                    <SelectItem key={t.training_id} value={t.training_id}>
-                                        {t.training_name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                        <Label htmlFor="authorFilter" className="text-xs sm:text-sm block mb-2 font-semibold">
+                            Author Name (partial match)
+                        </Label>
+                        <Input
+                            id="authorFilter"
+                            type="text"
+                            placeholder="Enter author name"
+                            className="w-full text-sm"
+                            value={authorFilter}
+                            onChange={(e) => setAuthorFilter(e.target.value)}
+                        />
+                    </div>
+
+                    {/* Views Range */}
+                    <div>
+                        <Label className="text-xs sm:text-sm mb-2 block font-semibold">Views Range</Label>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div className="flex flex-col">
+                                <Label htmlFor="minViews" className="text-xs text-gray-500 mb-1">
+                                    Min
+                                </Label>
+                                <Input
+                                    id="minViews"
+                                    type="number"
+                                    placeholder="0"
+                                    className="w-full text-sm"
+                                    value={minViews}
+                                    onChange={(e) => setMinViews(e.target.value)}
+                                />
+                            </div>
+
+                            <div className="flex flex-col">
+                                <Label htmlFor="maxViews" className="text-xs text-gray-500 mb-1">
+                                    Max
+                                </Label>
+                                <Input
+                                    id="maxViews"
+                                    type="number"
+                                    placeholder="10000"
+                                    className="w-full text-sm"
+                                    value={maxViews}
+                                    onChange={(e) => setMaxViews(e.target.value)}
+                                />
+                            </div>
+                        </div>
                     </div>
                 </div>
 

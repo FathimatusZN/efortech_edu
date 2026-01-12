@@ -1,11 +1,7 @@
 "use client";
 import { createContext, useContext, useState, useEffect } from "react";
-import {
-  getAuth,
-  onAuthStateChanged,
-  signInWithEmailAndPassword,
-} from "firebase/auth";
-import { auth, app } from "@/app/firebase/config";
+import { onAuthStateChanged, signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "@/app/firebase/config";
 import axios from "axios";
 
 export const AuthContext = createContext();
@@ -16,7 +12,6 @@ export const AuthProvider = ({ children }) => {
   const [sessionExpired, setSessionExpired] = useState(false);
 
   useEffect(() => {
-    let unsubscribe = () => {};
     const safeParse = (str) => {
       try {
         return JSON.parse(str);
@@ -25,56 +20,64 @@ export const AuthProvider = ({ children }) => {
       }
     };
 
-    const checkStoredAuth = async () => {
-      setLoading(true);
-      const storedUser = safeParse(localStorage.getItem("user"));
-      const storedToken = localStorage.getItem("token");
-      const loginTime = parseInt(localStorage.getItem("login_time"), 10);
-      const maxDuration = parseInt(localStorage.getItem("max_duration"), 10);
-      const now = Date.now();
+    // ✅ CHECK localStorage SYNC (tidak async)
+    const storedUser = safeParse(localStorage.getItem("user"));
+    const storedToken = localStorage.getItem("token");
+    const loginTime = parseInt(localStorage.getItem("login_time"), 10);
+    const maxDuration = parseInt(localStorage.getItem("max_duration"), 10);
+    const now = Date.now();
 
-      const isExpired =
-        loginTime && maxDuration && now - loginTime > maxDuration;
+    const isExpired = loginTime && maxDuration && now - loginTime > maxDuration;
 
-      if (isExpired) {
-        logout(); // Clear user and token if expired
-        setSessionExpired(true);
-        setLoading(false);
-        return;
-      }
+    if (isExpired) {
+      logout();
+      setSessionExpired(true);
+      setLoading(false); // ✅ Set loading false IMMEDIATELY
+      return;
+    }
 
-      if (storedUser && storedToken && !isExpired) {
-        setUser(storedUser);
-      }
+    // ✅ Jika ada stored user yang valid, set immediately
+    if (storedUser && storedToken && !isExpired) {
+      setUser(storedUser);
+      // JANGAN set loading false di sini, tunggu Firebase verify
+    }
 
-      unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-        if (currentUser) {
-          try {
-            const idToken = await currentUser.getIdToken(true);
-            const res = await axios.get(
-              `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user/me`,
-              {
-                headers: { Authorization: `Bearer ${idToken}` },
-              }
-            );
-            setUser(res.data.data);
-            localStorage.setItem("user", JSON.stringify(res.data.data));
-            localStorage.setItem("token", idToken);
-          } catch (err) {
-            console.error("Error fetching user data", err);
-            logout();
-          }
-        } else {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (currentUser) {
+        try {
+          const idToken = await currentUser.getIdToken(true);
+          const res = await axios.get(
+            `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user/me`,
+            {
+              headers: { Authorization: `Bearer ${idToken}` },
+            }
+          );
+
+          setUser(res.data.data);
+          localStorage.setItem("user", JSON.stringify(res.data.data));
+          localStorage.setItem("token", idToken);
+        } catch (err) {
           logout();
         }
-        setLoading(false);
-      });
-    };
+      } else {
+        // ✅ Hanya logout jika memang tidak ada stored user
+        if (!storedUser || isExpired) {
+          logout();
+        }
+      }
 
-    checkStoredAuth();
+      // ✅ CRITICAL: Set loading false setelah check selesai
+      setLoading(false);
+    });
+
+    // ✅ FALLBACK: Jika onAuthStateChanged tidak dipanggil dalam 3 detik
+    const fallbackTimeout = setTimeout(() => {
+      setLoading(false);
+    }, 3000);
 
     return () => {
-      if (unsubscribe) unsubscribe();
+      clearTimeout(fallbackTimeout);
+      unsubscribe();
     };
   }, []);
 
@@ -124,7 +127,6 @@ export const AuthProvider = ({ children }) => {
       localStorage.removeItem("max_duration");
       localStorage.removeItem("role");
     } catch (error) {
-      console.error("Error logging out:", error);
     }
   };
 

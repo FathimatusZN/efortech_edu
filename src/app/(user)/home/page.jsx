@@ -10,6 +10,7 @@ import PartnerSection from "@/components/home/partner_home";
 import TopTrainingSection from "@/components/home/training_home";
 import ArticleSection from "@/components/home/article_home";
 import { useAuth } from "@/app/context/AuthContext";
+import { useProfile } from "@/app/context/ProfileContext";
 import {
   Dialog,
   DialogContent,
@@ -23,17 +24,28 @@ import { motion } from "framer-motion";
 
 const Home = () => {
   const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+  //handle complete-profile
+  const { isComplete, loading: profileLoading } = useProfile();
   //handle pop up
-  const { user, loading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+
   const router = useRouter();
   const [showAuthPopup, setShowAuthPopup] = useState(false);
 
   useEffect(() => {
-    if (!loading && !user) {
-      // Jika belum login, tampilkan popup
-      setTimeout(() => setShowAuthPopup(true), 1500);
+    if (authLoading || profileLoading) {
+      return;
     }
-  }, [loading, user]);
+
+    // 👤 guest
+    if (!user) {
+      setShowAuthPopup(true);
+      return;
+    }
+
+    setShowAuthPopup(false);
+  }, [authLoading, user]);
 
   // Data states
   const [slides, setSlides] = useState([]);

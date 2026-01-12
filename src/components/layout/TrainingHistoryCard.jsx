@@ -15,6 +15,7 @@ export default function TrainingHistoryCard({
   hasReview = false,
   hasCertificate = false,
   attendanceStatus = null,
+  advantechCert = [],
 }) {
   const router = useRouter();
 
@@ -23,6 +24,13 @@ export default function TrainingHistoryCard({
   const [isUploadCertDialogOpen, setIsUploadCertDialogOpen] = useState(false);
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
+
+  useEffect(() => {
+    // Check if advantech certificate already uploaded
+    if (advantechCert && advantechCert.length > 0) {
+      setIsCertificateUploaded(true);
+    }
+  }, [advantechCert]);
 
   useEffect(() => {
     if (images?.length) {
@@ -184,8 +192,7 @@ export default function TrainingHistoryCard({
                 onClick={handleWriteReview}
                 className="border-2 border-lightBlue w-full"
               >
-                {" "}
-                Review{" "}
+                Review
               </Button>
               <Button
                 variant="lightBlue"
@@ -240,9 +247,8 @@ export default function TrainingHistoryCard({
             key={index}
             src={img}
             alt={`Slide ${index + 1}`}
-            className={`absolute transition-opacity duration-1000 w-full h-full object-cover ${
-              currentSlide === index ? "opacity-100" : "opacity-0"
-            }`}
+            className={`absolute transition-opacity duration-1000 w-full h-full object-cover ${currentSlide === index ? "opacity-100" : "opacity-0"
+              }`}
           />
         ))}
 
@@ -251,14 +257,12 @@ export default function TrainingHistoryCard({
             <button
               key={index}
               onClick={() => setCurrentSlide(index)}
-              className={`w-3 h-3 rounded-full border-2 flex justify-center items-center transition-all ${
-                currentSlide === index ? "border-mainOrange" : "border-gray-400"
-              }`}
+              className={`w-3 h-3 rounded-full border-2 flex justify-center items-center transition-all ${currentSlide === index ? "border-mainOrange" : "border-gray-400"
+                }`}
             >
               <div
-                className={`w-1 h-1 rounded-full items-center ${
-                  currentSlide === index ? "bg-mainOrange" : "bg-transparent"
-                }`}
+                className={`w-1 h-1 rounded-full items-center ${currentSlide === index ? "bg-mainOrange" : "bg-transparent"
+                  }`}
               ></div>
             </button>
           ))}

@@ -1,8 +1,9 @@
+// efortech_edu\src\app\(admin)\training-admin\page.jsx
 "use client";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { ArrowRight, Plus } from "lucide-react";
+import { ArrowRight, Plus, Download } from "lucide-react";
 import { FaSearch } from "react-icons/fa";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,6 +23,7 @@ import {
 } from "@/components/ui/select";
 import { NotFound } from "@/components/ui/ErrorPage";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import ExportTrainingDialog from "@/components/admin/ExportTrainingDialog";
 
 export default function TrainingPage() {
   const router = useRouter();
@@ -30,32 +32,28 @@ export default function TrainingPage() {
   const [sortOrder, setSortOrder] = useState("Latest");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 6;
+  const itemsPerPage = 24;
   const [isLoading, setIsLoading] = useState(true);
+  const [exportDialogOpen, setExportDialogOpen] = useState(false);
 
   useEffect(() => {
     setCurrentPage(1);
-    // Setup a delay to debounce the search query input
     const delayDebounce = setTimeout(() => {
       const fetchTrainings = async () => {
         setIsLoading(true);
         try {
-          // Build query params based on current filter/sort/search state
           const params = new URLSearchParams();
 
-          // Filter by status (convert to backend expected value)
           if (filterStatus !== "All") {
             params.append("status", filterStatus === "Active" ? "1" : "2");
           } else {
             params.append("status", "all");
           }
 
-          // Add search query if it's not empty
           if (searchQuery) {
             params.append("search", searchQuery);
           }
 
-          // Add sort params
           if (sortOrder === "Latest") {
             params.append("sort_by", "created_date");
             params.append("sort_order", "desc");
@@ -64,14 +62,12 @@ export default function TrainingPage() {
             params.append("sort_order", "asc");
           }
 
-          // Make API call with constructed query params
           const res = await fetch(
             `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/training?${params.toString()}`
           );
 
           const data = await res.json();
 
-          // Update state with fetched data
           if (res.ok) {
             setTrainingData(data.data);
           }
@@ -82,13 +78,11 @@ export default function TrainingPage() {
         }
       };
 
-      // Call the fetch function after debounce delay
       fetchTrainings();
-    }, 500); // Wait for 500ms before calling API (debounce)
+    }, 500);
 
-    // Clear timeout if any of the dependencies change before the delay completes
     return () => clearTimeout(delayDebounce);
-  }, [filterStatus, sortOrder, searchQuery]); // Rerun effect when filters or search change
+  }, [filterStatus, sortOrder, searchQuery]);
 
   const totalPages = Math.ceil(trainingData.length / itemsPerPage);
   const paginatedData = trainingData.slice(
@@ -149,6 +143,14 @@ export default function TrainingPage() {
               </Select>
 
               <Button
+                variant="orange"
+                onClick={() => setExportDialogOpen(true)}
+                className="flex items-center"
+              >
+                <Download size={20} className="mr-2" /> Export
+              </Button>
+
+              <Button
                 variant="mainBlue"
                 onClick={() => router.push("/training-admin/add")}
               >
@@ -166,7 +168,7 @@ export default function TrainingPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 px-4">
           {paginatedData.length > 0 ? (
             paginatedData.map((item) => {
-              const isArchived = item.status !== 1; // 1 = Active, sesuai backend
+              const isArchived = item.status !== 1;
               const badgeClass = isArchived
                 ? "text-gray-500 border-gray-400"
                 : "text-mainOrange border-mainOrange";
@@ -181,7 +183,7 @@ export default function TrainingPage() {
               return (
                 <div
                   key={item.training_id}
-                  className={`border shadow-lg rounded-2xl overflow-hidden flex flex-col cursor-pointer w-full h-[430px] max-w-sm ${cardClass}`}
+                  className={`border shadow-lg rounded-2xl overflow-hidden flex flex-col cursor-pointer w-full h-[480px] max-w-sm ${cardClass} hover:shadow-xl transition-shadow`}
                   onClick={() => router.push(`/training-admin/${item.training_id}`)}
                 >
                   <div className="h-[200px] w-full relative">
@@ -202,12 +204,31 @@ export default function TrainingPage() {
                       <h2 className="text-lg font-semibold mb-1 line-clamp-2">
                         {item.training_name}
                       </h2>
-                      <p className="text-sm text-gray-600 mb-3 line-clamp-4">
+                      <p className="text-sm text-gray-600 mb-3 line-clamp-2">
                         {item.description}
                       </p>
+
+                      {/* Admin Info Section */}
+                      <div className="bg-gray-50 border border-gray-200 rounded-lg p-2 mb-3 space-y-1">
+                        <div className="flex justify-between items-center text-xs">
+                          <span className="text-gray-500">Graduates:</span>
+                          <span className="font-semibold text-gray-900">{item.graduates || 0}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-xs">
+                          <span className="text-gray-500">Rating:</span>
+                          <span className="font-semibold text-gray-900">⭐ {item.rating ? item.rating.toFixed(1) : '0.0'}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-xs">
+                          <span className="text-gray-500">Created:</span>
+                          <span className="font-semibold text-gray-900">
+                            {item.created_date ? new Date(item.created_date).toLocaleDateString('id-ID', { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A'}
+                          </span>
+                        </div>
+                      </div>
                     </div>
+
                     <div className="flex items-center justify-between border-t pt-3">
-                      <div className="flex gap-2 items-center">
+                      <div className="flex gap-2 items-center flex-wrap">
                         <span
                           className={`px-3 py-1 rounded-lg font-semibold text-sm border ${badgeClass}`}
                         >
@@ -305,6 +326,11 @@ export default function TrainingPage() {
           } of {trainingData.length} training data
         </p>
       </div>
+
+      <ExportTrainingDialog
+        open={exportDialogOpen}
+        onClose={() => setExportDialogOpen(false)}
+      />
     </ProtectedRoute>
   );
 }

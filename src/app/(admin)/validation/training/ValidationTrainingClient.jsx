@@ -1,16 +1,18 @@
+// efortech_edu\src\app\(admin)\validation\training\ValidationTrainingClient.jsx
 "use client";
 
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ValidationTrainingTable } from "@/components/admin/ValidationTrainingTable";
+import { SelectableTableWrapper } from "@/components/ui/SelectableTableWrapper";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "react-hot-toast";
 import { AdditionalParticipantDialog } from "@/components/admin/AdditionalParticipantDialog";
 import { UploadCertificateDialog } from "@/components/admin/UploadCertificateDialog";
-import { FaSearch } from "react-icons/fa";
+import { ConfirmDialogAdmin } from "@/components/ui/ConfirmDialog";
+import { FaSearch, FaFilter } from "react-icons/fa";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { FaFilter } from "react-icons/fa";
 import { useRouter, useSearchParams } from "next/navigation";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import ExportNeedToProcessDialog from "@/components/admin/ExportNeedToProcessDialog";
@@ -42,6 +44,12 @@ const ValidationTrainingClient = () => {
   const filterRef = useRef(null);
   const sortRef = useRef(null);
   const [attendanceStatus, setAttendanceStatus] = useState({});
+
+  // Delete related states
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteMode, setDeleteMode] = useState(""); // "selected" or "all"
+  const [selectedIdsToDelete, setSelectedIdsToDelete] = useState([]);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const STATUS_LABELS = {
     1: "Pending",
@@ -202,8 +210,7 @@ const ValidationTrainingClient = () => {
 
     setLoading(true);
     try {
-      const url = `${process.env.NEXT_PUBLIC_API_BASE_URL
-        }${buildQueryParams()}`;
+      const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}${buildQueryParams()}`;
       const response = await fetch(url);
       if (!response.ok) throw new Error();
 
@@ -356,6 +363,68 @@ const ValidationTrainingClient = () => {
     }
   };
 
+  // Delete selected registrations
+  const handleDeleteSelected = async (selectedIds) => {
+    setSelectedIdsToDelete(selectedIds);
+    setDeleteMode("selected");
+    setDeleteDialogOpen(true);
+  };
+
+  // Delete all cancelled registrations
+  const handleDeleteAll = async () => {
+    setDeleteMode("all");
+    setDeleteDialogOpen(true);
+  };
+
+  // Execute delete operation
+  const executeDelete = async () => {
+    setIsDeleting(true);
+    try {
+      let res, result;
+
+      if (deleteMode === "all") {
+        res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/registration/delete-all-cancelled`,
+          {
+            method: "DELETE",
+          }
+        );
+      } else {
+        res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/registration/delete-multiple`,
+          {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ registration_ids: selectedIdsToDelete }),
+          }
+        );
+      }
+
+      result = await res.json();
+
+      if (!res.ok) {
+        throw new Error(result.message || "Failed to delete registrations");
+      }
+
+      if (result.data.deleted_registrations === 0) {
+        toast.success("No cancelled registrations to delete");
+      } else {
+        toast.success(
+          `${result.data.deleted_registrations} registration(s) deleted successfully`
+        );
+      }
+
+      setDeleteDialogOpen(false);
+      fetchTabData(tab);
+    } catch (error) {
+      console.error("Error deleting registrations:", error);
+      toast.error(`Error: ${error.message}`);
+    } finally {
+      setIsDeleting(false);
+      setSelectedIdsToDelete([]);
+    }
+  };
+
   // Function to handle click outside the filter dropdown
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -373,6 +442,9 @@ const ValidationTrainingClient = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  // Get cancelled data count
+  const cancelledDataCount = trainingData.cancelledData?.length || 0;
 
   return (
     <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
@@ -406,7 +478,7 @@ const ValidationTrainingClient = () => {
                     onKeyDown={(e) => {
                       if (e.key === "Enter") {
                         setSearchQuery(searchInput);
-                      } // trigger search
+                      }
                     }}
                     className="text-sm w-full pl-6 pr-10 py-2 rounded-md border border-mainBlue focus:ring-0 focus:outline-none"
                   />
@@ -513,7 +585,6 @@ const ValidationTrainingClient = () => {
                 </div>
 
                 <div className="flex justify-between gap-4">
-
                   {/* Sort Dropdown */}
                   <div className="relative" ref={sortRef}>
                     <button
@@ -555,8 +626,8 @@ const ValidationTrainingClient = () => {
                               key={field}
                               onClick={() => setTempSortField(field)}
                               className={`w-full text-left px-2 py-1 rounded hover:bg-gray-100 text-sm ${tempSortField === field
-                                ? "bg-blue-100 font-semibold"
-                                : ""
+                                  ? "bg-blue-100 font-semibold"
+                                  : ""
                                 }`}
                             >
                               {field
@@ -583,7 +654,7 @@ const ValidationTrainingClient = () => {
                               setSortBy(tempSortField);
                               setSortOrder(tempSortOrder);
                               setSortOpen(false);
-                              fetchTabData(); // apply sorting
+                              fetchTabData();
                             }}
                             className="text-sm bg-mainBlue text-white px-3 py-1 rounded"
                           >
@@ -603,7 +674,6 @@ const ValidationTrainingClient = () => {
                     <i className="fa-solid fa-file-export"></i>Export Data
                   </Button>
                 </div>
-
               </div>
             </div>
             <div className="border-t border-gray-200 mt-2" />
@@ -684,7 +754,7 @@ const ValidationTrainingClient = () => {
                     )}
                   </TabsContent>
 
-                  {/* Cancelled tab */}
+                  {/* Cancelled tab with SelectableTableWrapper */}
                   <TabsContent value="cancelled" className="w-full">
                     <AdditionalParticipantDialog
                       open={selectedRegistration !== null}
@@ -692,12 +762,22 @@ const ValidationTrainingClient = () => {
                       registration={selectedRegistration}
                     />
                     {trainingData.cancelledData ? (
-                      <ValidationTrainingTable
+                      <SelectableTableWrapper
                         data={trainingData.cancelledData}
-                        mode="cancelled"
-                        onShowDetailRegistration={onShowDetailRegistration}
-                        onStatusChange={handleStatusChange}
-                      />
+                        idKey="registration_id"
+                        onDeleteSelected={handleDeleteSelected}
+                        onDeleteAll={handleDeleteAll}
+                        itemType="registration"
+                        showDeleteAll={cancelledDataCount > 0}
+                        enabled={true}
+                      >
+                        <ValidationTrainingTable
+                          data={trainingData.cancelledData}
+                          mode="cancelled"
+                          onShowDetailRegistration={onShowDetailRegistration}
+                          onStatusChange={handleStatusChange}
+                        />
+                      </SelectableTableWrapper>
                     ) : (
                       <div className="w-full flex justify-center items-center min-h-[120px]">
                         <LoadingSpinner className="w-10 h-10" />
@@ -708,11 +788,6 @@ const ValidationTrainingClient = () => {
               </div>
             </div>
           </div>
-
-          <ExportNeedToProcessDialog
-            open={exportOpen}
-            onClose={() => setExportOpen(false)}
-          />
 
           {tab === "needprocess" && (
             <ExportNeedToProcessDialog
@@ -741,8 +816,22 @@ const ValidationTrainingClient = () => {
               onClose={() => setExportOpen(false)}
             />
           )}
-
         </Tabs>
+
+        {/* Delete Confirmation Dialog */}
+        <ConfirmDialogAdmin
+          open={deleteDialogOpen}
+          data={
+            deleteMode === "all"
+              ? `all ${cancelledDataCount} cancelled registrations`
+              : `${selectedIdsToDelete.length} selected registrations`
+          }
+          onCancel={() => {
+            setDeleteDialogOpen(false);
+            setIsDeleting(false);
+          }}
+          onConfirm={executeDelete}
+        />
       </div>
     </ProtectedRoute>
   );

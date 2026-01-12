@@ -310,7 +310,7 @@ export default function UploadUCertificateForm({
 
         <div>
           <Label>
-            Certificate Type <span className="text-red-500">*</span>
+            Certificate Type / Training Name<span className="text-red-500">*</span>
           </Label>
           <Input
             name="cert_type"

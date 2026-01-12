@@ -1,54 +1,45 @@
-// efortech_edu\src\components\admin\ExportCompletedDialog.jsx
+// efortech_edu\src\components\admin\ExportUserCertificatesDialog.jsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-    Select,
-    SelectTrigger,
-    SelectContent,
-    SelectItem,
-    SelectValue,
-} from "@/components/ui/select";
 import { auth } from "@/app/firebase/config";
 import { getIdToken } from "firebase/auth";
-import toast from "react-hot-toast";
+import { toast } from "react-hot-toast";
 
-export default function ExportCompletedDialog({ open, onClose }) {
-    const [dateType, setDateType] = useState("");
+export default function ExportUserCertificatesDialog({ open, onClose }) {
+    const [dateType, setDateType] = useState("issued_date");
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
     const [selectedStatus, setSelectedStatus] = useState([]);
-    const [selectedTraining, setSelectedTraining] = useState("");
-    const [trainingList, setTrainingList] = useState([]);
-    const [advantechCert, setAdvantechCert] = useState("");
+    const [selectedCertStatus, setSelectedCertStatus] = useState([]);
 
     const statuses = [
-        { label: "Present", value: "true" },
-        { label: "Absent", value: "false" },
+        { label: "Pending", value: "1" },
+        { label: "Accepted", value: "2" },
+        { label: "Rejected", value: "3" },
     ];
 
-    useEffect(() => {
-        const fetchTrainings = async () => {
-            try {
-                const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/training?status=all`);
-                const data = await res.json();
-                setTrainingList(data?.data || []);
-            } catch (error) {
-                console.error(error);
-                toast.error("Failed to fetch training data");
-            }
-        };
-        fetchTrainings();
-    }, []);
+    const certStatuses = [
+        { label: "Valid", value: "valid" },
+        { label: "Expired", value: "expired" },
+    ];
 
     if (!open) return null;
 
     const toggleStatus = (value) => {
         setSelectedStatus((prev) =>
+            prev.includes(value)
+                ? prev.filter((s) => s !== value)
+                : [...prev, value]
+        );
+    };
+
+    const toggleCertStatus = (value) => {
+        setSelectedCertStatus((prev) =>
             prev.includes(value)
                 ? prev.filter((s) => s !== value)
                 : [...prev, value]
@@ -61,50 +52,46 @@ export default function ExportCompletedDialog({ open, onClose }) {
             if (!currentUser) throw new Error("User not logged in");
             const token = await getIdToken(currentUser);
 
-            let url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/export/registrations/completed`;
+            let url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/export/usercertificates`;
 
-            if (type !== "all") {
+            let res;
+            if (type === "all") {
+                res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+            } else {
                 const params = new URLSearchParams();
+                params.append("dateType", dateType);
 
-                const mappedDateType =
-                    dateType === "registration"
-                        ? "registration_date"
-                        : dateType === "training"
-                            ? "training_date"
-                            : dateType === "completed"
-                                ? "completed_date"
-                                : "";
+                if (startDate) params.append("start", startDate);
+                if (endDate) params.append("end", endDate);
 
-                if (startDate) params.append("start", `${startDate}T00:00:00Z`);
-                if (endDate) params.append("end", `${endDate}T23:59:59Z`);
                 if (selectedStatus.length > 0)
-                    params.append("attendance_status", selectedStatus.join(","));
-                if (selectedTraining) params.append("training_id", selectedTraining);
-                if (advantechCert) params.append("has_advantech_cert", advantechCert);
-                if (mappedDateType) params.append("dateType", mappedDateType);
+                    params.append("status", selectedStatus.join(","));
+
+                if (selectedCertStatus.length > 0) {
+                    params.append("certificate_status", selectedCertStatus[0]);
+                }
 
                 if (params.toString()) url += `?${params.toString()}`;
-            }
 
-            const res = await fetch(url, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-
-            if (res.status === 404) {
-                toast.error("No data found to export.");
-                return;
+                res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
             }
 
             if (!res.ok) {
                 const errData = await res.json().catch(() => null);
                 const errMsg = errData?.message || "Export failed.";
-                toast.error(errMsg);
+
+                if (errMsg.toLowerCase().includes("no") && errMsg.toLowerCase().includes("data")) {
+                    toast.error("No data available to export.");
+                } else {
+                    toast.error(errMsg);
+                }
+
                 return;
             }
 
             const blob = await res.blob();
             const contentDisposition = res.headers.get("Content-Disposition");
-            let fileName = "exported_completed.xlsx";
+            let fileName = "exported_data.xlsx";
 
             if (contentDisposition && contentDisposition.includes("filename=")) {
                 const match = contentDisposition.match(/filename="?([^"]+)"?/);
@@ -119,7 +106,7 @@ export default function ExportCompletedDialog({ open, onClose }) {
             link.remove();
             URL.revokeObjectURL(link.href);
 
-            toast.success("Completed training data exported successfully.");
+            toast.success("User certificates data exported successfully.");
             onClose();
         } catch (error) {
             console.error(error);
@@ -128,28 +115,26 @@ export default function ExportCompletedDialog({ open, onClose }) {
     };
 
     const clearFilters = () => {
-        setSelectedTraining("");
         setSelectedStatus([]);
-        setDateType("");
+        setSelectedCertStatus([]);
+        setDateType("issued_date");
         setStartDate("");
         setEndDate("");
-        setAdvantechCert("");
     };
 
     const hasFilters =
         (startDate && endDate) ||
         selectedStatus.length > 0 ||
-        selectedTraining ||
-        advantechCert;
+        selectedCertStatus.length > 0;
 
     return (
         <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50 p-4">
             <div className="relative bg-white rounded-lg w-full max-w-[800px] max-h-[90vh] overflow-y-auto shadow-lg">
                 {/* Header - Sticky */}
                 <div className="sticky top-0 bg-white z-10 px-4 sm:px-6 pt-4 sm:pt-6 pb-3 border-b">
-                    <h2 className="text-lg sm:text-xl font-bold mb-1">Export Completed</h2>
+                    <h2 className="text-lg sm:text-xl font-bold mb-1">Export User Certificates</h2>
                     <p className="text-xs sm:text-sm text-gray-500">
-                        Export completed training registration data.
+                        Export user uploaded certificate data with custom filters.
                     </p>
                     <button
                         onClick={onClose}
@@ -164,39 +149,50 @@ export default function ExportCompletedDialog({ open, onClose }) {
                     {/* Date Type Selection */}
                     <div>
                         <Label className="text-xs sm:text-sm block mb-2 font-semibold">Date Type</Label>
-                        <div className="flex flex-wrap gap-2 sm:gap-3">
+                        <div className="grid grid-cols-2 gap-2 sm:gap-3">
                             <label className="flex items-center gap-2 text-xs sm:text-sm">
                                 <input
                                     type="radio"
                                     name="dateType"
-                                    value="registration"
-                                    checked={dateType === "registration"}
+                                    value="issued_date"
+                                    checked={dateType === "issued_date"}
                                     onChange={(e) => setDateType(e.target.value)}
                                     className="w-4 h-4"
                                 />
-                                Registration Date
+                                Issued Date
                             </label>
                             <label className="flex items-center gap-2 text-xs sm:text-sm">
                                 <input
                                     type="radio"
                                     name="dateType"
-                                    value="training"
-                                    checked={dateType === "training"}
+                                    value="expired_date"
+                                    checked={dateType === "expired_date"}
                                     onChange={(e) => setDateType(e.target.value)}
                                     className="w-4 h-4"
                                 />
-                                Training Date
+                                Expired Date
                             </label>
                             <label className="flex items-center gap-2 text-xs sm:text-sm">
                                 <input
                                     type="radio"
                                     name="dateType"
-                                    value="completed"
-                                    checked={dateType === "completed"}
+                                    value="created_at"
+                                    checked={dateType === "created_at"}
                                     onChange={(e) => setDateType(e.target.value)}
                                     className="w-4 h-4"
                                 />
-                                Completed Date
+                                Created Date
+                            </label>
+                            <label className="flex items-center gap-2 text-xs sm:text-sm">
+                                <input
+                                    type="radio"
+                                    name="dateType"
+                                    value="verification_date"
+                                    checked={dateType === "verification_date"}
+                                    onChange={(e) => setDateType(e.target.value)}
+                                    className="w-4 h-4"
+                                />
+                                Verification Date
                             </label>
                         </div>
                     </div>
@@ -233,9 +229,9 @@ export default function ExportCompletedDialog({ open, onClose }) {
                         </div>
                     </div>
 
-                    {/* Status */}
+                    {/* Validation Status */}
                     <div>
-                        <Label className="text-xs sm:text-sm block mb-2 font-semibold">Attendance Status</Label>
+                        <Label className="text-xs sm:text-sm block mb-2 font-semibold">Validation Status</Label>
                         <div className="flex flex-wrap gap-3">
                             {statuses.map((st) => (
                                 <div key={st.value} className="flex items-center space-x-2">
@@ -252,35 +248,23 @@ export default function ExportCompletedDialog({ open, onClose }) {
                         </div>
                     </div>
 
-                    {/* Training Dropdown */}
+                    {/* Certificate Status */}
                     <div>
-                        <Label className="text-xs sm:text-sm block mb-2 font-semibold">Training</Label>
-                        <Select value={selectedTraining} onValueChange={setSelectedTraining}>
-                            <SelectTrigger className="w-full text-sm">
-                                <SelectValue placeholder="Select a training" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {trainingList.map((t) => (
-                                    <SelectItem key={t.training_id} value={t.training_id}>
-                                        {t.training_name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-
-                    {/* Advantech Certificate */}
-                    <div>
-                        <Label className="text-xs sm:text-sm block mb-2 font-semibold">Advantech Certificate</Label>
-                        <Select value={advantechCert} onValueChange={setAdvantechCert}>
-                            <SelectTrigger className="w-full text-sm">
-                                <SelectValue placeholder="Select certificate availability" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value='true'>Yes</SelectItem>
-                                <SelectItem value='false'>No</SelectItem>
-                            </SelectContent>
-                        </Select>
+                        <Label className="text-xs sm:text-sm block mb-2 font-semibold">Certificate Status</Label>
+                        <div className="flex flex-wrap gap-3">
+                            {certStatuses.map((st) => (
+                                <div key={st.value} className="flex items-center space-x-2">
+                                    <Checkbox
+                                        id={st.value}
+                                        checked={selectedCertStatus.includes(st.value)}
+                                        onCheckedChange={() => toggleCertStatus(st.value)}
+                                    />
+                                    <Label htmlFor={st.value} className="text-xs sm:text-sm capitalize cursor-pointer">
+                                        {st.label}
+                                    </Label>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
 
