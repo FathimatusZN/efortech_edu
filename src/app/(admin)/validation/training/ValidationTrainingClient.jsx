@@ -126,6 +126,7 @@ const ValidationTrainingClient = () => {
         attendance_status: ["null", "true", "false"],
       },
       sortFields: [
+        "advantech_cert",
         "registration_participant_id",
         "fullname",
         "registration_date",
@@ -145,6 +146,7 @@ const ValidationTrainingClient = () => {
         completion_type: ["certified", "no_certificate", "absent"],
       },
       sortFields: [
+        "advantech_cert",
         "registration_participant_id",
         "fullname",
         "registration_date",
@@ -231,7 +233,14 @@ const ValidationTrainingClient = () => {
       if (!response.ok) throw new Error();
 
       const result = await response.json();
-      const data = result?.data || [];
+      let data = result?.data || [];
+
+      if (
+        (tabKey === "onprogress" || tabKey === "completed") &&
+        sortBy === "advantech_cert"
+      ) {
+        data = sortByAdvantechCert(data, sortOrder);
+      }
 
       setTrainingData((prev) => ({
         ...prev,
@@ -309,6 +318,19 @@ const ValidationTrainingClient = () => {
       [tab]: defaultFilter,
     }));
   }, [tab]);
+
+  const sortByAdvantechCert = (data, order) => {
+    return [...data].sort((a, b) => {
+      const aHasCert = Boolean(a.advantech_cert);
+      const bHasCert = Boolean(b.advantech_cert);
+
+      if (order === "ASC") {
+        return Number(bHasCert) - Number(aHasCert);
+      } else {
+        return Number(aHasCert) - Number(bHasCert);
+      }
+    });
+  };
 
   // Function to handle showing participants in a dialog
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
