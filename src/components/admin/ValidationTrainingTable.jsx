@@ -48,6 +48,7 @@ export const ValidationTrainingTable = ({
   onShowDetailRegistration,
   onAttendanceChange,
   onUploadClick,
+  onMarkNoCertificate,
   disablePagination = false,
   // Selection props (injected by SelectableTableWrapper or passed manually)
   selectedRows = [],
@@ -200,6 +201,54 @@ export const ValidationTrainingTable = ({
     return <span className="text-red-500 italic">Not Found</span>;
   };
 
+  // Render "No Certificate" button for On Progress mode
+  const renderNoCertificateColumn = (item) => {
+    const canMarkNoCert = item.attendance_status === true && !item.has_certificate && !item.no_certificate;
+
+    if (!canMarkNoCert) {
+      return <span className="text-gray-400 text-sm">-</span>;
+    }
+
+    return (
+      <Button
+        variant="outline"
+        className="text-orange-600 border-orange-500 hover:bg-orange-100"
+        onClick={() => onMarkNoCertificate(item.registration_participant_id)}
+      >
+        No Certificate
+        <BsFillXCircleFill className="ml-2" />
+      </Button>
+    );
+  };
+
+  // Render status badge for Completed mode
+  const renderCompletedStatus = (item) => {
+    if (item.has_certificate) {
+      return (
+        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+          <BsCheckCircleFill className="w-3 h-3" />
+          Certified
+        </span>
+      );
+    }
+    if (item.no_certificate) {
+      return (
+        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-700">
+          <BsFillXCircleFill className="w-3 h-3" />
+          Uncertified
+        </span>
+      );
+    }
+    if (item.attendance_status === false) {
+      return (
+        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+          <BsFillXCircleFill className="w-3 h-3" />
+          Absent
+        </span>
+      );
+    }
+    return <span className="text-gray-400 text-sm">-</span>;
+  };
 
   const handleOpenCertificateDetail = async (certificateId) => {
     try {
@@ -248,13 +297,20 @@ export const ValidationTrainingTable = ({
                   <TableHead>Participant</TableHead>
                   <TableHead>Status</TableHead>
                 </>
-              ) : (
+              ) : mode === "onprogress" ? (
                 <>
                   <TableHead>Attendance</TableHead>
                   <TableHead>Advantech Certificate</TableHead>
                   <TableHead>Certificate</TableHead>
+                  <TableHead>Action</TableHead>
                 </>
-              )}
+              ) : mode === "completed" ? (
+                <>
+                  <TableHead>Advantech Certificate</TableHead>
+                  <TableHead>Certificate</TableHead>
+                  <TableHead>Status</TableHead>
+                </>
+              ) : null}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -319,13 +375,32 @@ export const ValidationTrainingTable = ({
                       />
                     </TableCell>
                   </>
-                ) : (
+                ) : mode === "onprogress" ? (
                   <>
                     <TableCell>{renderAttendanceColumn(item)}</TableCell>
                     <TableCell>{renderAdvantechCertificateColumn(item)}</TableCell>
                     <TableCell>{renderCertificateUploadColumn(item)}</TableCell>
+                    <TableCell>{renderNoCertificateColumn(item)}</TableCell>
                   </>
-                )}
+                ) : mode === "completed" ? (
+                  <>
+                    <TableCell>{renderAdvantechCertificateColumn(item)}</TableCell>
+                    <TableCell>
+                      {item.has_certificate ? (
+                        <Button
+                          variant="outline"
+                          className="text-green-600 border-green-500 hover:bg-green-100"
+                          onClick={() => handleOpenCertificateDetail(item.certificate_id)}
+                        >
+                          View Certificate
+                        </Button>
+                      ) : (
+                        <span className="text-gray-400 text-sm">-</span>
+                      )}
+                    </TableCell>
+                    <TableCell>{renderCompletedStatus(item)}</TableCell>
+                  </>
+                ) : null}
               </TableRow>
             ))}
           </TableBody>
