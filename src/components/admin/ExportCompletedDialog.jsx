@@ -21,14 +21,15 @@ export default function ExportCompletedDialog({ open, onClose }) {
     const [dateType, setDateType] = useState("");
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
-    const [selectedStatus, setSelectedStatus] = useState([]);
+    const [selectedCompletionType, setSelectedCompletionType] = useState([]);
     const [selectedTraining, setSelectedTraining] = useState("");
     const [trainingList, setTrainingList] = useState([]);
     const [advantechCert, setAdvantechCert] = useState("");
 
-    const statuses = [
-        { label: "Present", value: "true" },
-        { label: "Absent", value: "false" },
+    const completionTypes = [
+        { label: "Certified", value: "certified" },
+        { label: "No Certificate", value: "no_certificate" },
+        { label: "Absent", value: "absent" },
     ];
 
     useEffect(() => {
@@ -46,14 +47,6 @@ export default function ExportCompletedDialog({ open, onClose }) {
     }, []);
 
     if (!open) return null;
-
-    const toggleStatus = (value) => {
-        setSelectedStatus((prev) =>
-            prev.includes(value)
-                ? prev.filter((s) => s !== value)
-                : [...prev, value]
-        );
-    };
 
     const handleExport = async (type) => {
         try {
@@ -77,8 +70,11 @@ export default function ExportCompletedDialog({ open, onClose }) {
 
                 if (startDate) params.append("start", `${startDate}T00:00:00Z`);
                 if (endDate) params.append("end", `${endDate}T23:59:59Z`);
-                if (selectedStatus.length > 0)
-                    params.append("attendance_status", selectedStatus.join(","));
+                if (selectedCompletionType.length > 0) {
+                    selectedCompletionType.forEach((t) =>
+                        params.append("completion_type", t)
+                    );
+                }
                 if (selectedTraining) params.append("training_id", selectedTraining);
                 if (advantechCert) params.append("has_advantech_cert", advantechCert);
                 if (mappedDateType) params.append("dateType", mappedDateType);
@@ -129,7 +125,7 @@ export default function ExportCompletedDialog({ open, onClose }) {
 
     const clearFilters = () => {
         setSelectedTraining("");
-        setSelectedStatus([]);
+        setSelectedCompletionType([]);
         setDateType("");
         setStartDate("");
         setEndDate("");
@@ -138,7 +134,7 @@ export default function ExportCompletedDialog({ open, onClose }) {
 
     const hasFilters =
         (startDate && endDate) ||
-        selectedStatus.length > 0 ||
+        selectedCompletionType.length > 0 ||
         selectedTraining ||
         advantechCert;
 
@@ -235,20 +231,25 @@ export default function ExportCompletedDialog({ open, onClose }) {
 
                     {/* Status */}
                     <div>
-                        <Label className="text-xs sm:text-sm block mb-2 font-semibold">Attendance Status</Label>
+                        <Label className="text-xs sm:text-sm block mb-2 font-semibold">Completion Status</Label>
                         <div className="flex flex-wrap gap-3">
-                            {statuses.map((st) => (
-                                <div key={st.value} className="flex items-center space-x-2">
+                            {completionTypes.map((ct) => (
+                                <div key={ct.value} className="flex items-center space-x-2">
                                     <Checkbox
-                                        id={st.value}
-                                        checked={selectedStatus.includes(st.value)}
-                                        onCheckedChange={() => toggleStatus(st.value)}
+                                        id={ct.value}
+                                        checked={selectedCompletionType.includes(ct.value)}
+                                        onCheckedChange={() =>
+                                            setSelectedCompletionType((prev) =>
+                                                prev.includes(ct.value)
+                                                    ? prev.filter((v) => v !== ct.value)
+                                                    : [...prev, ct.value]
+                                            )
+                                        }
                                     />
-                                    <Label htmlFor={st.value} className="text-xs sm:text-sm capitalize cursor-pointer">
-                                        {st.label}
-                                    </Label>
+                                    <Label htmlFor={ct.value}>{ct.label}</Label>
                                 </div>
                             ))}
+
                         </div>
                     </div>
 
