@@ -9,7 +9,7 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "react-hot-toast";
 import { AdditionalParticipantDialog } from "@/components/admin/AdditionalParticipantDialog";
 import { UploadCertificateDialog } from "@/components/admin/UploadCertificateDialog";
-import { ConfirmDialogAdmin } from "@/components/ui/ConfirmDialog";
+import { ConfirmDialogAdmin, ConfirmUncertifiedDialog } from "@/components/ui/ConfirmDialog";
 import { FaSearch, FaFilter } from "react-icons/fa";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
@@ -44,6 +44,10 @@ const ValidationTrainingClient = () => {
   const filterRef = useRef(null);
   const sortRef = useRef(null);
   const [attendanceStatus, setAttendanceStatus] = useState({});
+
+  const [uncertifiedDialogOpen, setUncertifiedDialogOpen] = useState(false);
+  const [selectedUncertifiedParticipant, setSelectedUncertifiedParticipant] =
+    useState(null);
 
   // Delete related states
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -382,29 +386,34 @@ const ValidationTrainingClient = () => {
     setDeleteDialogOpen(true);
   };
 
-  // Handler for marking no certificate
-  const handleMarkNoCertificate = async (participantId) => {
-    if (!confirm("Mark this participant as 'No Certificate'? This action will move them to Completed tab.")) {
-      return;
-    }
+  const confirmMarkNoCertificate = async () => {
+    if (!selectedUncertifiedParticipant) return;
 
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/enrollment/no-certificate/${participantId}`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/enrollment/no-certificate/${selectedUncertifiedParticipant.registration_participant_id}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
         }
       );
 
-      if (!res.ok) throw new Error("Failed to mark no certificate");
+      if (!res.ok) throw new Error();
 
-      toast.success("Participant marked as 'No Certificate'");
+      toast.success("Participant marked as No Certificate");
+      setUncertifiedDialogOpen(false);
+      setSelectedUncertifiedParticipant(null);
       fetchTabData(tab);
     } catch (err) {
       console.error(err);
-      toast.error("Error marking no certificate");
+      toast.error("Error marking No Certificate");
     }
+  };
+
+  // Handler for marking no certificate
+  const handleMarkNoCertificate = (participant) => {
+    setSelectedUncertifiedParticipant(participant);
+    setUncertifiedDialogOpen(true);
   };
 
   // Delete all cancelled registrations
@@ -908,6 +917,17 @@ const ValidationTrainingClient = () => {
           }}
           onConfirm={executeDelete}
         />
+
+        <ConfirmUncertifiedDialog
+          open={uncertifiedDialogOpen}
+          participant={selectedUncertifiedParticipant}
+          onCancel={() => {
+            setUncertifiedDialogOpen(false);
+            setSelectedUncertifiedParticipant(null);
+          }}
+          onConfirm={confirmMarkNoCertificate}
+        />
+
       </div>
     </ProtectedRoute>
   );
