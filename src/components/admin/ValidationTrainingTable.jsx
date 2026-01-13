@@ -93,7 +93,7 @@ export const ValidationTrainingTable = ({
     if (attendanceLocked) {
       return (
         <div className="flex items-center justify-center">
-          <div className="flex items-center gap-1 border border-green-400 text-green-600 bg-white rounded-full px-3 py-1 text-sm font-medium">
+          <div className="flex items-center gap-1 border border-green-400 text-green-600 bg-white rounded-full px-3 py-1 text-xs font-medium">
             <BsCheckCircleFill className="w-4 h-4" />
             Present
           </div>
@@ -213,41 +213,12 @@ export const ValidationTrainingTable = ({
       <Button
         variant="outline"
         className="text-orange-600 border-orange-500 hover:bg-orange-100"
-        onClick={() => onMarkNoCertificate(item.registration_participant_id)}
+        onClick={() => onMarkNoCertificate(item)}
       >
         No Certificate
         <BsFillXCircleFill className="ml-2" />
       </Button>
     );
-  };
-
-  // Render status badge for Completed mode
-  const renderCompletedStatus = (item) => {
-    if (item.has_certificate) {
-      return (
-        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
-          <BsCheckCircleFill className="w-3 h-3" />
-          Certified
-        </span>
-      );
-    }
-    if (item.no_certificate) {
-      return (
-        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-700">
-          <BsFillXCircleFill className="w-3 h-3" />
-          Uncertified
-        </span>
-      );
-    }
-    if (item.attendance_status === false) {
-      return (
-        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
-          <BsFillXCircleFill className="w-3 h-3" />
-          Absent
-        </span>
-      );
-    }
-    return <span className="text-gray-400 text-sm">-</span>;
   };
 
   const handleOpenCertificateDetail = async (certificateId) => {
@@ -306,9 +277,9 @@ export const ValidationTrainingTable = ({
                 </>
               ) : mode === "completed" ? (
                 <>
+                  <TableHead>Attendance</TableHead>
                   <TableHead>Advantech Certificate</TableHead>
                   <TableHead>Certificate</TableHead>
-                  <TableHead>Status</TableHead>
                 </>
               ) : null}
             </TableRow>
@@ -384,21 +355,30 @@ export const ValidationTrainingTable = ({
                   </>
                 ) : mode === "completed" ? (
                   <>
+                    <TableCell>{renderAttendanceColumn(item)}</TableCell>
                     <TableCell>{renderAdvantechCertificateColumn(item)}</TableCell>
                     <TableCell>
                       {item.has_certificate ? (
                         <Button
-                          variant="outline"
-                          className="text-green-600 border-green-500 hover:bg-green-100"
+                          variant="lightBlue"
                           onClick={() => handleOpenCertificateDetail(item.certificate_id)}
                         >
                           View Certificate
                         </Button>
+                      ) : item.attendance_status === false ? (
+                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+                          <BsFillXCircleFill className="w-3 h-3" />
+                          Absent
+                        </span>
+                      ) : item.no_certificate ? (
+                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-700">
+                          <BsFillXCircleFill className="w-3 h-3" />
+                          Uncertified
+                        </span>
                       ) : (
                         <span className="text-gray-400 text-sm">-</span>
                       )}
                     </TableCell>
-                    <TableCell>{renderCompletedStatus(item)}</TableCell>
                   </>
                 ) : null}
               </TableRow>
