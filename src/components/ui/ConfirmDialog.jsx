@@ -242,4 +242,68 @@ const DeleteTrainingDialog = ({ open, onCancel, onConfirm, relationStatus, messa
     );
 };
 
-export { ConfirmDialog, ConfirmDialogAdmin, ArchiveDialog, DeleteTrainingDialog };
+const ConfirmUncertifiedDialog = ({
+    open,
+    participant,
+    onCancel,
+    onConfirm,
+}) => {
+    if (!participant) return null;
+
+    return (
+        <Dialog open={open} onOpenChange={onCancel}>
+            <DialogContent className="space-y-4">
+                <DialogHeader>
+                    <DialogTitle className="text-lg font-semibold text-yellow-600">
+                        ⚠️ Mark No Certificate
+                    </DialogTitle>
+                </DialogHeader>
+
+                <p className="text-sm text-muted-foreground">
+                    Are you sure you want to mark this participant as{" "}
+                    <span className="font-semibold text-yellow-700">
+                        No Certificate
+                    </span>
+                    ?
+                </p>
+
+                <p className="text-sm text-muted-foreground">
+                    This action will move the participant to the{" "}
+                    <span className="font-medium text-mainBlue">Completed</span>{" "}
+                    tab and cannot be undone.
+                </p>
+
+                <table className="text-sm w-full table-auto">
+                    <tbody>
+                        <tr>
+                            <td className="text-lightBlue w-28">Participant</td>
+                            <td className="text-black font-medium">
+                                : {participant.fullname}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td className="text-lightBlue">Training</td>
+                            <td className="text-black font-medium">
+                                : {participant.training_name}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <DialogFooter className="flex justify-end gap-2 pt-4">
+                    <Button variant="ghost" onClick={onCancel}>
+                        Cancel
+                    </Button>
+                    <Button
+                        className="bg-yellow-600 hover:bg-yellow-700 text-white"
+                        onClick={onConfirm}
+                    >
+                        Yes, Mark No Certificate
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+};
+
+export { ConfirmDialog, ConfirmDialogAdmin, ArchiveDialog, DeleteTrainingDialog, ConfirmUncertifiedDialog };
