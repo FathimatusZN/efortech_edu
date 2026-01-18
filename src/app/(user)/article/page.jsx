@@ -124,7 +124,7 @@ export default function ArticlePage() {
 
   return (
     <div className="max-w-screen w-full relative mx-auto">
-      <div className="relative w-full aspect-[21/9] max-h-[90vh] overflow-hidden shadow-lg">
+      <div className="relative w-full aspect-[21/9] max-h-[55vh] overflow-hidden shadow-lg">
         {mostViewedArticles.length > 0 && (
           <div
             className="w-full h-full cursor-pointer relative"
