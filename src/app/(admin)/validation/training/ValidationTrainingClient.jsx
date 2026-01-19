@@ -9,7 +9,7 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "react-hot-toast";
 import { AdditionalParticipantDialog } from "@/components/admin/AdditionalParticipantDialog";
 import { UploadCertificateDialog } from "@/components/admin/UploadCertificateDialog";
-import { ConfirmDialogAdmin } from "@/components/ui/ConfirmDialog";
+import { ConfirmDialogAdmin, ConfirmUncertifiedDialog } from "@/components/ui/ConfirmDialog";
 import { FaSearch, FaFilter } from "react-icons/fa";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
@@ -45,6 +45,10 @@ const ValidationTrainingClient = () => {
   const sortRef = useRef(null);
   const [attendanceStatus, setAttendanceStatus] = useState({});
 
+  const [uncertifiedDialogOpen, setUncertifiedDialogOpen] = useState(false);
+  const [selectedUncertifiedParticipant, setSelectedUncertifiedParticipant] =
+    useState(null);
+
   // Delete related states
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteMode, setDeleteMode] = useState(""); // "selected" or "all"
@@ -57,6 +61,12 @@ const ValidationTrainingClient = () => {
     3: "Validated",
     4: "Completed",
     5: "Cancelled",
+  };
+
+  const COMPLETED_STATUS_LABELS = {
+    certified: "Certified",
+    no_certificate: "No Certificate",
+    absent: "Absent",
   };
 
   const ATTENDANCE_LABELS = {
@@ -77,7 +87,7 @@ const ValidationTrainingClient = () => {
   const [selectedFilters, setSelectedFilters] = useState({
     needprocess: { status: ["1", "2", "3"] },
     onprogress: { attendance_status: ["null", "true", "false"] },
-    completed: { attendance_status: ["true", "false"] },
+    completed: { completion_type: ["certified", "no_certificate", "absent"] },
     cancelled: { status: ["5"] },
   });
 
@@ -116,6 +126,7 @@ const ValidationTrainingClient = () => {
         attendance_status: ["null", "true", "false"],
       },
       sortFields: [
+        "advantech_cert",
         "registration_participant_id",
         "fullname",
         "registration_date",
@@ -132,9 +143,10 @@ const ValidationTrainingClient = () => {
         "training_name",
       ],
       filters: {
-        attendance_status: ["true", "false"],
+        completion_type: ["certified", "no_certificate", "absent"],
       },
       sortFields: [
+        "advantech_cert",
         "registration_participant_id",
         "fullname",
         "registration_date",
@@ -181,24 +193,30 @@ const ValidationTrainingClient = () => {
 
     if (searchQuery) params.append("keyword", searchQuery);
 
-    const rawStatus = selectedFilters[tab].status || [];
-    const uniqueStatus = [...new Set(rawStatus)];
-    uniqueStatus.forEach((statusCode) => {
-      if (statusCode) params.append("status", statusCode);
-    });
+    if (tab === "needprocess" || tab === "cancelled") {
+      const statuses = selectedFilters[tab].status || [];
+      statuses.forEach((s) => params.append("status", s));
+    }
 
     if (sortBy) params.append("sort_by", sortBy);
     if (sortOrder) params.append("sort_order", sortOrder);
 
     Object.entries(selectedFilters[tab]).forEach(([key, value]) => {
-      if (key !== "status") {
-        if (Array.isArray(value)) {
-          [...new Set(value)].forEach((val) => params.append(key, val));
-        } else if (value) {
-          params.append(key, value);
-        }
+      if (key === "status") return;
+
+      if (Array.isArray(value) && value.length > 0) {
+        const defaultValues = tabConfig[tab]?.filters?.[key];
+        const isDefault =
+          defaultValues &&
+          defaultValues.length === value.length &&
+          defaultValues.every((v) => value.includes(v));
+
+        if (isDefault) return;
+
+        [...new Set(value)].forEach((val) => params.append(key, val));
       }
     });
+    console.log("QUERY:", params.toString());
 
     return `${baseURL}?${params.toString()}`;
   };
@@ -215,7 +233,14 @@ const ValidationTrainingClient = () => {
       if (!response.ok) throw new Error();
 
       const result = await response.json();
-      const data = result?.data || [];
+      let data = result?.data || [];
+
+      if (
+        (tabKey === "onprogress" || tabKey === "completed") &&
+        sortBy === "advantech_cert"
+      ) {
+        data = sortByAdvantechCert(data, sortOrder);
+      }
 
       setTrainingData((prev) => ({
         ...prev,
@@ -278,7 +303,7 @@ const ValidationTrainingClient = () => {
     } else if (tab === "onprogress") {
       defaultFilter.attendance_status = ["null", "true", "false"];
     } else if (tab === "completed") {
-      defaultFilter.attendance_status = ["true", "false"];
+      defaultFilter.completion_type = ["certified", "no_certificate", "absent"];
     } else if (tab === "cancelled") {
       defaultFilter.status = ["5"];
     }
@@ -293,6 +318,19 @@ const ValidationTrainingClient = () => {
       [tab]: defaultFilter,
     }));
   }, [tab]);
+
+  const sortByAdvantechCert = (data, order) => {
+    return [...data].sort((a, b) => {
+      const aHasCert = Boolean(a.advantech_cert);
+      const bHasCert = Boolean(b.advantech_cert);
+
+      if (order === "ASC") {
+        return Number(bHasCert) - Number(aHasCert);
+      } else {
+        return Number(aHasCert) - Number(bHasCert);
+      }
+    });
+  };
 
   // Function to handle showing participants in a dialog
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
@@ -368,6 +406,36 @@ const ValidationTrainingClient = () => {
     setSelectedIdsToDelete(selectedIds);
     setDeleteMode("selected");
     setDeleteDialogOpen(true);
+  };
+
+  const confirmMarkNoCertificate = async () => {
+    if (!selectedUncertifiedParticipant) return;
+
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/enrollment/no-certificate/${selectedUncertifiedParticipant.registration_participant_id}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+
+      if (!res.ok) throw new Error();
+
+      toast.success("Participant marked as No Certificate");
+      setUncertifiedDialogOpen(false);
+      setSelectedUncertifiedParticipant(null);
+      fetchTabData(tab);
+    } catch (err) {
+      console.error(err);
+      toast.error("Error marking No Certificate");
+    }
+  };
+
+  // Handler for marking no certificate
+  const handleMarkNoCertificate = (participant) => {
+    setSelectedUncertifiedParticipant(participant);
+    setUncertifiedDialogOpen(true);
   };
 
   // Delete all cancelled registrations
@@ -496,7 +564,7 @@ const ValidationTrainingClient = () => {
 
                   {isFilterOpen && (
                     <div className="absolute z-10 mt-2 w-[180px] bg-white border border-gray-300 rounded-md shadow-md p-2 space-y-2 text-sm">
-                      {/* Status Filter */}
+                      {/* Status Filter for needprocess and cancelled tabs */}
                       {currentConfig.filters?.status?.map((statusCode) => (
                         <div
                           key={statusCode}
@@ -534,7 +602,7 @@ const ValidationTrainingClient = () => {
                         </div>
                       ))}
 
-                      {/* Attendance Status Filter */}
+                      {/* Attendance Status Filter for onprogress tab */}
                       {currentConfig.filters?.attendance_status?.map(
                         (attendanceStatus) => (
                           <div
@@ -580,6 +648,44 @@ const ValidationTrainingClient = () => {
                           </div>
                         )
                       )}
+
+                      {/* Completion Type Filter for completed tab */}
+                      {currentConfig.filters?.completion_type?.map((type) => (
+                        <div
+                          key={type}
+                          className="flex items-center gap-2"
+                        >
+                          <Checkbox
+                            id={`completion-type-${type}`}
+                            checked={
+                              selectedFilters[tab].completion_type?.includes(
+                                type
+                              ) || false
+                            }
+                            onCheckedChange={(checked) => {
+                              setSelectedFilters((prev) => {
+                                const prevTabFilters = prev[tab] || {};
+                                const prevCompletionType = prevTabFilters.completion_type || [];
+
+                                return {
+                                  ...prev,
+                                  [tab]: {
+                                    ...prevTabFilters,
+                                    completion_type: checked
+                                      ? [...prevCompletionType, type]
+                                      : prevCompletionType.filter(
+                                        (t) => t !== type
+                                      ),
+                                  },
+                                };
+                              });
+                            }}
+                          />
+                          <label htmlFor={`completion-type-${type}`}>
+                            {COMPLETED_STATUS_LABELS[type] || type}
+                          </label>
+                        </div>
+                      ))}
                     </div>
                   )}
                 </div>
@@ -626,8 +732,8 @@ const ValidationTrainingClient = () => {
                               key={field}
                               onClick={() => setTempSortField(field)}
                               className={`w-full text-left px-2 py-1 rounded hover:bg-gray-100 text-sm ${tempSortField === field
-                                  ? "bg-blue-100 font-semibold"
-                                  : ""
+                                ? "bg-blue-100 font-semibold"
+                                : ""
                                 }`}
                             >
                               {field
@@ -720,6 +826,7 @@ const ValidationTrainingClient = () => {
                         onAttendanceChange={handleAttendanceChange}
                         onShowUploadDialog={onShowUploadDialog}
                         onUploadClick={onShowUploadDialog}
+                        onMarkNoCertificate={handleMarkNoCertificate}
                       />
                     ) : (
                       <div className="w-full flex justify-center items-center min-h-[120px]">
@@ -832,6 +939,17 @@ const ValidationTrainingClient = () => {
           }}
           onConfirm={executeDelete}
         />
+
+        <ConfirmUncertifiedDialog
+          open={uncertifiedDialogOpen}
+          participant={selectedUncertifiedParticipant}
+          onCancel={() => {
+            setUncertifiedDialogOpen(false);
+            setSelectedUncertifiedParticipant(null);
+          }}
+          onConfirm={confirmMarkNoCertificate}
+        />
+
       </div>
     </ProtectedRoute>
   );

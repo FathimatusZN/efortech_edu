@@ -33,12 +33,19 @@ const categoryOptions = [
   { id: 3, label: "Success Story" },
 ];
 
+const sortOptions = [
+  { value: "latest", label: "Latest" },
+  { value: "oldest", label: "Oldest" },
+  { value: "most_viewed", label: "Most Viewed" },
+];
+
 const PAGE_SIZE = 24;
 
 const ArticleAdminPage = () => {
   const [articles, setArticles] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [selectedSort, setSelectedSort] = useState("latest");
   const [page, setPage] = useState(1);
   const itemsPerPage = PAGE_SIZE;
   const [isLoading, setIsLoading] = useState(true);
@@ -56,17 +63,34 @@ const ArticleAdminPage = () => {
     return () => {
       window.removeEventListener("refreshArticles", handleRefresh);
     };
-  }, []);
+  }, [selectedSort]);
 
   const fetchAllArticles = async () => {
-    setIsLoading(true); // mulai loading
+    setIsLoading(true);
     try {
+      // Map frontend sort to backend parameters
+      let sortBy = "create_date";
+      let sortOrder = "desc";
+
+      if (selectedSort === "latest") {
+        sortBy = "create_date";
+        sortOrder = "desc";
+      } else if (selectedSort === "oldest") {
+        sortBy = "create_date";
+        sortOrder = "asc";
+      } else if (selectedSort === "most_viewed") {
+        sortBy = "views";
+        sortOrder = "desc";
+      }
+
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/articles`
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/articles?limit=1000&sort_by=${sortBy}&sort_order=${sortOrder}`
       );
       if (!response.ok) throw new Error("Failed to fetch articles");
       const data = await response.json();
-      setArticles(Array.isArray(data.data) ? data.data : []);
+
+      const articlesData = data.data?.articles || data.data || [];
+      setArticles(Array.isArray(articlesData) ? articlesData : []);
     } catch (error) {
       console.error("Error fetching articles:", error);
       setArticles([]);
@@ -88,7 +112,9 @@ const ArticleAdminPage = () => {
       );
       const data = await response.json();
       if (!response.ok) throw new Error(data.message);
-      setArticles(Array.isArray(data.data) ? data.data : []);
+
+      const articlesData = data.data?.articles || data.data || [];
+      setArticles(Array.isArray(articlesData) ? articlesData : []);
       setPage(1);
     } catch (error) {
       console.error("Error searching articles:", error);
@@ -110,6 +136,11 @@ const ArticleAdminPage = () => {
       prev.filter((article) => article.article_id !== deletedId)
     );
     dispatchEvent(new Event("refreshArticles"));
+  };
+
+  const handleSortChange = (value) => {
+    setSelectedSort(value);
+    setPage(1);
   };
 
   const selectedCategoryId = categoryOptions.find(
@@ -172,10 +203,24 @@ const ArticleAdminPage = () => {
               </SelectContent>
             </Select>
 
+            <Select value={selectedSort} onValueChange={handleSortChange}>
+              <SelectTrigger className="w-full sm:w-[180px] h-[42px] rounded-lg border-mainOrange focus:ring-0 focus:outline-none">
+                <SelectValue placeholder="Sort By" />
+              </SelectTrigger>
+              <SelectContent>
+                {sortOptions.map((sort) => (
+                  <SelectItem key={sort.value} value={sort.value}>
+                    {sort.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
             <Button
               variant="orange"
               onClick={() => setExportDialogOpen(true)}
-              className="flex items-center"            >
+              className="flex items-center"
+            >
               <Download size={20} className="mr-2" /> Export
             </Button>
 
@@ -191,7 +236,6 @@ const ArticleAdminPage = () => {
 
         <div>
           {isLoading ? (
-            // Loading spinner hanya di sini
             <div className="flex justify-center items-center py-20">
               <LoadingSpinner />
             </div>
@@ -236,8 +280,14 @@ const ArticleAdminPage = () => {
 
                       {(() => {
                         const maxVisible = 5;
-                        let startPage = Math.max(1, page - Math.floor(maxVisible / 2));
-                        let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+                        let startPage = Math.max(
+                          1,
+                          page - Math.floor(maxVisible / 2)
+                        );
+                        let endPage = Math.min(
+                          totalPages,
+                          startPage + maxVisible - 1
+                        );
 
                         if (endPage - startPage < maxVisible - 1) {
                           startPage = Math.max(1, endPage - maxVisible + 1);

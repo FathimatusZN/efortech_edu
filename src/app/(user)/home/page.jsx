@@ -1,3 +1,4 @@
+// efortech_edu\src\app\(user)\home\page.jsx
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -20,14 +21,11 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
 
 const Home = () => {
   const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-  //handle complete-profile
   const { isComplete, loading: profileLoading } = useProfile();
-  //handle pop up
   const { user, loading: authLoading } = useAuth();
 
   const router = useRouter();
@@ -38,7 +36,6 @@ const Home = () => {
       return;
     }
 
-    // 👤 guest
     if (!user) {
       setShowAuthPopup(true);
       return;
@@ -47,7 +44,6 @@ const Home = () => {
     setShowAuthPopup(false);
   }, [authLoading, user]);
 
-  // Data states
   const [slides, setSlides] = useState([]);
   const [partnersData, setPartnersData] = useState({
     Institution: [],
@@ -67,7 +63,6 @@ const Home = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // Fetch and prepare all required home data
   useEffect(() => {
     const loadAllData = async () => {
       try {
@@ -77,7 +72,7 @@ const Home = () => {
             fetch(`${BASE_URL}/api/partner/search?category=1&status=1`),
             fetch(`${BASE_URL}/api/partner/search?category=2&status=1`),
             fetch(`${BASE_URL}/api/training?sort_order=desc&sort_by=graduates`),
-            fetch(`${BASE_URL}/api/articles?sort_by=views&sort_order=desc`),
+            fetch(`${BASE_URL}/api/articles?sort_by=views&sort_order=desc&limit=6`),
             fetch(`${BASE_URL}/api/review/search?score=5`),
           ]);
 
@@ -130,7 +125,10 @@ const Home = () => {
         });
 
         setTopCourses((courseJson.data || []).slice(0, 3));
-        setHighlightArticles((articleJson.data || []).slice(0, 6));
+
+        // FIX: Handle new API structure with pagination
+        const articles = articleJson.data?.articles || articleJson.data || [];
+        setHighlightArticles(Array.isArray(articles) ? articles.slice(0, 6) : []);
 
         const reviews = (reviewJson.data || []).sort(() => Math.random() - 0.5);
         const cards = reviews.map((rev) => ({
@@ -154,7 +152,6 @@ const Home = () => {
     loadAllData();
   }, []);
 
-  // Slide autoplay & YouTube integration
   useEffect(() => {
     let timer;
     let player;
@@ -199,7 +196,6 @@ const Home = () => {
     };
   }, [currentSlide, slides]);
 
-  // Fade-in animation trigger
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => entry.isIntersecting && setIsVisible(true),
@@ -268,14 +264,12 @@ const Home = () => {
             <button
               key={index}
               onClick={() => setCurrentSlide(index)}
-              className={`w-3 h-3 rounded-full border-2 flex items-center justify-center transition-all ${
-                currentSlide === index ? "border-mainOrange" : "border-gray-400"
-              }`}
+              className={`w-3 h-3 rounded-full border-2 flex items-center justify-center transition-all ${currentSlide === index ? "border-mainOrange" : "border-gray-400"
+                }`}
             >
               <div
-                className={`w-1 h-1 rounded-full ${
-                  currentSlide === index ? "bg-mainOrange" : "bg-transparent"
-                }`}
+                className={`w-1 h-1 rounded-full ${currentSlide === index ? "bg-mainOrange" : "bg-transparent"
+                  }`}
               ></div>
             </button>
           ))}
@@ -284,13 +278,12 @@ const Home = () => {
 
       <div
         ref={sectionRef}
-        className={
-          'mx-auto bg-mainBlue p-10 shadow-xl transition-opacity duration-1000 ${isVisible ? "opacity-100" : "opacity-0" }'
-        }
+        className={`mx-auto bg-mainBlue p-10 shadow-xl transition-opacity duration-1000 ${isVisible ? "opacity-100" : "opacity-0"
+          }`}
       >
         <h1 className="text-3xl font-bold text-white">Empowering Tomorrow :</h1>
         <h2 className="text-2xl font-semibold text-white">
-          Efortech’s Innovative Education Solutions
+          Efortech's Innovative Education Solutions
         </h2>
       </div>
 
@@ -414,11 +407,11 @@ const Home = () => {
                           ))}
                         </div>
                         <p className="text-xs bg-white text-black px-4 py-2 rounded-md leading-relaxed text-center w-50">
-                          “
+                          "
                           {card.comment.length > 120
                             ? card.comment.slice(0, 120) + "..."
                             : card.comment}
-                          ”
+                          "
                         </p>
                       </div>
                     </div>
@@ -466,7 +459,6 @@ const Home = () => {
         <Dialog open={showAuthPopup} onOpenChange={setShowAuthPopup}>
           <DialogContent className="w-[90%] sm:max-w-[900px] max-h-[90vh] h-auto p-0 overflow-hidden rounded-2xl shadow-xl focus:outline-none border-0">
             <div className="flex flex-col sm:flex-row w-full h-full">
-              {/* Gambar kiri */}
               <div className="w-full sm:w-1/2 h-48 sm:h-auto">
                 <img
                   src="/assets/popup_image.jpg"
@@ -475,7 +467,6 @@ const Home = () => {
                 />
               </div>
 
-              {/* Konten kanan */}
               <div className="w-full sm:w-1/2 bg-white p-6 sm:p-8 flex flex-col justify-center items-center sm:items-start text-center sm:text-left gap-4">
                 <DialogTitle className="text-2xl sm:text-4xl font-extrabold text-mainBlue font-sans">
                   Sign up now to join the community!

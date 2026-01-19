@@ -7,10 +7,12 @@ import {
   useState,
   ReactNode,
   useRef,
+  useCallback,
 } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "./AuthContext";
 
+// Shape of profile context exposed to consumers
 interface ProfileContextType {
   loading: boolean;
   isComplete: boolean | null;
@@ -20,7 +22,8 @@ interface ProfileContextType {
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
 
-// ✅ PINDAHKAN KE SINI - Di luar component
+// Auth-related pages that should not be accessible
+// once the user profile is complete
 const AUTH_PAGES = [
   "/auth/login",
   "/auth/signin",
@@ -34,15 +37,22 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const { user, loading: authLoading } = useAuth();
 
+  /**
+   * loading        → profile checking state
+   * isComplete     → profile completion status
+   * missingFields  → list of required fields that are missing
+   */
   const [loading, setLoading] = useState(true);
   const [isComplete, setIsComplete] = useState<boolean | null>(null);
   const [missingFields, setMissingFields] = useState<string[]>([]);
 
+  // Prevent redundant profile checks for the same user
   const hasChecked = useRef(false);
   const lastCheckedUserId = useRef<string | null>(null);
 
-  const checkProfile = async () => {
-    // Jika tidak ada user
+  // Fetch profile completeness status from backend
+  const checkProfile = useCallback(async () => {
+    // Reset state when user is not authenticated
     if (!user) {
       setLoading(false);
       setIsComplete(null);
@@ -51,41 +61,39 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    // ✅ PERBAIKAN: Check berbagai kemungkinan field untuk user ID
+    // Support multiple possible user id keys
     const userId = user.id || user.user_id || user.uid || user.userId;
-
-    // Jika user ID belum ada
     if (!userId) {
       setLoading(false);
       return;
     }
 
-    // Skip jika sudah pernah check user ini
+    // Avoid re-checking if already validated for the same user
     if (hasChecked.current && lastCheckedUserId.current === userId) {
       return;
     }
 
-    // Admin selalu complete
-    if (user.role === "admin" || user.role === "superadmin") {
-      setIsComplete(true);
-      setMissingFields([]);
-      setLoading(false);
-      hasChecked.current = true;
-      lastCheckedUserId.current = userId;
-      return;
-    }
+    // Admin always complete
+    // (This logic is intentionally disabled to enforce completion for all roles)
+    // if (user.role_id === "role2" || user.role_id === "role3") {
+    //   setIsComplete(true);
+    //   setMissingFields([]);
+    //   setLoading(false);
+    //   hasChecked.current = true;
+    //   lastCheckedUserId.current = userId;
+    //   return;
+    // }
 
     try {
       setLoading(true);
 
       const token = localStorage.getItem("token");
-
       if (!token) {
         setIsComplete(false);
-        setLoading(false);
         return;
       }
 
+      // Request profile completeness data from API
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user/profile/${userId}`,
         {
@@ -93,39 +101,32 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         }
       );
 
-      if (!res.ok) {
-        throw new Error("Failed to fetch profile");
-      }
+      if (!res.ok) throw new Error("Failed to fetch profile");
 
       const json = await res.json();
-
       const data = json?.data || {};
 
-      const complete = data.isComplete === true || data.isComplete === 1;
-
-      setIsComplete(complete);
+      // Normalize isComplete value (boolean / numeric)
+      setIsComplete(data.isComplete === true || data.isComplete === 1);
       setMissingFields(
         Array.isArray(data.missingFields) ? data.missingFields : []
       );
 
       hasChecked.current = true;
       lastCheckedUserId.current = userId;
-    } catch (e) {
+    } catch {
+      // Fail-safe: treat profile as incomplete
       setIsComplete(false);
       setMissingFields([]);
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
-  // ✅ Check profile saat authLoading selesai DAN user berubah
+  // Trigger profile check once auth state is ready
   useEffect(() => {
-    // Tunggu auth selesai
-    if (authLoading) {
-      return;
-    }
+    if (authLoading) return;
 
-    // Jika tidak ada user, set loading false
     if (!user) {
       setLoading(false);
       setIsComplete(null);
@@ -133,22 +134,22 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       lastCheckedUserId.current = null;
       return;
     }
-    checkProfile();
-  }, [authLoading, user]);
 
-  // Handle redirect
+    checkProfile();
+  }, [authLoading, user, checkProfile]);
+
+  // Handle navigation based on profile completeness
   useEffect(() => {
-    // Tunggu sampai loading selesai
+    // Wait until both auth & profile loading are finished
     if (authLoading || loading) {
       return;
     }
 
-    // Jika tidak ada user
     if (!user) {
       return;
     }
 
-    // Jika masih null, tunggu
+    // Still resolving profile status
     if (isComplete === null) {
       return;
     }
@@ -156,11 +157,9 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     const isOnAuthPage = AUTH_PAGES.includes(pathname);
     const isOnCompleteProfilePage = pathname === "/complete-profile";
 
-    // ✅ LOGIC BARU: Lebih jelas dan terstruktur
-
-    // 1. Jika profile COMPLETE
+    // 1. Profile is COMPLETE
     if (isComplete === true) {
-      // Jika di auth page atau complete-profile page → redirect ke home
+      // Prevent access to auth & complete-profile pages
       if (isOnAuthPage || isOnCompleteProfilePage) {
         router.replace("/home");
         return;
@@ -168,15 +167,15 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    // 2. Jika profile INCOMPLETE
+    // 2. Profile is INCOMPLETE
     if (isComplete === false) {
-      // ✅ JIKA MASIH DI AUTH PAGE → LANGSUNG KE COMPLETE-PROFILE
+      // Redirect from auth pages directly to complete-profile
       if (isOnAuthPage) {
         router.replace("/complete-profile");
         return;
       }
 
-      // Jika bukan di complete-profile → redirect
+      // Force user to stay on complete-profile page
       if (!isOnCompleteProfilePage) {
         router.replace("/complete-profile");
         return;
@@ -185,6 +184,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     }
   }, [user, isComplete, loading, authLoading, pathname, router]);
 
+  // Manually re-check profile (used after profile update)
   const refetch = async () => {
     hasChecked.current = false;
     lastCheckedUserId.current = null;
@@ -200,6 +200,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// Hook to consume profile context safely
 export function useProfile() {
   const ctx = useContext(ProfileContext);
   if (!ctx) {
