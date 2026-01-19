@@ -33,12 +33,19 @@ const categoryOptions = [
   { id: 3, label: "Success Story" },
 ];
 
+const sortOptions = [
+  { value: "latest", label: "Latest" },
+  { value: "oldest", label: "Oldest" },
+  { value: "most_viewed", label: "Most Viewed" },
+];
+
 const PAGE_SIZE = 24;
 
 const ArticleAdminPage = () => {
   const [articles, setArticles] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [selectedSort, setSelectedSort] = useState("latest");
   const [page, setPage] = useState(1);
   const itemsPerPage = PAGE_SIZE;
   const [isLoading, setIsLoading] = useState(true);
@@ -56,18 +63,32 @@ const ArticleAdminPage = () => {
     return () => {
       window.removeEventListener("refreshArticles", handleRefresh);
     };
-  }, []);
+  }, [selectedSort]);
 
   const fetchAllArticles = async () => {
     setIsLoading(true);
     try {
+      // Map frontend sort to backend parameters
+      let sortBy = "create_date";
+      let sortOrder = "desc";
+
+      if (selectedSort === "latest") {
+        sortBy = "create_date";
+        sortOrder = "desc";
+      } else if (selectedSort === "oldest") {
+        sortBy = "create_date";
+        sortOrder = "asc";
+      } else if (selectedSort === "most_viewed") {
+        sortBy = "views";
+        sortOrder = "desc";
+      }
+
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/articles?limit=1000`
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/articles?limit=1000&sort_by=${sortBy}&sort_order=${sortOrder}`
       );
       if (!response.ok) throw new Error("Failed to fetch articles");
       const data = await response.json();
 
-      // FIX: Handle new API structure
       const articlesData = data.data?.articles || data.data || [];
       setArticles(Array.isArray(articlesData) ? articlesData : []);
     } catch (error) {
@@ -86,12 +107,12 @@ const ArticleAdminPage = () => {
     }
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/articles/search?query=${encodeURIComponent(searchQuery)}`
+        `${process.env.NEXT_PUBLIC_API_BASE_URL
+        }/api/articles/search?query=${encodeURIComponent(searchQuery)}`
       );
       const data = await response.json();
       if (!response.ok) throw new Error(data.message);
 
-      // FIX: Handle both old and new structure
       const articlesData = data.data?.articles || data.data || [];
       setArticles(Array.isArray(articlesData) ? articlesData : []);
       setPage(1);
@@ -115,6 +136,11 @@ const ArticleAdminPage = () => {
       prev.filter((article) => article.article_id !== deletedId)
     );
     dispatchEvent(new Event("refreshArticles"));
+  };
+
+  const handleSortChange = (value) => {
+    setSelectedSort(value);
+    setPage(1);
   };
 
   const selectedCategoryId = categoryOptions.find(
@@ -172,6 +198,19 @@ const ArticleAdminPage = () => {
                 {categoryOptions.map((cat) => (
                   <SelectItem key={cat.id} value={cat.label}>
                     {cat.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={selectedSort} onValueChange={handleSortChange}>
+              <SelectTrigger className="w-full sm:w-[180px] h-[42px] rounded-lg border-mainOrange focus:ring-0 focus:outline-none">
+                <SelectValue placeholder="Sort By" />
+              </SelectTrigger>
+              <SelectContent>
+                {sortOptions.map((sort) => (
+                  <SelectItem key={sort.value} value={sort.value}>
+                    {sort.label}
                   </SelectItem>
                 ))}
               </SelectContent>
