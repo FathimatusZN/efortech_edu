@@ -30,11 +30,18 @@ const categoryOptions = [
   { id: 3, label: "Success Story" },
 ];
 
+const sortOptions = [
+  { value: "latest", label: "Latest" },
+  { value: "oldest", label: "Oldest" },
+  { value: "most_viewed", label: "Most Viewed" },
+];
+
 export default function ArticlePage() {
   const router = useRouter();
   const [articles, setArticles] = useState([]);
   const [mostViewedArticles, setMostViewedArticles] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [selectedSort, setSelectedSort] = useState("latest");
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -54,7 +61,7 @@ export default function ArticlePage() {
   // Fetch articles when filters change
   useEffect(() => {
     fetchArticles();
-  }, [page, selectedCategory]);
+  }, [page, selectedCategory, selectedSort]);
 
   // Auto-slide carousel
   useEffect(() => {
@@ -86,11 +93,26 @@ export default function ArticlePage() {
         (cat) => cat.label === selectedCategory
       )?.id;
 
+      // Map frontend sort to backend parameters
+      let sortBy = "create_date";
+      let sortOrder = "desc";
+
+      if (selectedSort === "latest") {
+        sortBy = "create_date";
+        sortOrder = "desc";
+      } else if (selectedSort === "oldest") {
+        sortBy = "create_date";
+        sortOrder = "asc";
+      } else if (selectedSort === "most_viewed") {
+        sortBy = "views";
+        sortOrder = "desc";
+      }
+
       const params = new URLSearchParams({
         page: page.toString(),
         limit: "12",
-        sort_by: "create_date",
-        sort_order: "desc",
+        sort_by: sortBy,
+        sort_order: sortOrder,
       });
 
       if (categoryId && categoryId !== 0) {
@@ -108,12 +130,14 @@ export default function ArticlePage() {
       if (!res.ok) throw new Error(data.message);
 
       setArticles(data.data?.articles || []);
-      setPagination(data.data?.pagination || {
-        currentPage: 1,
-        totalPages: 1,
-        totalArticles: 0,
-        articlesPerPage: 12,
-      });
+      setPagination(
+        data.data?.pagination || {
+          currentPage: 1,
+          totalPages: 1,
+          totalArticles: 0,
+          articlesPerPage: 12,
+        }
+      );
     } catch (error) {
       console.error("Error fetching articles:", error);
       setArticles([]);
@@ -129,13 +153,18 @@ export default function ArticlePage() {
   };
 
   const handleSearch = () => {
-    setPage(1); // Reset to first page
+    setPage(1);
     fetchArticles();
   };
 
   const handleCategoryChange = (value) => {
     setSelectedCategory(value);
-    setPage(1); // Reset to first page
+    setPage(1);
+  };
+
+  const handleSortChange = (value) => {
+    setSelectedSort(value);
+    setPage(1);
   };
 
   const stripHtml = (html) => {
@@ -180,8 +209,8 @@ export default function ArticlePage() {
               key={index}
               onClick={() => setCurrentSlide(index)}
               className={`w-3 h-3 rounded-full border-2 flex items-center justify-center transition-all ${currentSlide === index
-                ? "border-mainOrange"
-                : "border-gray-400"
+                  ? "border-mainOrange"
+                  : "border-gray-400"
                 }`}
             >
               <div
@@ -223,6 +252,21 @@ export default function ArticlePage() {
               {categoryOptions.map((cat) => (
                 <SelectItem key={cat.id} value={cat.label}>
                   {cat.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="w-full md:w-1/6">
+          <Select value={selectedSort} onValueChange={handleSortChange}>
+            <SelectTrigger className="w-full h-[38px] rounded-md shadow-lg border-orange-500 focus:ring-orange-600">
+              <SelectValue placeholder="Sort By" />
+            </SelectTrigger>
+            <SelectContent>
+              {sortOptions.map((sort) => (
+                <SelectItem key={sort.value} value={sort.value}>
+                  {sort.label}
                 </SelectItem>
               ))}
             </SelectContent>
