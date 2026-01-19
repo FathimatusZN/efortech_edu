@@ -59,14 +59,17 @@ const ArticleAdminPage = () => {
   }, []);
 
   const fetchAllArticles = async () => {
-    setIsLoading(true); // mulai loading
+    setIsLoading(true);
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/articles`
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/articles?limit=1000`
       );
       if (!response.ok) throw new Error("Failed to fetch articles");
       const data = await response.json();
-      setArticles(Array.isArray(data.data) ? data.data : []);
+
+      // FIX: Handle new API structure
+      const articlesData = data.data?.articles || data.data || [];
+      setArticles(Array.isArray(articlesData) ? articlesData : []);
     } catch (error) {
       console.error("Error fetching articles:", error);
       setArticles([]);
@@ -83,12 +86,14 @@ const ArticleAdminPage = () => {
     }
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL
-        }/api/articles/search?query=${encodeURIComponent(searchQuery)}`
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/articles/search?query=${encodeURIComponent(searchQuery)}`
       );
       const data = await response.json();
       if (!response.ok) throw new Error(data.message);
-      setArticles(Array.isArray(data.data) ? data.data : []);
+
+      // FIX: Handle both old and new structure
+      const articlesData = data.data?.articles || data.data || [];
+      setArticles(Array.isArray(articlesData) ? articlesData : []);
       setPage(1);
     } catch (error) {
       console.error("Error searching articles:", error);
@@ -175,7 +180,8 @@ const ArticleAdminPage = () => {
             <Button
               variant="orange"
               onClick={() => setExportDialogOpen(true)}
-              className="flex items-center"            >
+              className="flex items-center"
+            >
               <Download size={20} className="mr-2" /> Export
             </Button>
 
@@ -191,7 +197,6 @@ const ArticleAdminPage = () => {
 
         <div>
           {isLoading ? (
-            // Loading spinner hanya di sini
             <div className="flex justify-center items-center py-20">
               <LoadingSpinner />
             </div>
@@ -236,8 +241,14 @@ const ArticleAdminPage = () => {
 
                       {(() => {
                         const maxVisible = 5;
-                        let startPage = Math.max(1, page - Math.floor(maxVisible / 2));
-                        let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+                        let startPage = Math.max(
+                          1,
+                          page - Math.floor(maxVisible / 2)
+                        );
+                        let endPage = Math.min(
+                          totalPages,
+                          startPage + maxVisible - 1
+                        );
 
                         if (endPage - startPage < maxVisible - 1) {
                           startPage = Math.max(1, endPage - maxVisible + 1);
