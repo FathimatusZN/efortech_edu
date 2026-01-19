@@ -1,11 +1,8 @@
+// efortech_edu\src\app\(user)\article\page.jsx
 "use client";
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Pagination as SwiperPagination, Autoplay } from "swiper/modules";
-import "swiper/css";
-import "swiper/css/pagination";
 import { FaSearch } from "react-icons/fa";
 import {
   Pagination,
@@ -41,64 +38,105 @@ export default function ArticlePage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
-  const itemsPerPage = 12;
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalArticles: 0,
+    articlesPerPage: 12,
+  });
+  const [currentSlide, setCurrentSlide] = useState(0);
 
+  // Fetch most viewed articles for carousel
+  useEffect(() => {
+    fetchMostViewedArticles();
+  }, []);
+
+  // Fetch articles when filters change
   useEffect(() => {
     fetchArticles();
-  }, []);
+  }, [page, selectedCategory]);
+
+  // Auto-slide carousel
+  useEffect(() => {
+    if (mostViewedArticles.length === 0) return;
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % mostViewedArticles.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [mostViewedArticles]);
+
+  const fetchMostViewedArticles = async () => {
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/articles/most-viewed?limit=3`
+      );
+      const data = await res.json();
+      if (res.ok && data.data) {
+        setMostViewedArticles(data.data);
+      }
+    } catch (error) {
+      console.error("Error fetching most viewed articles:", error);
+    }
+  };
 
   const fetchArticles = async () => {
     setLoading(true);
     try {
+      const categoryId = categoryOptions.find(
+        (cat) => cat.label === selectedCategory
+      )?.id;
+
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: "12",
+        sort_by: "create_date",
+        sort_order: "desc",
+      });
+
+      if (categoryId && categoryId !== 0) {
+        params.append("category", categoryId.toString());
+      }
+
+      if (searchQuery.trim()) {
+        params.append("search", searchQuery.trim());
+      }
+
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/articles`
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/articles?${params}`
       );
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
 
-      setArticles(data.data);
-      const sorted = [...data.data].sort((a, b) => b.views - a.views);
-      setMostViewedArticles(sorted.slice(0, 3));
+      setArticles(data.data?.articles || []);
+      setPagination(data.data?.pagination || {
+        currentPage: 1,
+        totalPages: 1,
+        totalArticles: 0,
+        articlesPerPage: 12,
+      });
     } catch (error) {
       console.error("Error fetching articles:", error);
       setArticles([]);
+      setPagination({
+        currentPage: 1,
+        totalPages: 1,
+        totalArticles: 0,
+        articlesPerPage: 12,
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchSearchResults = async () => {
-    if (!searchQuery.trim()) {
-      fetchArticles();
-      return;
-    }
-    setLoading(true);
-    try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL
-        }/api/articles/search?query=${encodeURIComponent(searchQuery)}`
-      );
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message);
-
-      setArticles(Array.isArray(data.data) ? data.data : []);
-      setPage(1);
-    } catch (error) {
-      console.error("Search error:", error);
-      setArticles([]);
-    } finally {
-      setLoading(false);
-    }
+  const handleSearch = () => {
+    setPage(1); // Reset to first page
+    fetchArticles();
   };
 
-  const [currentSlide, setCurrentSlide] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % (mostViewedArticles.length || 1));
-    }, 3000);
-    return () => clearInterval(interval);
-  }, [mostViewedArticles]);
+  const handleCategoryChange = (value) => {
+    setSelectedCategory(value);
+    setPage(1); // Reset to first page
+  };
 
   const stripHtml = (html) => {
     if (!html) return "";
@@ -106,24 +144,9 @@ export default function ArticlePage() {
     return plain.length > 200 ? plain.slice(0, 200) + "..." : plain;
   };
 
-  const selectedCategoryId = categoryOptions.find(
-    (cat) => cat.label === selectedCategory
-  )?.id;
-
-  const filteredArticles = articles.filter((article) => {
-    return (
-      selectedCategory === "All" || article.category === selectedCategoryId
-    );
-  });
-
-  const totalPages = Math.ceil(filteredArticles.length / itemsPerPage);
-  const paginatedArticles = filteredArticles.slice(
-    (page - 1) * itemsPerPage,
-    page * itemsPerPage
-  );
-
   return (
     <div className="max-w-screen w-full relative mx-auto">
+      {/* Carousel Section */}
       <div className="relative w-full aspect-[21/9] max-h-[55vh] overflow-hidden shadow-lg">
         {mostViewedArticles.length > 0 && (
           <div
@@ -150,12 +173,15 @@ export default function ArticlePage() {
           </div>
         )}
 
+        {/* Carousel Indicators */}
         <div className="absolute bottom-[5px] left-0 right-0 flex justify-center space-x-2 z-10">
           {mostViewedArticles.map((_, index) => (
             <button
               key={index}
               onClick={() => setCurrentSlide(index)}
-              className={`w-3 h-3 rounded-full border-2 flex items-center justify-center transition-all ${currentSlide === index ? "border-mainOrange" : "border-gray-400"
+              className={`w-3 h-3 rounded-full border-2 flex items-center justify-center transition-all ${currentSlide === index
+                ? "border-mainOrange"
+                : "border-gray-400"
                 }`}
             >
               <div
@@ -167,6 +193,7 @@ export default function ArticlePage() {
         </div>
       </div>
 
+      {/* Search & Filter Section */}
       <div className="mt-6 mx-auto px-4 flex flex-col md:flex-row md:items-center md:justify-center gap-4">
         <div className="relative w-full md:w-1/3">
           <input
@@ -175,12 +202,12 @@ export default function ArticlePage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter") fetchSearchResults();
+              if (e.key === "Enter") handleSearch();
             }}
             className="w-full h-[38px] px-4 pr-10 border-2 border-mainOrange rounded-md"
           />
           <button
-            onClick={fetchSearchResults}
+            onClick={handleSearch}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-black hover:text-mainOrange"
           >
             <FaSearch />
@@ -188,13 +215,7 @@ export default function ArticlePage() {
         </div>
 
         <div className="w-full md:w-1/6">
-          <Select
-            value={selectedCategory}
-            onValueChange={(value) => {
-              setSelectedCategory(value);
-              setPage(1);
-            }}
-          >
+          <Select value={selectedCategory} onValueChange={handleCategoryChange}>
             <SelectTrigger className="w-full h-[38px] rounded-md shadow-lg border-orange-500 focus:ring-orange-600">
               <SelectValue placeholder="Select Category" />
             </SelectTrigger>
@@ -209,14 +230,15 @@ export default function ArticlePage() {
         </div>
       </div>
 
+      {/* Articles Grid */}
       <div className="p-10 mx-auto max-w-7xl w-full">
         {loading ? (
           <div className="flex justify-center items-center py-10">
             <LoadingSpinner />
           </div>
-        ) : paginatedArticles.length > 0 ? (
+        ) : articles.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-            {paginatedArticles.map((article) => {
+            {articles.map((article) => {
               const categoryObj = categoryOptions.find(
                 (cat) => cat.id === article.category
               );
@@ -236,7 +258,7 @@ export default function ArticlePage() {
           <NotFound
             message={
               searchQuery
-                ? "We couldn’t find any article matching your search. Try different keywords."
+                ? "We couldn't find any article matching your search. Try different keywords."
                 : "No articles found in this category."
             }
             buttons={[]}
@@ -244,7 +266,8 @@ export default function ArticlePage() {
         )}
       </div>
 
-      {!loading && totalPages > 1 && (
+      {/* Pagination */}
+      {!loading && pagination.totalPages > 1 && (
         <Pagination className="flex justify-center mt-8">
           <PaginationContent>
             <PaginationItem>
@@ -260,27 +283,36 @@ export default function ArticlePage() {
               const maxVisible = 5;
               let startPage = Math.max(
                 1,
-                Math.min(page - Math.floor(maxVisible / 2), totalPages - maxVisible + 1)
+                Math.min(
+                  page - Math.floor(maxVisible / 2),
+                  pagination.totalPages - maxVisible + 1
+                )
               );
-              let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+              let endPage = Math.min(
+                pagination.totalPages,
+                startPage + maxVisible - 1
+              );
 
-              return Array.from({ length: endPage - startPage + 1 }, (_, i) => {
-                const pageNum = startPage + i;
-                return (
-                  <PaginationItem key={pageNum}>
-                    <PaginationLink
-                      href="#"
-                      isActive={page === pageNum}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setPage(pageNum);
-                      }}
-                    >
-                      {pageNum}
-                    </PaginationLink>
-                  </PaginationItem>
-                );
-              });
+              return Array.from(
+                { length: endPage - startPage + 1 },
+                (_, i) => {
+                  const pageNum = startPage + i;
+                  return (
+                    <PaginationItem key={pageNum}>
+                      <PaginationLink
+                        href="#"
+                        isActive={page === pageNum}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setPage(pageNum);
+                        }}
+                      >
+                        {pageNum}
+                      </PaginationLink>
+                    </PaginationItem>
+                  );
+                }
+              );
             })()}
 
             <PaginationItem>
@@ -288,7 +320,7 @@ export default function ArticlePage() {
                 href="#"
                 onClick={(e) => {
                   e.preventDefault();
-                  if (page < totalPages) setPage(page + 1);
+                  if (page < pagination.totalPages) setPage(page + 1);
                 }}
               />
             </PaginationItem>
@@ -296,17 +328,18 @@ export default function ArticlePage() {
         </Pagination>
       )}
 
+      {/* Result Count */}
       {!loading && (
         <p className="text-sm text-muted-foreground mt-2 flex justify-center items-center pb-10">
           Showing{" "}
-          {filteredArticles.length > 0
-            ? `${(page - 1) * itemsPerPage + 1} - ${Math.min(
-              page * itemsPerPage,
-              filteredArticles.length
+          {pagination.totalArticles > 0
+            ? `${(page - 1) * pagination.articlesPerPage + 1} - ${Math.min(
+              page * pagination.articlesPerPage,
+              pagination.totalArticles
             )}`
             : 0}{" "}
-          of {filteredArticles.length} article
-          {filteredArticles.length !== 1 && "s"}
+          of {pagination.totalArticles} article
+          {pagination.totalArticles !== 1 && "s"}
         </p>
       )}
     </div>
