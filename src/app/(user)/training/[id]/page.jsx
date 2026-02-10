@@ -24,7 +24,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, Mail } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 
 const TrainingDetail = () => {
   const { id } = useParams();
@@ -59,7 +59,7 @@ const TrainingDetail = () => {
     const fetchTrainingDetail = async () => {
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/training/id/${id}`
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/training/id/${id}`,
         );
         const data = await res.json();
 
@@ -88,7 +88,7 @@ const TrainingDetail = () => {
     const fetchReviews = async () => {
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/review/search?training_id=${id}`
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/review/search?training_id=${id}`,
         );
         const data = await res.json();
 
@@ -134,7 +134,7 @@ const TrainingDetail = () => {
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/registration/check/${user.uid}/${id}`,
         {
           headers: { Authorization: `Bearer ${token}` },
-        }
+        },
       );
 
       const data = await res.json();
@@ -186,7 +186,7 @@ const TrainingDetail = () => {
 
   const sortedReviews = reviews
     .filter((review) =>
-      filterRating !== null ? review.score === filterRating : true
+      filterRating !== null ? review.score === filterRating : true,
     )
     .sort((a, b) => {
       if (sortOrder === "newest") {
@@ -197,19 +197,10 @@ const TrainingDetail = () => {
     });
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex flex-col gap-8">
-          {/* Image Slider - Full Width 16:9 */}
-          <div className="relative w-full max-w-4xl mx-auto aspect-[16/9] overflow-hidden rounded-xl shadow-lg bg-gradient-to-b from-gray-100 to-gray-200">
-            {/* Discount Badge */}
-            {trainingData.discount > 0 && (
-              <div className="absolute top-4 right-4 bg-red-500 text-white text-sm font-bold px-4 py-2 rounded-full shadow-lg animate-bounce z-10">
-                🔥 {Math.floor(trainingData.discount)}% OFF
-              </div>
-            )}
-
-            {/* Images */}
+    <div className="overflow-x-hidden">
+      <div className="mx-auto p-4 md:p-8 max-w-screen-xl">
+        <div className="flex flex-col xl:flex-row gap-8">
+          <div className="relative w-full xl:max-w-[650px] aspect-video max-h-[240px] md:max-h-[320px] xl:max-h-[366px] flex-shrink-0 overflow-hidden rounded-lg shadow-md">
             {trainingData.images.map((img, index) => (
               <Image
                 key={index}
@@ -221,8 +212,6 @@ const TrainingDetail = () => {
                 }`}
               />
             ))}
-
-            {/* Slide Indicators */}
             <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
               {trainingData.images.map((_, index) => (
                 <button
@@ -246,167 +235,236 @@ const TrainingDetail = () => {
             </div>
           </div>
 
-          {/* Content Section - White Card */}
-          <div className="bg-white rounded-xl shadow-md p-6 sm:p-8">
-            {/* Title & Price */}
-            <div className="border-b pb-6 mb-6">
-              <h1 className="text-3xl sm:text-4xl font-bold text-blue-900 mb-4 break-words">
-                {trainingData.training_name}
-              </h1>
-
-              <div className="flex flex-wrap gap-3 items-center">
-                {trainingData.discount && trainingData.discount > 0 ? (
-                  <>
-                    <span className="text-xl text-gray-400 line-through font-semibold">
-                      Rp{" "}
-                      {parseInt(trainingData.training_fees).toLocaleString(
-                        "id-ID"
-                      )}
-                    </span>
-                    <span className="text-3xl text-mainOrange font-bold">
-                      Rp{" "}
-                      {parseInt(trainingData.final_price).toLocaleString(
-                        "id-ID"
-                      )}
-                    </span>
-                    <span className="bg-red-100 text-red-600 text-sm font-bold px-3 py-1 rounded-full">
-                      Save Rp{" "}
-                      {(
-                        parseInt(trainingData.training_fees) -
-                        parseInt(trainingData.final_price)
-                      ).toLocaleString("id-ID")}
-                    </span>
-                  </>
-                ) : trainingData.training_fees == 0 ? (
-                  <span className="text-3xl font-bold text-green-600">
-                    FREE!
-                  </span>
-                ) : (
-                  <span className="text-3xl text-gray-900 font-bold">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-blue-900 break-words">
+              {trainingData.training_name}
+            </h1>
+            <div className="pt-2 flex flex-wrap gap-x-3 gap-y-1 items-center">
+              {trainingData.discount && trainingData.discount > 0 ? (
+                <>
+                  <p className="text-lg line-through text-gray-500 font-semibold">
                     Rp{" "}
                     {parseInt(trainingData.training_fees).toLocaleString(
-                      "id-ID"
+                      "id-ID",
                     )}
+                  </p>
+                  <p className="text-xl text-mainOrange font-bold">
+                    Rp{" "}
+                    {parseInt(trainingData.final_price).toLocaleString("id-ID")}
+                  </p>
+                </>
+              ) : trainingData.training_fees == 0 ? (
+                <p className="text-xl text-black font-semibold">
+                  Rp 0,00{" "}
+                  <span className="font-extrabold animate-pulse text-orange-600">
+                    (Free!)
                   </span>
-                )}
-              </div>
+                </p>
+              ) : (
+                <p className="text-xl text-black font-semibold">
+                  Rp{" "}
+                  {parseInt(trainingData.training_fees).toLocaleString("id-ID")}
+                </p>
+              )}
             </div>
 
-            {/* Key Info Grid - 4 Columns */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-              <div className="bg-orange-50 p-4 rounded-lg border-l-4 border-mainOrange">
-                <p className="text-sm text-gray-600 mb-1">Level</p>
-                <p className="text-lg font-bold text-gray-900">
+            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
+              <div>
+                <p className="text-lg text-mainOrange font-bold">Level</p>
+                <p className="text-sm text-black font-semibold">
                   {trainingData.level === 1
                     ? "Beginner"
                     : trainingData.level === 2
-                    ? "Intermediate"
-                    : "Advanced"}
+                      ? "Intermediate"
+                      : "Advanced"}
                 </p>
               </div>
-
-              <div className="bg-blue-50 p-4 rounded-lg border-l-4 border-mainBlue">
-                <p className="text-sm text-gray-600 mb-1">Duration</p>
-                <p className="text-lg font-bold text-gray-900">
-                  {trainingData.duration}{" "}
-                  {trainingData.duration > 1 ? "Hours" : "Hour"}
-                </p>
-              </div>
-
-              <div className="bg-orange-50 p-4 rounded-lg border-l-4 border-mainOrange">
-                <p className="text-sm text-gray-600 mb-1">
+              <div>
+                <p className="text-lg text-mainOrange font-bold">
                   Certificate Validity
                 </p>
-                <p className="text-lg font-bold text-gray-900">
+                <p className="text-sm text-black font-semibold">
                   {trainingData.validity_period
                     ? `${trainingData.validity_period} ${
                         trainingData.validity_period > 1 ? "Months" : "Month"
                       }`
-                    : "No Expiry"}
+                    : "No Expiry Date"}
                 </p>
               </div>
+            </div>
 
-              <div className="bg-blue-50 p-4 rounded-lg border-l-4 border-mainBlue">
-                <p className="text-sm text-gray-600 mb-1">Available Date</p>
-                <p className="text-lg font-bold text-gray-900">
+            <div className="mt-4 flex flex-wrap gap-2">
+              {trainingData.skills.map((tag, index) => (
+                <span
+                  key={index}
+                  className={`px-3 py-1 text-xs sm:text-sm border rounded-full break-words max-w-full ${
+                    index % 2 === 0
+                      ? "border-mainOrange text-black"
+                      : "border-mainBlue text-black"
+                  }`}
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+
+            <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 w-full items-start">
+              <div>
+                <p className="text-lg text-mainOrange font-bold">Duration</p>
+                <p className="text-sm text-black font-semibold">
+                  {trainingData.duration}{" "}
+                  {trainingData.duration > 1 ? "Hours" : "Hour"}
+                </p>
+              </div>
+              <div>
+                <p className="text-lg text-mainOrange font-bold">
+                  Available Date
+                </p>
+                <p className="text-sm text-black font-semibold">
                   {trainingData.available_date}
                 </p>
               </div>
             </div>
 
-            {/* Skills Tags */}
-            <div className="mb-6">
-              <h3 className="text-lg font-bold text-gray-900 mb-3">
-                What You'll Learn
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {trainingData.skills.map((tag, index) => (
-                  <span
-                    key={index}
-                    className={`px-4 py-2 text-sm font-medium rounded-lg border-2 ${
-                      index % 2 === 0
-                        ? "border-mainOrange text-mainOrange bg-orange-50"
-                        : "border-mainBlue text-mainBlue bg-blue-50"
-                    }`}
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            {/* Description */}
-            <div className="mb-6">
-              <h3 className="text-lg font-bold text-gray-900 mb-3">
-                Description
-              </h3>
-              <div className="text-gray-700 leading-relaxed whitespace-pre-line">
-                {trainingData.description}
-              </div>
-            </div>
-
-            {/* Terms & Conditions */}
-            <div className="mb-6 bg-gray-50 p-4 rounded-lg">
-              <h3 className="text-lg font-bold text-gray-900 mb-3">
-                Terms & Conditions
-              </h3>
-              <ul className="space-y-2 text-sm text-gray-700">
-                {trainingData.term_condition ? (
-                  trainingData.term_condition
-                    .split(".")
-                    .filter((t) => t.trim())
-                    .map((term, index) => (
-                      <li key={index} className="flex items-start gap-2">
-                        <span className="text-mainOrange mt-1">•</span>
-                        <span>{term.trim()}</span>
-                      </li>
-                    ))
-                ) : (
-                  <li>No terms provided.</li>
-                )}
-              </ul>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="mt-6 flex flex-col sm:flex-row gap-3 sm:gap-4 w-full">
               <button
                 onClick={handleEnrollClick}
-                disabled={trainingData.status === 2}
-                className={`flex-1 px-8 py-3 font-bold rounded-lg transition-all ${
-                  trainingData.status === 2
-                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                    : "bg-mainOrange text-white hover:bg-orange-700 shadow-md hover:shadow-lg active:scale-95"
-                }`}
+                className="px-6 py-2 border-2 bg-mainOrange border-mainOrange text-white font-semibold rounded-lg w-full sm:w-auto sm:min-w-[180px] md:w-[300px] transition duration-300 hover:bg-white hover:text-mainOrange active:scale-95"
               >
-                {trainingData.status === 2
-                  ? "Training No Longer Available"
-                  : "Enroll Now"}
+                Enroll Now
               </button>
+              <Dialog
+                open={showRegisteredDialog}
+                onOpenChange={setShowRegisteredDialog}
+              >
+                <DialogContent className="w-[90vw] max-w-[600px] max-h-[90vh] overflow-y-auto rounded-xl shadow-lg p-6 ">
+                  <DialogHeader className="text-center">
+                    <div className="flex justify-center mb-2">
+                      <AlertTriangle className="text-orange-500 w-10 h-10" />
+                    </div>
+                    <DialogTitle className="text-xl font-bold text-mainOrange">
+                      Already Registered
+                    </DialogTitle>
+                    <DialogDescription className="text-gray-600">
+                      You have already registered for this training. Below are
+                      your registration details:
+                    </DialogDescription>
+                  </DialogHeader>
+
+                  {registrationInfo && (
+                    <div className="overflow-x-auto mt-4">
+                      <table className="min-w-full border border-gray-200 text-sm text-left text-gray-700 rounded-lg overflow-hidden">
+                        <tbody>
+                          <tr className="border-b border-gray-200">
+                            <td className="px-4 py-2 font-semibold bg-gray-50 w-1/3">
+                              Training
+                            </td>
+                            <td className="px-4 py-2">
+                              {registrationInfo.training_name}
+                            </td>
+                          </tr>
+                          <tr className="border-b border-gray-200">
+                            <td className="px-4 py-2 font-semibold bg-gray-50">
+                              Registration Date
+                            </td>
+                            <td className="px-4 py-2">
+                              {new Date(
+                                registrationInfo.registration_date,
+                              ).toLocaleDateString("en-US", {
+                                year: "numeric",
+                                month: "short",
+                                day: "numeric",
+                              })}
+                            </td>
+                          </tr>
+                          <tr className="border-b border-gray-200">
+                            <td className="px-4 py-2 font-semibold bg-gray-50">
+                              Training Date
+                            </td>
+                            <td className="px-4 py-2">
+                              {new Date(
+                                registrationInfo.training_date,
+                              ).toLocaleDateString("en-US", {
+                                year: "numeric",
+                                month: "short",
+                                day: "numeric",
+                              })}
+                            </td>
+                          </tr>
+                          <tr className="border-b border-gray-200">
+                            <td className="px-4 py-2 font-semibold bg-gray-50">
+                              Status
+                            </td>
+                            <td
+                              className={`px-4 py-2 font-semibold ${
+                                registrationInfo.status_label === "Done"
+                                  ? "text-green-600"
+                                  : registrationInfo.status_label ===
+                                      "Cancelled"
+                                    ? "text-red-600"
+                                    : "text-blue-600"
+                              }`}
+                            >
+                              {registrationInfo.status_label}
+                            </td>
+                          </tr>
+                          <tr className="border-b border-gray-200">
+                            <td className="px-4 py-2 font-semibold bg-gray-50">
+                              Registration ID
+                            </td>
+                            <td className="px-4 py-2">
+                              {registrationInfo.registration_id}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td className="px-4 py-2 font-semibold bg-gray-50">
+                              Participant ID
+                            </td>
+                            <td className="px-4 py-2">
+                              {registrationInfo.registration_participant_id}
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+
+                  <p className="text-xs text-gray-500 mt-4 text-justify">
+                    If there was a mistake in your previous registration and you
+                    need to register again, please contact us at{" "}
+                    <a
+                      href="mailto:info@efortechsolutions.com"
+                      className="text-mainOrange font-semibold hover:underline"
+                    >
+                      info@efortechsolutions.com
+                    </a>
+                    .
+                  </p>
+
+                  <DialogFooter className="mt-6 flex justify-center gap-4">
+                    <Button
+                      onClick={() => {
+                        setShowRegisteredDialog(false);
+                        router.push("/edit-profile");
+                      }}
+                      className="bg-mainOrange text-white hover:bg-orange-600"
+                    >
+                      View My Training
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowRegisteredDialog(false)}
+                    >
+                      Back to Detail
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
 
               <button
                 onClick={() => {
                   const subject = encodeURIComponent(
-                    `Inquiry about Training Registration - ${trainingData.training_name}`
+                    `Inquiry about Training Registration - ${trainingData.training_name}`,
                   );
 
                   const body = encodeURIComponent(
@@ -422,252 +480,138 @@ const TrainingDetail = () => {
                       `Looking forward to your reply.\n\n` +
                       `Best regards,\n` +
                       `[Your Name]\n` +
-                      `[Your Contact Information (optional)]`
+                      `[Your Contact Information (optional)]`,
                   );
 
                   window.location.href = `mailto:info@efortechsolutions.com?subject=${subject}&body=${body}`;
                 }}
-                className="flex-1 px-8 py-3 border-2 border-mainOrange text-mainOrange font-bold rounded-lg hover:bg-mainOrange hover:text-white transition-all active:scale-95 flex items-center justify-center gap-2"
+                className="px-6 py-1 border-2 border-mainOrange text-mainOrange font-semibold rounded-lg w-full md:w-[300px] transition duration-300 ease-in-out hover:bg-mainOrange hover:text-white active:scale-95"
               >
-                <Mail size={20} />
                 Ask by Email
               </button>
             </div>
           </div>
-
-          {/* Reviews Section */}
-          <div className="bg-white rounded-xl shadow-md p-6 sm:p-8">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 pb-6 border-b">
-              <div>
-                <h2 className="text-2xl font-bold text-mainOrange mb-2">
-                  Reviews
-                </h2>
-                <div className="flex items-center gap-2">
-                  <span className="text-3xl font-bold text-gray-900">
-                    ⭐ {averageRating}
-                  </span>
-                  <span className="text-gray-500">/ 5.00</span>
-                  <span className="text-gray-400">
-                    ({reviews.length} reviews)
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex gap-3 w-full sm:w-auto">
-                <Select value={sortOrder} onValueChange={setSortOrder}>
-                  <SelectTrigger className="w-full sm:w-[180px]">
-                    <SelectValue placeholder="Sort by" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="newest">Newest First</SelectItem>
-                    <SelectItem value="oldest">Oldest First</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                <Select
-                  value={filterRating?.toString() || "all"}
-                  onValueChange={(value) =>
-                    setFilterRating(value === "all" ? null : Number(value))
-                  }
-                >
-                  <SelectTrigger className="w-full sm:w-[180px]">
-                    <SelectValue placeholder="Filter by Rating" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Ratings</SelectItem>
-                    <SelectItem value="5">⭐⭐⭐⭐⭐</SelectItem>
-                    <SelectItem value="4">⭐⭐⭐⭐</SelectItem>
-                    <SelectItem value="3">⭐⭐⭐</SelectItem>
-                    <SelectItem value="2">⭐⭐</SelectItem>
-                    <SelectItem value="1">⭐</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {isReviewEmpty ? (
-              <NotFound
-                message={"This training has no reviews yet."}
-                buttons={[]}
-              />
-            ) : (
-              <div className="space-y-6 max-h-96 overflow-y-auto pr-2">
-                {sortedReviews.map((review, index) => (
-                  <div
-                    key={index}
-                    className="flex gap-4 pb-4 border-b last:border-0 items-start"
-                  >
-                    <Image
-                      src={review.user_photo || "/default-avatar.png"}
-                      alt={review.fullname}
-                      width={50}
-                      height={50}
-                      className="rounded-full object-cover"
-                      style={{ aspectRatio: "1 / 1" }}
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-bold text-gray-900">
-                          {review.fullname}
-                        </h4>
-                        <span className="text-sm text-gray-500">
-                          {new Date(review.review_date).toLocaleDateString(
-                            "en-US",
-                            {
-                              month: "short",
-                              day: "numeric",
-                              year: "numeric",
-                            }
-                          )}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="text-yellow-500 font-bold">
-                          {review.score.toFixed(1)}
-                        </span>
-                        <span className="text-yellow-500">
-                          {"⭐".repeat(Math.floor(review.score))}
-                        </span>
-                      </div>
-                      <p className="text-gray-700 leading-relaxed">
-                        {review.review_description}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
         </div>
-      </div>
 
-      {/* Registration Dialog */}
-      <Dialog
-        open={showRegisteredDialog}
-        onOpenChange={setShowRegisteredDialog}
-      >
-        <DialogContent className="w-[90vw] max-w-[600px] max-h-[90vh] overflow-y-auto rounded-xl shadow-lg p-6">
-          <DialogHeader className="text-center">
-            <div className="flex justify-center mb-2">
-              <AlertTriangle className="text-mainOrange w-10 h-10" />
-            </div>
-            <DialogTitle className="text-xl font-bold text-mainOrange">
-              Already Registered
-            </DialogTitle>
-            <DialogDescription className="text-gray-600">
-              You have already registered for this training. Below are your
-              registration details:
-            </DialogDescription>
-          </DialogHeader>
+        <div className="mt-10 border-t pt-6">
+          <p className="text-2xl font-bold text-mainOrange mb-3">Description</p>
 
-          {registrationInfo && (
-            <div className="overflow-x-auto mt-4">
-              <table className="min-w-full border border-gray-200 text-sm text-left text-gray-700 rounded-lg overflow-hidden">
-                <tbody>
-                  <tr className="border-b border-gray-200">
-                    <td className="px-4 py-2 font-semibold bg-gray-50 w-1/3">
-                      Training
-                    </td>
-                    <td className="px-4 py-2">
-                      {registrationInfo.training_name}
-                    </td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="px-4 py-2 font-semibold bg-gray-50">
-                      Registration Date
-                    </td>
-                    <td className="px-4 py-2">
-                      {new Date(
-                        registrationInfo.registration_date
-                      ).toLocaleDateString("en-US", {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                      })}
-                    </td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="px-4 py-2 font-semibold bg-gray-50">
-                      Training Date
-                    </td>
-                    <td className="px-4 py-2">
-                      {new Date(
-                        registrationInfo.training_date
-                      ).toLocaleDateString("en-US", {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                      })}
-                    </td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="px-4 py-2 font-semibold bg-gray-50">
-                      Status
-                    </td>
-                    <td
-                      className={`px-4 py-2 font-semibold ${
-                        registrationInfo.status_label === "Done"
-                          ? "text-green-600"
-                          : registrationInfo.status_label === "Cancelled"
-                          ? "text-red-600"
-                          : "text-blue-600"
-                      }`}
-                    >
-                      {registrationInfo.status_label}
-                    </td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="px-4 py-2 font-semibold bg-gray-50">
-                      Registration ID
-                    </td>
-                    <td className="px-4 py-2">
-                      {registrationInfo.registration_id}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="px-4 py-2 font-semibold bg-gray-50">
-                      Participant ID
-                    </td>
-                    <td className="px-4 py-2">
-                      {registrationInfo.registration_participant_id}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          )}
-
-          <p className="text-xs text-gray-500 mt-4 text-justify">
-            If there was a mistake in your previous registration and you need to
-            register again, please contact us at{" "}
-            <a
-              href="mailto:info@efortechsolutions.com"
-              className="text-mainOrange font-semibold hover:underline"
-            >
-              info@efortechsolutions.com
-            </a>
-            .
+          <p className="text-sm text-black leading-relaxed text-justify whitespace-pre-line">
+            {trainingData.description}
           </p>
 
-          <DialogFooter className="mt-6 flex justify-center gap-4">
-            <Button
-              onClick={() => {
-                setShowRegisteredDialog(false);
-                router.push("/edit-profile");
-              }}
-              className="bg-mainOrange text-white hover:bg-orange-600"
-            >
-              View My Training
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => setShowRegisteredDialog(false)}
-            >
-              Back to Detail
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          <div className="mt-6">
+            <p className="text-2xl font-bold text-mainOrange mb-3">
+              Terms & Conditions
+            </p>
+
+            <div className="text-sm text-black leading-relaxed text-justify">
+              {trainingData.term_condition ? (
+                <ul className="list-disc list-inside space-y-2">
+                  {trainingData.term_condition
+                    .split(".")
+                    .filter((term) => term.trim() !== "")
+                    .map((term, index) => (
+                      <li key={index}>{term.trim()}</li>
+                    ))}
+                </ul>
+              ) : (
+                "No terms provided."
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-8 border-2 border-mainBlue p-6 rounded-lg shadow-md">
+          <div className="flex flex-col md:flex-row md:justify-between items-start md:items-center">
+            <h2 className="w-full md:w-auto">
+              <span className="text-2xl font-bold text-mainOrange">Review</span>{" "}
+              <span className="text-xl text-black drop-shadow font-semibold">
+                ⭐ {averageRating} / 5.00
+              </span>{" "}
+              <span className="text-xl text-gray-500">({reviews.length})</span>
+            </h2>
+
+            <div className="flex gap-4 mt-4 md:mt-0 w-full md:w-auto">
+              <Select value={sortOrder} onValueChange={setSortOrder}>
+                <SelectTrigger className="w-full md:w-[180px]">
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="newest">Sort by Newest</SelectItem>
+                  <SelectItem value="oldest">Sort by Oldest</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select
+                value={filterRating?.toString() || "all"}
+                onValueChange={(value) =>
+                  setFilterRating(value === "all" ? null : Number(value))
+                }
+              >
+                <SelectTrigger className="w-full md:w-[180px]">
+                  <SelectValue placeholder="Filter by Rating" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Ratings</SelectItem>
+                  <SelectItem value="5">⭐⭐⭐⭐⭐</SelectItem>
+                  <SelectItem value="4">⭐⭐⭐⭐</SelectItem>
+                  <SelectItem value="3">⭐⭐⭐</SelectItem>
+                  <SelectItem value="2">⭐⭐</SelectItem>
+                  <SelectItem value="1">⭐</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {isReviewEmpty ? (
+            <NotFound
+              message={"This training has no reviews yet."}
+              buttons={[]}
+            />
+          ) : (
+            <div className="mt-4 max-h-[300px] overflow-y-auto pr-4 custom-scroll">
+              {sortedReviews.map((review, index) => (
+                <div
+                  key={index}
+                  className="mt-4 border-b pb-4 flex items-start gap-4"
+                >
+                  <Image
+                    src={review.user_photo || "/default-avatar.png"}
+                    alt={review.fullname}
+                    width={50}
+                    height={50}
+                    className="rounded-full object-cover"
+                    style={{ aspectRatio: "1 / 1" }}
+                  />
+                  <div>
+                    <p className="text-black text-lg font-semibold">
+                      {review.fullname}
+                    </p>
+                    <p className="text-black text-lg">
+                      {review.score.toFixed(2)} / 5.00 ⭐
+                    </p>
+                    <p className="text-black text-sm">
+                      {review.review_description}
+                    </p>
+                    <p className="text-sm text-gray-500 pt-2">
+                      {new Date(review.review_date).toLocaleDateString(
+                        "en-US",
+                        {
+                          weekday: "short",
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                        },
+                      )}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
