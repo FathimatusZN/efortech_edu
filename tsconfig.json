@@ -32,6 +32,8 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
+    "**/*.js",
+    "**/*.jsx",
     ".next/types/**/*.ts",
     "src/components/admin/AdditionalParticipantDialog.jsx",
     ".next/dev/types/**/*.ts",
