@@ -1,3 +1,4 @@
+// efortech_edu\src\app\context\ProfileContext.tsx
 "use client";
 
 import {
@@ -12,7 +13,6 @@ import {
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "./AuthContext";
 
-// Shape of profile context exposed to consumers
 interface ProfileContextType {
   loading: boolean;
   isComplete: boolean | null;
@@ -22,8 +22,6 @@ interface ProfileContextType {
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
 
-// Auth-related pages that should not be accessible
-// once the user profile is complete
 const AUTH_PAGES = [
   "/auth/login",
   "/auth/signin",
@@ -37,85 +35,108 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const { user, loading: authLoading } = useAuth();
 
-  /**
-   * loading        → profile checking state
-   * isComplete     → profile completion status
-   * missingFields  → list of required fields that are missing
-   */
   const [loading, setLoading] = useState(true);
   const [isComplete, setIsComplete] = useState<boolean | null>(null);
   const [missingFields, setMissingFields] = useState<string[]>([]);
 
-  // Prevent redundant profile checks for the same user
   const hasChecked = useRef(false);
   const lastCheckedUserId = useRef<string | null>(null);
+  const checkAttempts = useRef(0);
 
-  // Fetch profile completeness status from backend
   const checkProfile = useCallback(async () => {
-    // Reset state when user is not authenticated
     if (!user) {
       setLoading(false);
       setIsComplete(null);
       hasChecked.current = false;
       lastCheckedUserId.current = null;
+      checkAttempts.current = 0;
       return;
     }
 
-    // Support multiple possible user id keys
     const userId = user.id || user.user_id || user.uid || user.userId;
     if (!userId) {
+      console.warn("No user ID found, waiting...");
+
+      if (checkAttempts.current < 5) {
+        checkAttempts.current++;
+        setTimeout(() => checkProfile(), 500);
+        return;
+      }
+
       setLoading(false);
       return;
     }
 
-    // Avoid re-checking if already validated for the same user
     if (hasChecked.current && lastCheckedUserId.current === userId) {
       return;
     }
 
-    // Admin always complete
-    // (This logic is intentionally disabled to enforce completion for all roles)
-    // if (user.role_id === "role2" || user.role_id === "role3") {
-    //   setIsComplete(true);
-    //   setMissingFields([]);
-    //   setLoading(false);
-    //   hasChecked.current = true;
-    //   lastCheckedUserId.current = userId;
-    //   return;
-    // }
+    const token = localStorage.getItem("token");
+    if (!token) {
+      console.warn("No token found, waiting...");
+
+      if (checkAttempts.current < 5) {
+        checkAttempts.current++;
+        setTimeout(() => checkProfile(), 500);
+        return;
+      }
+
+      setIsComplete(false);
+      setLoading(false);
+      return;
+    }
 
     try {
       setLoading(true);
 
-      const token = localStorage.getItem("token");
-      if (!token) {
-        setIsComplete(false);
-        return;
+      console.log("Checking profile for user:", userId);
+
+      let retries = 3;
+      let res: Response | undefined;
+
+      while (retries > 0) {
+        try {
+          res = await fetch(
+            `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user/profile/${userId}`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            },
+          );
+
+          if (res.ok) break;
+
+          retries--;
+          if (retries === 0)
+            throw new Error(`Profile check failed: ${res.status}`);
+
+          await new Promise((r) => setTimeout(r, 1000));
+        } catch (err) {
+          retries--;
+          if (retries === 0) throw err;
+          await new Promise((r) => setTimeout(r, 1000));
+        }
       }
 
-      // Request profile completeness data from API
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user/profile/${userId}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      if (!res.ok) throw new Error("Failed to fetch profile");
+      if (!res || !res.ok) {
+        console.error("Profile check failed:", res?.status);
+        throw new Error("Failed to fetch profile");
+      }
 
       const json = await res.json();
       const data = json?.data || {};
 
-      // Normalize isComplete value (boolean / numeric)
+      console.log("Profile data:", data);
+
       setIsComplete(data.isComplete === true || data.isComplete === 1);
       setMissingFields(
-        Array.isArray(data.missingFields) ? data.missingFields : []
+        Array.isArray(data.missingFields) ? data.missingFields : [],
       );
 
       hasChecked.current = true;
       lastCheckedUserId.current = userId;
-    } catch {
-      // Fail-safe: treat profile as incomplete
+      checkAttempts.current = 0;
+    } catch (err) {
+      console.error("Profile check error:", err);
       setIsComplete(false);
       setMissingFields([]);
     } finally {
@@ -123,24 +144,25 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     }
   }, [user]);
 
-  // Trigger profile check once auth state is ready
   useEffect(() => {
-    if (authLoading) return;
+    if (authLoading) {
+      setLoading(true);
+      return;
+    }
 
     if (!user) {
       setLoading(false);
       setIsComplete(null);
       hasChecked.current = false;
       lastCheckedUserId.current = null;
+      checkAttempts.current = 0;
       return;
     }
 
     checkProfile();
   }, [authLoading, user, checkProfile]);
 
-  // Handle navigation based on profile completeness
   useEffect(() => {
-    // Wait until both auth & profile loading are finished
     if (authLoading || loading) {
       return;
     }
@@ -149,7 +171,6 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    // Still resolving profile status
     if (isComplete === null) {
       return;
     }
@@ -157,26 +178,24 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     const isOnAuthPage = AUTH_PAGES.includes(pathname);
     const isOnCompleteProfilePage = pathname === "/complete-profile";
 
-    // 1. Profile is COMPLETE
     if (isComplete === true) {
-      // Prevent access to auth & complete-profile pages
       if (isOnAuthPage || isOnCompleteProfilePage) {
+        console.log("Profile complete, redirecting to /home");
         router.replace("/home");
         return;
       }
       return;
     }
 
-    // 2. Profile is INCOMPLETE
     if (isComplete === false) {
-      // Redirect from auth pages directly to complete-profile
       if (isOnAuthPage) {
+        console.log("Profile incomplete, redirecting to /complete-profile");
         router.replace("/complete-profile");
         return;
       }
 
-      // Force user to stay on complete-profile page
       if (!isOnCompleteProfilePage) {
+        console.log("Profile incomplete, redirecting to /complete-profile");
         router.replace("/complete-profile");
         return;
       }
@@ -184,10 +203,10 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     }
   }, [user, isComplete, loading, authLoading, pathname, router]);
 
-  // Manually re-check profile (used after profile update)
   const refetch = async () => {
     hasChecked.current = false;
     lastCheckedUserId.current = null;
+    checkAttempts.current = 0;
     await checkProfile();
   };
 
@@ -200,7 +219,6 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   );
 }
 
-// Hook to consume profile context safely
 export function useProfile() {
   const ctx = useContext(ProfileContext);
   if (!ctx) {
