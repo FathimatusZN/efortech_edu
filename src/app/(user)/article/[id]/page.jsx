@@ -64,7 +64,7 @@ export default function ArticleDetail({ params }) {
           >
             {article.images.map((img, index) => (
               <SwiperSlide key={index}>
-                <div className="relative w-full h-full aspect-[4/3] sm:aspect-[16/9]">
+                <div className="relative w-full h-[220px] sm:h-[300px] md:h-[360px]">
                   <img
                     src={img}
                     alt={`Image ${index}`}
