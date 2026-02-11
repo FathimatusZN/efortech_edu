@@ -68,6 +68,16 @@ export default function CompleteProfile() {
     user_photo: "/assets/user1.png",
   });
 
+  const isFormComplete =
+    profile.fullname.trim() !== "" &&
+    profile.phone_number.trim() !== "" &&
+    profile.role !== "" &&
+    profile.position.trim() !== "" &&
+    profile.gender !== "Default" &&
+    profile.birthdate !== "";
+
+  const isDisabled = submitting || !isFormComplete;
+
   /* =========================
       FETCH PROFILE
   ========================= */
@@ -363,11 +373,11 @@ export default function CompleteProfile() {
           <FormField
             label="Position"
             tooltip={`Example:
-Marketing Manager
-Software Engineer
-Head of Electrical Engineering Study Program
-Dean of Faculty of Engineering
-Industrial Engineering Student`}
+            Marketing Manager
+            Software Engineer
+            Head of Electrical Engineering Study Program
+            Dean of Faculty of Engineering
+            Industrial Engineering Student`}
           >
             <input
               name="position"
@@ -380,9 +390,19 @@ Industrial Engineering Student`}
           </FormField>
         </div>
 
+        {!isFormComplete && (
+  <p className="mt-6 text-sm text-orange-600 text-center flex items-center justify-center gap-1">
+    <FaInfoCircle size={14} />
+    Please complete all required fields to enable the button
+  </p>
+)}
+
+
         <button
-          disabled={submitting}
-          className="mt-8 w-full max-w-[400px] bg-mainBlue hover:bg-lightBlue text-white py-3 rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed items-center justify-center flex mx-auto"
+          disabled={isDisabled}
+          className="mt-8 w-full max-w-[400px] bg-mainBlue hover:bg-lightBlue 
+            text-white py-3 rounded-lg font-medium transition 
+            disabled:opacity-50 disabled:cursor-not-allowed items-center justify-center flex mx-auto"
         >
           {submitting ? "Saving profile..." : "Complete Profile"}
         </button>
