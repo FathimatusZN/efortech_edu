@@ -180,8 +180,8 @@ const TrainingDetail = () => {
 
   const averageRating = validScores.length
     ? (
-        validScores.reduce((acc, score) => acc + score, 0) / validScores.length
-      ).toFixed(2)
+      validScores.reduce((acc, score) => acc + score, 0) / validScores.length
+    ).toFixed(2)
     : "0.00";
 
   const sortedReviews = reviews
@@ -207,9 +207,8 @@ const TrainingDetail = () => {
                 src={img}
                 alt={`Slide ${index + 1}`}
                 fill
-                className={`object-cover transition-opacity duration-1000 ${
-                  currentSlide === index ? "opacity-100" : "opacity-0"
-                }`}
+                className={`object-cover transition-opacity duration-1000 ${currentSlide === index ? "opacity-100" : "opacity-0"
+                  }`}
               />
             ))}
             <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
@@ -217,18 +216,16 @@ const TrainingDetail = () => {
                 <button
                   key={index}
                   onClick={() => setCurrentSlide(index)}
-                  className={`w-3 h-3 rounded-full border-2 flex items-center justify-center transition-all ${
-                    currentSlide === index
+                  className={`w-3 h-3 rounded-full border-2 flex items-center justify-center transition-all ${currentSlide === index
                       ? "border-mainOrange"
                       : "border-gray-400"
-                  }`}
+                    }`}
                 >
                   <div
-                    className={`w-1 h-1 rounded-full ${
-                      currentSlide === index
+                    className={`w-1 h-1 rounded-full ${currentSlide === index
                         ? "bg-mainOrange"
                         : "bg-transparent"
-                    }`}
+                      }`}
                   ></div>
                 </button>
               ))}
@@ -285,9 +282,8 @@ const TrainingDetail = () => {
                 </p>
                 <p className="text-sm text-black font-semibold">
                   {trainingData.validity_period
-                    ? `${trainingData.validity_period} ${
-                        trainingData.validity_period > 1 ? "Months" : "Month"
-                      }`
+                    ? `${trainingData.validity_period} ${trainingData.validity_period > 1 ? "Months" : "Month"
+                    }`
                     : "No Expiry Date"}
                 </p>
               </div>
@@ -297,11 +293,10 @@ const TrainingDetail = () => {
               {trainingData.skills.map((tag, index) => (
                 <span
                   key={index}
-                  className={`px-3 py-1 text-xs sm:text-sm border rounded-full break-words max-w-full ${
-                    index % 2 === 0
+                  className={`px-3 py-1 text-xs sm:text-sm border rounded-full break-words max-w-full ${index % 2 === 0
                       ? "border-mainOrange text-black"
                       : "border-mainBlue text-black"
-                  }`}
+                    }`}
                 >
                   {tag}
                 </span>
@@ -396,14 +391,13 @@ const TrainingDetail = () => {
                               Status
                             </td>
                             <td
-                              className={`px-4 py-2 font-semibold ${
-                                registrationInfo.status_label === "Done"
+                              className={`px-4 py-2 font-semibold ${registrationInfo.status_label === "Done"
                                   ? "text-green-600"
                                   : registrationInfo.status_label ===
-                                      "Cancelled"
+                                    "Cancelled"
                                     ? "text-red-600"
                                     : "text-blue-600"
-                              }`}
+                                }`}
                             >
                               {registrationInfo.status_label}
                             </td>
@@ -469,18 +463,18 @@ const TrainingDetail = () => {
 
                   const body = encodeURIComponent(
                     `Dear Efortech Team,\n\n` +
-                      `I hope this message finds you well.\n\n` +
-                      `I'm reaching out to ask for further information regarding the training registration process.\n\n` +
-                      `Here are the training details:\n` +
-                      `• Training ID   : ${trainingData.training_id}\n` +
-                      `• Training Name : ${trainingData.training_name}\n\n` +
-                      `Could you please provide more details about the registration process, requirements, or any additional steps?\n` +
-                      `[* Feel free to adjust or rephrase this part to match your preferred tone or context.]\n\n` +
-                      `Thank you very much for your time and assistance.\n` +
-                      `Looking forward to your reply.\n\n` +
-                      `Best regards,\n` +
-                      `[Your Name]\n` +
-                      `[Your Contact Information (optional)]`,
+                    `I hope this message finds you well.\n\n` +
+                    `I'm reaching out to ask for further information regarding the training registration process.\n\n` +
+                    `Here are the training details:\n` +
+                    `• Training ID   : ${trainingData.training_id}\n` +
+                    `• Training Name : ${trainingData.training_name}\n\n` +
+                    `Could you please provide more details about the registration process, requirements, or any additional steps?\n` +
+                    `[* Feel free to adjust or rephrase this part to match your preferred tone or context.]\n\n` +
+                    `Thank you very much for your time and assistance.\n` +
+                    `Looking forward to your reply.\n\n` +
+                    `Best regards,\n` +
+                    `[Your Name]\n` +
+                    `[Your Contact Information (optional)]`,
                   );
 
                   window.location.href = `mailto:info@efortechsolutions.com?subject=${subject}&body=${body}`;
@@ -577,7 +571,7 @@ const TrainingDetail = () => {
                   className="mt-4 border-b pb-4 flex items-start gap-4"
                 >
                   <Image
-                    src={review.user_photo || "/default-avatar.png"}
+                    src={review.user_photo || "/assets/user1.png"}
                     alt={review.fullname}
                     width={50}
                     height={50}
