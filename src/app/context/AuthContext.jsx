@@ -1,3 +1,4 @@
+// efortech_edu\src\app\context\AuthContext.jsx
 "use client";
 import { createContext, useContext, useState, useEffect } from "react";
 import { onAuthStateChanged, signInWithEmailAndPassword } from "firebase/auth";
@@ -20,7 +21,6 @@ export const AuthProvider = ({ children }) => {
       }
     };
 
-    // ✅ CHECK localStorage SYNC (tidak async)
     const storedUser = safeParse(localStorage.getItem("user"));
     const storedToken = localStorage.getItem("token");
     const loginTime = parseInt(localStorage.getItem("login_time"), 10);
@@ -32,50 +32,84 @@ export const AuthProvider = ({ children }) => {
     if (isExpired) {
       logout();
       setSessionExpired(true);
-      setLoading(false); // ✅ Set loading false IMMEDIATELY
+      setLoading(false);
       return;
     }
 
-    // ✅ Jika ada stored user yang valid, set immediately
     if (storedUser && storedToken && !isExpired) {
       setUser(storedUser);
-      // JANGAN set loading false di sini, tunggu Firebase verify
+      setLoading(false);
     }
 
+    let isUnsubscribed = false;
+
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (isUnsubscribed) return;
+
       if (currentUser) {
         try {
           const idToken = await currentUser.getIdToken(true);
-          const res = await axios.get(
-            `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user/me`,
-            {
-              headers: { Authorization: `Bearer ${idToken}` },
-            }
-          );
 
-          setUser(res.data.data);
-          localStorage.setItem("user", JSON.stringify(res.data.data));
+          let retries = 3;
+          let res;
+
+          while (retries > 0 && !isUnsubscribed) {
+            try {
+              res = await axios.get(
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user/me`,
+                {
+                  headers: { Authorization: `Bearer ${idToken}` },
+                  timeout: 10000,
+                }
+              );
+              break;
+            } catch (err) {
+              retries--;
+              if (retries === 0) throw err;
+              await new Promise(r => setTimeout(r, 1000));
+            }
+          }
+
+          if (isUnsubscribed) return;
+
+          const userData = res.data.data;
+
+          const now = Date.now();
+          const duration = 3 * 60 * 60 * 1000;
+
+          localStorage.setItem("user", JSON.stringify(userData));
           localStorage.setItem("token", idToken);
+          localStorage.setItem("login_time", now.toString());
+          localStorage.setItem("max_duration", duration.toString());
+
+          setUser(userData);
+          setLoading(false);
+
         } catch (err) {
-          logout();
+          console.error("Failed to fetch user data:", err);
+
+          if (!storedUser) {
+            logout();
+          }
+          setLoading(false);
         }
       } else {
-        // ✅ Hanya logout jika memang tidak ada stored user
         if (!storedUser || isExpired) {
           logout();
         }
+        setLoading(false);
       }
-
-      // ✅ CRITICAL: Set loading false setelah check selesai
-      setLoading(false);
     });
 
-    // ✅ FALLBACK: Jika onAuthStateChanged tidak dipanggil dalam 3 detik
     const fallbackTimeout = setTimeout(() => {
-      setLoading(false);
-    }, 3000);
+      if (!isUnsubscribed) {
+        console.warn("Auth state check timeout - setting loading to false");
+        setLoading(false);
+      }
+    }, 10000);
 
     return () => {
+      isUnsubscribed = true;
       clearTimeout(fallbackTimeout);
       unsubscribe();
     };
@@ -83,11 +117,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       const idToken = await user.getIdToken(true);
 
@@ -97,12 +127,9 @@ export const AuthProvider = ({ children }) => {
       );
 
       const userData = res.data.data;
-
-      // Set max duration for localStorage login
       const now = Date.now();
       const duration = 3 * 60 * 60 * 1000;
 
-      // Save to localStorage
       localStorage.setItem("token", idToken);
       localStorage.setItem("role", userData.role);
       localStorage.setItem("user", JSON.stringify(userData));
@@ -110,7 +137,6 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem("max_duration", duration.toString());
 
       setUser(userData);
-
       return userData;
     } catch (error) {
       throw error;
@@ -127,6 +153,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.removeItem("max_duration");
       localStorage.removeItem("role");
     } catch (error) {
+      console.error("Logout error:", error);
     }
   };
 

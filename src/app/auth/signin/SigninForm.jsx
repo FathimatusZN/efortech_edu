@@ -1,7 +1,8 @@
+// efortech_edu\src\app\auth\signin\SigninForm.jsx
 "use client";
 
 import { useState, useMemo } from "react";
-import { FaEye, FaEyeSlash, FaGoogle } from "react-icons/fa";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useAuth } from "@/app/context/AuthContext";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -14,7 +15,7 @@ import { auth } from "@/app/firebase/config";
 const provider = new GoogleAuthProvider();
 
 const SigninForm = () => {
-  const { login } = useAuth();
+  const { login, loading: authLoading } = useAuth();
   const router = useRouter();
 
   const [showPassword, setShowPassword] = useState(false);
@@ -34,12 +35,13 @@ const SigninForm = () => {
   };
 
   const handleGoogleLogin = async () => {
-    setLoading(true);
+    setPasswordError("");
+
     try {
       await signInWithPopup(auth, provider);
     } catch (err) {
       console.error("Google login error:", err);
-      setLoading(false);
+      setPasswordError("Google sign-in failed. Please try again.");
     }
   };
 
@@ -70,7 +72,6 @@ const SigninForm = () => {
     try {
       await login(email, password);
     } catch (err) {
-      // Tangani error Firebase
       if (err.message.includes("auth/invalid-credential")) {
         setPasswordError("Invalid email or password.");
       } else {
@@ -97,7 +98,7 @@ const SigninForm = () => {
   const randomFunfact = useMemo(() => {
     const index = Math.floor(Math.random() * funfacts.length);
     return funfacts[index];
-  }, [loading, loading2, loading3]);
+  }, [loading, loading2, loading3, authLoading]);
 
   const inputClass = (error) => `
         w-full border rounded-[10px] px-4 py-2 shadow-md
@@ -106,9 +107,11 @@ const SigninForm = () => {
         placeholder:text-[12px] md:placeholder:text-[14px] lg:placeholder:text-[15px] xl:placeholder:text-[16px] 
         ${error ? "border-red-500" : "border-[#03649F]"}`;
 
+  const isLoading = loading || loading2 || loading3 || authLoading;
+
   return (
     <>
-      {loading || loading2 || loading3 ? (
+      {isLoading ? (
         <div className="w-full min-h-screen flex flex-col md:flex-row">
           <div className="relative w-full md:w-1/2 aspect-[16/9] md:aspect-auto overflow-hidden">
             <img
@@ -122,11 +125,13 @@ const SigninForm = () => {
               <div className="flex flex-col items-center space-y-3">
                 <LoadingSpinner
                   text={
-                    loading
+                    authLoading
                       ? "Signing you in..."
-                      : loading2
-                      ? "Redirecting to Forgot Password..."
-                      : "Redirecting to Register..."
+                      : loading
+                        ? "Signing you in..."
+                        : loading2
+                          ? "Redirecting to Forgot Password..."
+                          : "Redirecting to Register..."
                   }
                 />
                 <div className="bg-blue-50 rounded-xl px-4 py-3 shadow-md w-full max-w-[350px] sm:max-w-xl mx-auto">
@@ -239,7 +244,8 @@ const SigninForm = () => {
                   <Button
                     type="button"
                     onClick={handleGoogleLogin}
-                    className="w-[180px] h-9 text-xs md:text-sm font-semibold border border-gray-300 bg-white text-black hover:bg-gray-100 flex items-center justify-center gap-2 rounded-md shadow-sm"
+                    disabled={authLoading}
+                    className="w-[180px] h-9 text-xs md:text-sm font-semibold border border-gray-300 bg-white text-black hover:bg-gray-100 flex items-center justify-center gap-2 rounded-md shadow-sm disabled:opacity-50"
                   >
                     <GoogleIcon />
                     Sign in with Google
